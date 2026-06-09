@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POSE ANALYZER — 동작 분석</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0c;
+    --panel: #111116;
+    --border: #1e1e28;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --accent3: #ffe600;
+    --text: #e8e8f0;
+    --muted: #5a5a72;
+    --good: #00e5a0;
+    --warn: #ff9800;
+    --bad: #ff3d71;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+    margin-right: 6px;
+    transition: background 0.3s;
+  }
+  .status-dot.live { background: var(--good); box-shadow: 0 0 8px var(--good); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .status-label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); }
+
+  /* SPORT TABS */
+  .sport-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .sport-tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--muted);
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* VIDEO AREA */
+  .video-wrap {
+    position: relative;
+    background: #000;
+    width: 100%;
+    aspect-ratio: 9/16;
+    max-height: 60vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #video {
+    position: absolute;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+
+  #canvas {
+    position: absolute;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+  }
+
+  .overlay-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--accent);
+    border-style: solid;
+    opacity: 0.6;
+  }
+  .corner.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+  .corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+  .corner.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+  .corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+  .start-btn {
+    position: relative;
+    z-index: 10;
+    padding: 14px 32px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .start-btn:hover { transform: scale(1.04); box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+  .start-btn.hidden { display: none; }
+
+  /* METRICS PANEL */
+  .metrics {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .metrics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .metric-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 3px 0 0 3px;
+  }
+  .metric-card.warn::before { background: var(--warn); }
+  .metric-card.bad::before { background: var(--bad); }
+  .metric-card.good::before { background: var(--good); }
+
+  .metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .metric-value {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    color: var(--text);
+    line-height: 1;
+  }
+  .metric-value .unit {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+
+  .metric-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ASYMMETRY BAR */
+  .asym-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .asym-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  .asym-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .asym-joint {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .asym-bar-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bar-center {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    position: absolute;
+    top: 0; height: 100%;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    background: var(--accent);
+  }
+  .bar-fill.left { right: 50%; background: var(--accent); }
+  .bar-fill.right { left: 50%; background: var(--accent2); }
+
+  .asym-val {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    width: 36px;
+    text-align: right;
+  }
+
+  .lr-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    margin-top: -6px;
+    margin-bottom: 10px;
+    padding: 0 70px 0 0;
+  }
+
+  /* FEEDBACK */
+  .feedback-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .feedback-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 10px;
+  }
+
+  .feedback-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .feedback-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  /* LOADING */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    gap: 16px;
+  }
+
+  .loading-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .loading-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loading-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    animation: load 2s ease forwards;
+  }
+  @keyframes load { to { width: 100%; } }
+
+  .loading-text {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-logo">POSE ANALYZER</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="loading-text">AI 모델 로딩 중...</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">POSE<span>ANALYZER</span></div>
+  <div>
+    <span class="status-dot" id="statusDot"></span>
+    <span class="status-label" id="statusLabel">대기 중</span>
+  </div>
+</header>
+
+<!-- SPORT TABS -->
+<div class="sport-tabs">
+  <button class="tab active" onclick="setMode(this,'shorttrack')">쇼트트랙</button>
+  <button class="tab" onclick="setMode(this,'golf')">골프</button>
+  <button class="tab" onclick="setMode(this,'baseball')">야구</button>
+  <button class="tab" onclick="setMode(this,'tennis')">테니스</button>
+  <button class="tab" onclick="setMode(this,'general')">일반</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- VIDEO -->
+  <div class="video-wrap">
+    <div class="overlay-grid"></div>
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="canvas"></canvas>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <button class="start-btn" id="startBtn" onclick="startCamera()">📷 카메라 시작</button>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+
+    <!-- 각도 카드들 -->
+    <div class="metrics-row">
+      <div class="metric-card" id="card-shoulder">
+        <div class="metric-label">Shoulder Tilt</div>
+        <div class="metric-value" id="val-shoulder">--<span class="unit">°</span></div>
+        <div class="metric-sub" id="sub-shoulder">감지 대기</div>
+      </div>
+      <div class="metric-card" id="card-hip">
+        <div class="metric-label">Hip Tilt</div>
+        <div class="metric-value" id="val-hip">--<span class="unit">°</span></div>
+        <div class="metric-sub" id="sub-hip">감지 대기</div>
+      </div>
+    </div>
+
+    <div class="metrics-row">
+      <div class="metric-card" id="card-trunk">
+        <div class="metric-label">Trunk Lean</div>
+        <div class="metric-value" id="val-trunk">--<span class="unit">°</span></div>
+        <div class="metric-sub" id="sub-trunk">감지 대기</div>
+      </div>
+      <div class="metric-card" id="card-knee">
+        <div class="metric-label">Knee Angle</div>
+        <div class="metric-value" id="val-knee">--<span class="unit">°</span></div>
+        <div class="metric-sub" id="sub-knee">감지 대기</div>
+      </div>
+    </div>
+
+    <!-- 좌우 비대칭 -->
+    <div class="asym-section">
+      <div class="asym-title">좌우 비대칭 분석</div>
+      <div class="lr-labels"><span>← 좌(L)</span><span>우(R) →</span></div>
+
+      <div class="asym-row">
+        <div class="asym-joint">Hip</div>
+        <div class="asym-bar-wrap">
+          <div class="bar-center">
+            <div class="bar-fill left" id="bar-hip-l" style="width:0%"></div>
+            <div class="bar-fill right" id="bar-hip-r" style="width:0%"></div>
+          </div>
+          <div class="asym-val" id="asym-hip-val">--</div>
+        </div>
+      </div>
+
+      <div class="asym-row">
+        <div class="asym-joint">Knee</div>
+        <div class="asym-bar-wrap">
+          <div class="bar-center">
+            <div class="bar-fill left" id="bar-knee-l" style="width:0%"></div>
+            <div class="bar-fill right" id="bar-knee-r" style="width:0%"></div>
+          </div>
+          <div class="asym-val" id="asym-knee-val">--</div>
+        </div>
+      </div>
+
+      <div class="asym-row">
+        <div class="asym-joint">Shoulder</div>
+        <div class="asym-bar-wrap">
+          <div class="bar-center">
+            <div class="bar-fill left" id="bar-sh-l" style="width:0%"></div>
+            <div class="bar-fill right" id="bar-sh-r" style="width:0%"></div>
+          </div>
+          <div class="asym-val" id="asym-sh-val">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 피드백 -->
+    <div class="feedback-box">
+      <div class="feedback-title">실시간 피드백</div>
+      <div id="feedbackList">
+        <div class="feedback-item">
+          <div class="feedback-dot" style="background:var(--muted)"></div>
+          <span>카메라를 시작하면 분석이 시작됩니다</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+<script>
+let currentMode = 'shorttrack';
+let poseDetector = null;
+let cameraStarted = false;
+let smoothedData = {};
+
+// 모드별 기준값
+const modeConfig = {
+  shorttrack: {
+    trunkLean: { ideal: 110, range: [95, 125], label: '상체 전굴 (쇼트트랙)' },
+    hipTilt: { ideal: 80, range: [70, 95], label: '골반 기울기' },
+    kneeAngle: { ideal: 100, range: [85, 115], label: '무릎 굽힘각' },
+    feedback: ['상체를 더 앞으로 기울이세요', '좌우 골반 균형을 맞추세요', '무릎 굽힘 각도를 유지하세요']
+  },
+  golf: {
+    trunkLean: { ideal: 50, range: [40, 65], label: '상체 전굴 (골프)' },
+    hipTilt: { ideal: 10, range: [0, 20], label: '골반 기울기' },
+    kneeAngle: { ideal: 150, range: [140, 165], label: '무릎 각도' },
+    feedback: ['어드레스 자세를 확인하세요', '척추 각도를 유지하세요', '무릎을 약간 굽히세요']
+  },
+  baseball: {
+    trunkLean: { ideal: 70, range: [55, 85], label: '상체 기울기' },
+    hipTilt: { ideal: 15, range: [5, 30], label: '골반 기울기' },
+    kneeAngle: { ideal: 130, range: [115, 145], label: '무릎 각도' },
+    feedback: ['타격 준비 자세를 확인하세요', '체중 이동을 연습하세요', '무게 중심을 낮추세요']
+  },
+  tennis: {
+    trunkLean: { ideal: 75, range: [60, 90], label: '상체 기울기' },
+    hipTilt: { ideal: 12, range: [3, 25], label: '골반 기울기' },
+    kneeAngle: { ideal: 135, range: [120, 150], label: '무릎 각도' },
+    feedback: ['준비 자세를 확인하세요', '발끝 방향을 맞추세요', '무릎 굽힘을 유지하세요']
+  },
+  general: {
+    trunkLean: { ideal: 90, range: [75, 105], label: '상체 기울기' },
+    hipTilt: { ideal: 5, range: [0, 15], label: '골반 기울기' },
+    kneeAngle: { ideal: 170, range: [160, 180], label: '무릎 각도' },
+    feedback: ['균형 잡힌 자세를 유지하세요', '좌우 대칭을 확인하세요', '척추를 곧게 펴세요']
+  }
+};
+
+function setMode(el, mode) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentMode = mode;
+}
+
+// 각도 계산
+function calcAngle(a, b, c) {
+  const ab = { x: a.x - b.x, y: a.y - b.y };
+  const cb = { x: c.x - b.x, y: c.y - b.y };
+  const dot = ab.x * cb.x + ab.y * cb.y;
+  const magAB = Math.sqrt(ab.x**2 + ab.y**2);
+  const magCB = Math.sqrt(cb.x**2 + cb.y**2);
+  if (magAB === 0 || magCB === 0) return 0;
+  const cos = Math.max(-1, Math.min(1, dot / (magAB * magCB)));
+  return Math.round(Math.acos(cos) * 180 / Math.PI);
+}
+
+// 수직 기울기 각도
+function calcTiltAngle(p1, p2) {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  return Math.round(Math.abs(Math.atan2(dx, dy) * 180 / Math.PI));
+}
+
+// 스무딩
+function smooth(key, val, alpha = 0.3) {
+  if (smoothedData[key] === undefined) smoothedData[key] = val;
+  smoothedData[key] = smoothedData[key] * (1 - alpha) + val * alpha;
+  return Math.round(smoothedData[key]);
+}
+
+// 카드 상태 업데이트
+function updateCard(id, value, config) {
+  const card = document.getElementById('card-' + id);
+  const valEl = document.getElementById('val-' + id);
+  const subEl = document.getElementById('sub-' + id);
+
+  valEl.innerHTML = value + '<span class="unit">°</span>';
+
+  const diff = value - config.ideal;
+  const inRange = value >= config.range[0] && value <= config.range[1];
+
+  card.className = 'metric-card ' + (inRange ? 'good' : Math.abs(diff) < 20 ? 'warn' : 'bad');
+  subEl.textContent = inRange ? '✓ 이상적' : (diff > 0 ? `+${diff}° 과도` : `${diff}° 부족`);
+  subEl.style.color = inRange ? 'var(--good)' : Math.abs(diff) < 20 ? 'var(--warn)' : 'var(--bad)';
+}
+
+// 비대칭 바 업데이트
+function updateAsymBar(name, leftVal, rightVal) {
+  const diff = leftVal - rightVal;
+  const absMax = Math.max(Math.abs(leftVal), Math.abs(rightVal), 50);
+  const lPct = Math.min(50, (Math.abs(leftVal) / absMax) * 50);
+  const rPct = Math.min(50, (Math.abs(rightVal) / absMax) * 50);
+
+  document.getElementById(`bar-${name}-l`).style.width = lPct + '%';
+  document.getElementById(`bar-${name}-r`).style.width = rPct + '%';
+  document.getElementById(`asym-${name}-val`).textContent = (diff >= 0 ? 'L+' : 'R+') + Math.abs(diff);
+  document.getElementById(`asym-${name}-val`).style.color = Math.abs(diff) < 30 ? 'var(--good)' : Math.abs(diff) < 80 ? 'var(--warn)' : 'var(--bad)';
+}
+
+// 피드백 업데이트
+function updateFeedback(metrics, config) {
+  const items = [];
+  const { shoulder, hip, trunk, knee } = metrics;
+
+  const trunkCfg = config.trunkLean;
+  const hipCfg = config.hipTilt;
+  const kneeCfg = config.kneeAngle;
+
+  if (trunk < trunkCfg.range[0]) items.push({ color: 'var(--bad)', text: '상체를 더 앞으로 기울이세요 (' + trunk + '° / 목표: ' + trunkCfg.ideal + '°)' });
+  else if (trunk > trunkCfg.range[1]) items.push({ color: 'var(--warn)', text: '상체가 너무 앞으로 기울었어요 (' + trunk + '°)' });
+  else items.push({ color: 'var(--good)', text: '상체 기울기 이상적 ✓ (' + trunk + '°)' });
+
+  if (hip > hipCfg.range[1]) items.push({ color: 'var(--warn)', text: '골반 기울기가 큽니다 (' + hip + '° / 목표: ' + hipCfg.ideal + '°)' });
+  else items.push({ color: 'var(--good)', text: '골반 안정적 ✓' });
+
+  if (knee < kneeCfg.range[0]) items.push({ color: 'var(--bad)', text: '무릎을 더 굽히세요 (' + knee + '°)' });
+  else if (knee > kneeCfg.range[1]) items.push({ color: 'var(--accent)', text: '무릎을 살짝 굽히세요 (' + knee + '°)' });
+  else items.push({ color: 'var(--good)', text: '무릎 각도 이상적 ✓' });
+
+  const html = items.map(i =>
+    `<div class="feedback-item">
+      <div class="feedback-dot" style="background:${i.color}"></div>
+      <span>${i.text}</span>
+    </div>`
+  ).join('');
+
+  document.getElementById('feedbackList').innerHTML = html;
+}
+
+// 포즈 그리기
+function drawPose(ctx, landmarks, w, h) {
+  const connections = [
+    [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+    [11, 23], [12, 24], [23, 24], [23, 25], [25, 27],
+    [24, 26], [26, 28], [27, 29], [28, 30]
+  ];
+
+  // 선 그리기
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.7)';
+  ctx.lineWidth = 2;
+  connections.forEach(([a, b]) => {
+    const pa = landmarks[a], pb = landmarks[b];
+    if (pa.visibility > 0.5 && pb.visibility > 0.5) {
+      ctx.beginPath();
+      ctx.moveTo(pa.x * w, pa.y * h);
+      ctx.lineTo(pb.x * w, pb.y * h);
+      ctx.stroke();
+    }
+  });
+
+  // 관절 점
+  const keyJoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
+  keyJoints.forEach(i => {
+    const p = landmarks[i];
+    if (p.visibility > 0.5) {
+      const isHip = i === 23 || i === 24;
+      const isShoulder = i === 11 || i === 12;
+      const isKnee = i === 25 || i === 26;
+
+      ctx.beginPath();
+      ctx.arc(p.x * w, p.y * h, isHip || isShoulder || isKnee ? 6 : 4, 0, 2 * Math.PI);
+      ctx.fillStyle = isHip ? 'var(--accent2)' : isShoulder ? 'var(--accent3)' : isKnee ? '#00e5a0' : 'rgba(0,229,255,0.8)';
+      ctx.fill();
+    }
+  });
+
+  // 각도 텍스트 오버레이
+  ctx.font = 'bold 12px Space Mono, monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 4;
+
+  const lHip = landmarks[23], rHip = landmarks[24];
+  const lKnee = landmarks[25], rKnee = landmarks[26];
+  const lSh = landmarks[11], rSh = landmarks[12];
+  const lAnkle = landmarks[27], rAnkle = landmarks[28];
+
+  if (lKnee.visibility > 0.5) {
+    const ang = calcAngle(lHip, lKnee, lAnkle);
+    ctx.fillText(ang + '°', lKnee.x * w + 8, lKnee.y * h);
+  }
+  if (rKnee.visibility > 0.5) {
+    const ang = calcAngle(rHip, rKnee, rAnkle);
+    ctx.fillText(ang + '°', rKnee.x * w + 8, rKnee.y * h);
+  }
+
+  ctx.shadowBlur = 0;
+}
+
+// 결과 처리
+function onResults(results) {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (!results.poseLandmarks) return;
+
+  const lm = results.poseLandmarks;
+  drawPose(ctx, lm, w, h);
+
+  const lSh = lm[11], rSh = lm[12];
+  const lHip = lm[23], rHip = lm[24];
+  const lKnee = lm[25], rKnee = lm[26];
+  const lAnkle = lm[27], rAnkle = lm[28];
+  const nose = lm[0];
+
+  const config = modeConfig[currentMode];
+
+  // 어깨 기울기
+  const shoulderTilt = smooth('shoulder', calcTiltAngle(lSh, rSh));
+
+  // 골반 기울기
+  const hipTilt = smooth('hip', calcTiltAngle(lHip, rHip));
+
+  // 상체 전굴 (어깨 중점 → 골반 중점)
+  const shoulderMid = { x: (lSh.x + rSh.x) / 2, y: (lSh.y + rSh.y) / 2 };
+  const hipMid = { x: (lHip.x + rHip.x) / 2, y: (lHip.y + rHip.y) / 2 };
+  const dx = shoulderMid.x - hipMid.x;
+  const dy = shoulderMid.y - hipMid.y;
+  const trunkLean = smooth('trunk', Math.round(90 + Math.atan2(dx, -dy) * 180 / Math.PI));
+
+  // 무릎 각도 (평균)
+  const kneeL = calcAngle(lHip, lKnee, lAnkle);
+  const kneeR = calcAngle(rHip, rKnee, rAnkle);
+  const kneeAvg = smooth('knee', Math.round((kneeL + kneeR) / 2));
+
+  // 업데이트
+  updateCard('shoulder', shoulderTilt, { ideal: 5, range: [0, 15] });
+  updateCard('hip', hipTilt, config.hipTilt);
+  updateCard('trunk', trunkLean, config.trunkLean);
+  updateCard('knee', kneeAvg, config.kneeAngle);
+
+  // 비대칭
+  const hipAsymL = smooth('hipL', Math.round(lHip.y * 1000));
+  const hipAsymR = smooth('hipR', Math.round(rHip.y * 1000));
+  updateAsymBar('hip', hipAsymL - 500, hipAsymR - 500);
+
+  const kneeDiff = smooth('kneeDiff', kneeL - kneeR);
+  updateAsymBar('knee', kneeDiff > 0 ? kneeDiff : 0, kneeDiff < 0 ? -kneeDiff : 0);
+
+  const shDiff = smooth('shDiff', Math.round((lSh.y - rSh.y) * 500));
+  updateAsymBar('sh', shDiff > 0 ? shDiff : 0, shDiff < 0 ? -shDiff : 0);
+
+  updateFeedback({ shoulder: shoulderTilt, hip: hipTilt, trunk: trunkLean, knee: kneeAvg }, config);
+}
+
+// 카메라 시작
+async function startCamera() {
+  const btn = document.getElementById('startBtn');
+  btn.textContent = '카메라 연결 중...';
+  btn.disabled = true;
+
+  try {
+    const pose = new Pose({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+    });
+
+    pose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      smoothSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    pose.onResults(onResults);
+    poseDetector = pose;
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        canvas.width = video.videoWidth || 480;
+        canvas.height = video.videoHeight || 640;
+        await pose.send({ image: video });
+      },
+      width: 480,
+      height: 640
+    });
+
+    await camera.start();
+
+    btn.classList.add('hidden');
+    document.getElementById('statusDot').classList.add('live');
+    document.getElementById('statusLabel').textContent = 'LIVE 분석 중';
+
+  } catch (err) {
+    btn.textContent = '카메라 오류 — 다시 시도';
+    btn.disabled = false;
+    console.error(err);
+  }
+}
+
+// 로딩 완료
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }, 2200);
+});
+</script>
+</body>
+</html>
