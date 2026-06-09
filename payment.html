@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPECTRAX — Subscribe</title>
+  <script src="https://www.paypal.com/sdk/js?client-id=AaarqiVjfTsjuLNfxj89yYwLyNulTuaS2lUlXP8KKsGN6SuhUd1QVdS2uKGEgNZxuDknyrJuFt9nHWxB&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #0a0a0a;
+      color: #f0e6c8;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    /* Background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(197,160,80,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(197,160,80,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      padding: 20px;
+    }
+
+    /* Logo */
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo-wrap .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 42px;
+      font-weight: 600;
+      letter-spacing: 12px;
+      background: linear-gradient(135deg, #c5a050 0%, #f0d98a 50%, #c5a050 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-transform: uppercase;
+    }
+
+    .logo-wrap .tagline {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: #7a6a40;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    /* Gold divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 auto 36px;
+      max-width: 320px;
+    }
+    .divider span {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #c5a050, transparent);
+    }
+    .divider i {
+      width: 6px;
+      height: 6px;
+      background: #c5a050;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* Card */
+    .card {
+      background: linear-gradient(145deg, #141414, #0f0f0f);
+      border: 1px solid #2a2318;
+      border-radius: 2px;
+      padding: 44px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Corner ornaments */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-color: #c5a050;
+      border-style: solid;
+      opacity: 0.4;
+    }
+    .card::before { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
+    .card::after  { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
+
+    .plan-label {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: #c5a050;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .plan-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 300;
+      color: #f0e6c8;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 24px 0 28px;
+    }
+    .price-row .currency {
+      font-size: 18px;
+      color: #c5a050;
+      font-weight: 300;
+    }
+    .price-row .amount {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 56px;
+      font-weight: 600;
+      line-height: 1;
+      background: linear-gradient(135deg, #c5a050 0%, #f0d98a 50%, #c5a050 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .price-row .period {
+      font-size: 12px;
+      color: #5a4e30;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Features */
+    .features {
+      list-style: none;
+      margin-bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .features li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: #9a8a60;
+    }
+    .features li::before {
+      content: '';
+      width: 16px;
+      height: 1px;
+      background: linear-gradient(to right, #c5a050, transparent);
+      flex-shrink: 0;
+    }
+
+    /* Thin gold line separator */
+    .line {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #2a2318, transparent);
+      margin-bottom: 32px;
+    }
+
+    /* PayPal button wrapper */
+    #paypal-button-container {
+      min-height: 48px;
+    }
+
+    /* PayPal button overrides */
+    #paypal-button-container .paypal-buttons {
+      border-radius: 0 !important;
+    }
+
+    .secure-note {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #3a3020;
+      text-transform: uppercase;
+    }
+
+    .secure-note span {
+      color: #5a4e30;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #2a2318;
+      text-transform: uppercase;
+    }
+
+    /* Success / Error states */
+    .message {
+      text-align: center;
+      padding: 20px;
+      border: 1px solid;
+      margin-top: 20px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .message.success {
+      border-color: #c5a050;
+      color: #c5a050;
+      background: rgba(197,160,80,0.05);
+    }
+    .message.error {
+      border-color: #8b2020;
+      color: #c04040;
+      background: rgba(139,32,32,0.05);
+    }
+    .message.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="logo-wrap">
+      <div class="brand">Spectrax</div>
+      <div class="tagline">Exclusive Membership</div>
+    </div>
+
+    <div class="divider"><span></span><i></i><span></span></div>
+
+    <div class="card">
+      <div class="plan-label">Monthly Subscription</div>
+      <div class="plan-name">Premium Access</div>
+
+      <div class="price-row">
+        <span class="currency">$</span>
+        <span class="amount">35</span>
+        <span class="period">/ month</span>
+      </div>
+
+      <ul class="features">
+        <li>Full platform access — all features unlocked</li>
+        <li>Priority support &amp; dedicated assistance</li>
+        <li>Automatic renewal — cancel anytime</li>
+        <li>Exclusive member-only content</li>
+      </ul>
+
+      <div class="line"></div>
+
+      <div id="paypal-button-container"></div>
+
+      <div id="msg-success" class="message success hidden">
+        Subscription activated — welcome to Spectrax.
+      </div>
+      <div id="msg-error" class="message error hidden">
+        Something went wrong. Please try again.
+      </div>
+
+      <div class="secure-note">Secured by <span>PayPal</span> · SSL Encrypted</div>
+    </div>
+
+    <div class="footer">&copy; 2026 Spectrax &mdash; All rights reserved</div>
+
+  </div>
+
+  <script>
+    paypal.Buttons({
+      style: {
+        shape: 'rect',
+        color: 'gold',
+        layout: 'vertical',
+        label: 'subscribe'
+      },
+      createSubscription: function(data, actions) {
+        return actions.subscription.create({
+          plan_id: 'P-0EY43920F2693484GNIUDL5Q'
+        });
+      },
+      onApprove: function(data, actions) {
+        document.getElementById('msg-success').classList.remove('hidden');
+      },
+      onError: function(err) {
+        document.getElementById('msg-error').classList.remove('hidden');
+        console.error(err);
+      }
+    }).render('#paypal-button-container');
+  </script>
+</body>
+</html>
