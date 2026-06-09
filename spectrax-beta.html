@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SPECTRAX BETA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+
+  :root {
+    --black: #050505;
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --white: #F8F4EE;
+    --muted: rgba(248,244,238,0.4);
+    --border: rgba(201,168,76,0.2);
+    --red: #e53935;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1);
+    z-index: 1;
+  }
+  .screen.active { opacity: 1; pointer-events: all; z-index: 2; }
+
+  /* ── SCREEN 1: SPLASH ── */
+  #s1 { cursor: pointer; }
+  .s1-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,168,76,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 100% 80% at 50% 100%, rgba(201,168,76,0.04) 0%, transparent 60%);
+  }
+  .s1-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+  .s1-content { position: relative; text-align: center; z-index: 2; }
+  .s1-eyebrow {
+    font-size: 9px; font-weight: 500; letter-spacing: 0.5em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 28px;
+    opacity: 0; animation: fadeUp 1s 0.3s forwards;
+  }
+  .s1-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(64px, 13vw, 150px); font-weight: 300;
+    letter-spacing: 0.15em; color: var(--white); line-height: 1;
+    opacity: 0; animation: fadeUp 1s 0.5s forwards; position: relative;
+  }
+  .s1-logo::after {
+    content: ''; position: absolute; bottom: -8px; left: 50%;
+    transform: translateX(-50%); width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0; animation: fadeIn 1s 1s forwards;
+  }
+  .s1-beta {
+    display: inline-block; margin-top: 18px;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.4em;
+    color: var(--black); background: var(--gold);
+    padding: 4px 14px; text-transform: uppercase;
+    opacity: 0; animation: fadeUp 1s 0.7s forwards;
+  }
+  .s1-tagline {
+    font-size: 10px; font-weight: 300; letter-spacing: 0.45em;
+    color: var(--muted); text-transform: uppercase; margin-top: 24px;
+    opacity: 0; animation: fadeUp 1s 0.9s forwards;
+  }
+  .s1-enter {
+    position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    opacity: 0; animation: fadeIn 1.5s 1.8s forwards;
+  }
+  .s1-enter-text {
+    font-size: 13px; font-weight: 500; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .s1-enter-line {
+    width: 1px; height: 36px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: pulse 2s infinite;
+  }
+  .corner { position: absolute; width: 28px; height: 28px; border-color: rgba(201,168,76,0.25); border-style: solid; }
+  .corner.tl { top:20px; left:20px; border-width:1px 0 0 1px; }
+  .corner.tr { top:20px; right:20px; border-width:1px 1px 0 0; }
+  .corner.bl { bottom:20px; left:20px; border-width:0 0 1px 1px; }
+  .corner.br { bottom:20px; right:20px; border-width:0 1px 1px 0; }
+
+  /* ── SCREEN 2: LANGUAGE ── */
+  #s2 { background: var(--black); }
+  .s2-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,0.04) 0%, transparent 70%); }
+  .lang-header { text-align: center; margin-bottom: 44px; position: relative; z-index: 2; }
+  .lang-eyebrow { font-size: 9px; font-weight: 500; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; }
+  .lang-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(26px, 4vw, 44px); font-weight: 300; color: var(--white); letter-spacing: 0.06em; }
+  .lang-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 10px; max-width: 680px; width: 90%; position: relative; z-index: 2;
+  }
+  .lang-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding: 18px 10px; border: 1px solid var(--border); border-radius: 2px;
+    cursor: pointer; background: transparent; transition: all 0.3s ease; position: relative; overflow: hidden;
+  }
+  .lang-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .lang-btn:hover::before, .lang-btn.sel::before { opacity: 1; }
+  .lang-btn:hover, .lang-btn.sel { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.12); }
+  .lang-flag { font-size: 26px; line-height: 1; }
+  .lang-native { font-size: 11px; color: var(--white); font-weight: 400; }
+  .lang-code { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; transition: color 0.3s; }
+  .lang-btn:hover .lang-code, .lang-btn.sel .lang-code { color: var(--gold); }
+  .lang-go {
+    margin-top: 32px; padding: 13px 44px; background: transparent;
+    border: 1px solid var(--gold); color: var(--gold);
+    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 500;
+    letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
+    transition: all 0.3s; position: relative; overflow: hidden; z-index: 2;
+  }
+  .lang-go::before {
+    content: ''; position: absolute; inset: 0; background: var(--gold);
+    transform: translateX(-100%); transition: transform 0.3s ease; z-index: -1;
+  }
+  .lang-go:hover::before { transform: translateX(0); }
+  .lang-go:hover { color: var(--black); }
+
+  /* ── SCREEN 3: POSE ANALYZER ── */
+  #s3 {
+    background: #080808;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  /* Header bar */
+  .app-header {
+    width: 100%; height: 52px; flex-shrink: 0;
+    background: rgba(5,5,5,0.95);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; z-index: 10;
+  }
+  .app-brand { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; letter-spacing: 0.2em; color: var(--white); }
+  .app-brand span { color: var(--gold); font-size: 9px; letter-spacing: 0.3em; font-family: 'Montserrat', sans-serif; font-weight: 600; vertical-align: super; margin-left: 6px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .score-badge {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--gold); border: 1px solid var(--border); padding: 4px 12px; border-radius: 2px;
+  }
+  .back-lang {
+    font-size: 9px; font-weight: 500; letter-spacing: 0.2em; color: var(--muted);
+    text-transform: uppercase; cursor: pointer; background: none; border: none;
+    transition: color 0.3s;
+  }
+  .back-lang:hover { color: var(--gold); }
+
+  /* Main layout */
+  .app-body {
+    flex: 1; width: 100%; display: grid;
+    grid-template-columns: 1fr 280px;
+    overflow: hidden;
+  }
+
+  /* Camera zone */
+  .cam-zone {
+    position: relative; background: #0a0a0a;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  #videoEl {
+    width: 100%; height: 100%; object-fit: cover;
+    transform: scaleX(-1); display: none;
+  }
+  #canvasEl {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    transform: scaleX(-1);
+  }
+  .cam-placeholder {
+    display: flex; flex-direction: column; align-items: center; gap: 16px; z-index: 2;
+  }
+  .cam-icon { font-size: 48px; opacity: 0.2; }
+  .cam-hint { font-size: 11px; letter-spacing: 0.2em; color: var(--muted); text-align: center; line-height: 1.8; }
+  .start-btn {
+    margin-top: 8px; padding: 12px 32px;
+    background: var(--gold); color: var(--black);
+    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
+    border: none; border-radius: 2px; transition: all 0.3s;
+  }
+  .start-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .stop-btn {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    padding: 10px 28px; background: rgba(229,57,53,0.15);
+    border: 1px solid var(--red); color: var(--red);
+    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
+    border-radius: 2px; transition: all 0.3s; display: none; z-index: 10;
+  }
+  .stop-btn:hover { background: rgba(229,57,53,0.25); }
+
+  /* Side panel */
+  .side-panel {
+    background: rgba(8,8,8,0.98);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto; padding: 20px 16px;
+    gap: 20px;
+  }
+
+  .panel-section { border-bottom: 1px solid rgba(201,168,76,0.08); padding-bottom: 18px; }
+  .panel-section:last-child { border-bottom: none; padding-bottom: 0; }
+  .panel-label {
+    font-size: 8px; font-weight: 600; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 12px;
+  }
+
+  /* Score ring */
+  .score-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .score-ring { position: relative; width: 90px; height: 90px; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring-num {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .score-ring-num .num {
+    font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300;
+    color: var(--white); line-height: 1;
+  }
+  .score-ring-num .pts { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+  .score-label { font-size: 10px; letter-spacing: 0.1em; color: var(--gold); font-weight: 500; }
+
+  /* Joint angles */
+  .joint-list { display: flex; flex-direction: column; gap: 8px; }
+  .joint-row { display: flex; justify-content: space-between; align-items: center; }
+  .joint-name { font-size: 10px; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; }
+  .joint-val { font-size: 11px; font-weight: 500; color: var(--white); letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+  .joint-bar-wrap { width: 100%; height: 2px; background: rgba(255,255,255,0.06); border-radius: 1px; margin-top: 3px; }
+  .joint-bar { height: 2px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 1px; transition: width 0.4s ease; }
+
+  /* Feedback */
+  .feedback-list { display: flex; flex-direction: column; gap: 8px; }
+  .feedback-item {
+    font-size: 10px; font-weight: 300; color: var(--muted);
+    letter-spacing: 0.04em; line-height: 1.6;
+    padding: 8px 10px; border-left: 2px solid var(--border); background: rgba(255,255,255,0.02);
+  }
+  .feedback-item.good { border-color: #43a047; color: rgba(248,244,238,0.7); }
+  .feedback-item.warn { border-color: var(--gold); }
+
+  /* Status */
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.15); display: inline-block; margin-right: 6px; }
+  .status-dot.live { background: #43a047; box-shadow: 0 0 6px #43a047; animation: blink 1.5s infinite; }
+  .status-text { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+
+  /* Skeleton overlay colors */
+  :root { --sk-line: rgba(201,168,76,0.8); --sk-joint: #C9A84C; --sk-active: #E8C97A; }
+
+  /* Animations */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes pulse { 0%,100%{opacity:0.35} 50%{opacity:1} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .app-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    .side-panel { max-height: 220px; border-left: none; border-top: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; gap: 12px; padding: 14px; overflow-x: auto; }
+    .panel-section { border-bottom: none; padding-bottom: 0; min-width: 140px; }
+    .lang-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: SPLASH -->
+<div class="screen active" id="s1" onclick="goTo(2)">
+  <div class="s1-bg"></div>
+  <div class="s1-grid"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="s1-content">
+    <div class="s1-eyebrow">Performance · Motion · Intelligence</div>
+    <div class="s1-logo">SPECTRAX</div>
+    <div class="s1-beta">BETA</div>
+    <div class="s1-tagline">AI Pose Analyzer</div>
+  </div>
+  <div class="s1-enter">
+    <div class="s1-enter-text" id="enterText">Press Enter</div>
+    <div class="s1-enter-line"></div>
+  </div>
+</div>
+
+<!-- SCREEN 2: LANGUAGE -->
+<div class="screen" id="s2">
+  <div class="s2-bg"></div>
+  <div class="lang-header">
+    <div class="lang-eyebrow">Select Language</div>
+    <div class="lang-title">Choose Your Language</div>
+  </div>
+  <div class="lang-grid">
+    <div class="lang-btn" onclick="pickLang(this,'en')"><div class="lang-flag">🇺🇸</div><div class="lang-native">English</div><div class="lang-code">EN</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'zh')"><div class="lang-flag">🇨🇳</div><div class="lang-native">中文</div><div class="lang-code">ZH</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'es')"><div class="lang-flag">🇪🇸</div><div class="lang-native">Español</div><div class="lang-code">ES</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'fr')"><div class="lang-flag">🇫🇷</div><div class="lang-native">Français</div><div class="lang-code">FR</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'de')"><div class="lang-flag">🇩🇪</div><div class="lang-native">Deutsch</div><div class="lang-code">DE</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'ja')"><div class="lang-flag">🇯🇵</div><div class="lang-native">日本語</div><div class="lang-code">JA</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'pt')"><div class="lang-flag">🇧🇷</div><div class="lang-native">Português</div><div class="lang-code">PT</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'ar')"><div class="lang-flag">🇸🇦</div><div class="lang-native">العربية</div><div class="lang-code">AR</div></div>
+    <div class="lang-btn" onclick="pickLang(this,'hi')"><div class="lang-flag">🇮🇳</div><div class="lang-native">हिन्दी</div><div class="lang-code">HI</div></div>
+    <div class="lang-btn sel" onclick="pickLang(this,'ko')"><div class="lang-flag">🇰🇷</div><div class="lang-native">한국어</div><div class="lang-code">KO</div></div>
+  </div>
+  <button class="lang-go" id="langGoBtn" onclick="goTo(3)">계속하기</button>
+</div>
+
+<!-- SCREEN 3: POSE ANALYZER -->
+<div class="screen" id="s3">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="app-brand">SPECTRAX <span>BETA</span></div>
+    <div class="header-right">
+      <div class="score-badge" id="headerScore">— pts</div>
+      <button class="back-lang" onclick="goTo(2)" id="backLangBtn">← 언어</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="app-body">
+    <!-- Camera -->
+    <div class="cam-zone" id="camZone">
+      <video id="videoEl" autoplay playsinline muted></video>
+      <canvas id="canvasEl"></canvas>
+      <div class="cam-placeholder" id="camPlaceholder">
+        <div class="cam-icon">📷</div>
+        <div class="cam-hint" id="camHint">카메라를 시작하면<br>AI가 실시간으로 자세를 분석합니다</div>
+        <button class="start-btn" id="startBtn" onclick="startCamera()">분석 시작</button>
+      </div>
+      <button class="stop-btn" id="stopBtn" onclick="stopCamera()">■ 정지</button>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+      <!-- Status -->
+      <div class="panel-section">
+        <div class="panel-label" id="lblStatus">상태</div>
+        <div style="display:flex;align-items:center">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-text" id="statusText">대기 중</span>
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div class="panel-section">
+        <div class="panel-label" id="lblScore">자세 점수</div>
+        <div class="score-ring-wrap">
+          <div class="score-ring">
+            <svg width="90" height="90" viewBox="0 0 90 90">
+              <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(201,168,76,0.1)" stroke-width="4"/>
+              <circle id="scoreArc" cx="45" cy="45" r="38" fill="none"
+                stroke="url(#goldGrad)" stroke-width="4"
+                stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239"
+                style="transition:stroke-dashoffset 0.6s ease"/>
+              <defs>
+                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#C9A84C"/>
+                  <stop offset="100%" stop-color="#E8C97A"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="score-ring-num">
+              <span class="num" id="scoreNum">—</span>
+              <span class="pts">pts</span>
+            </div>
+          </div>
+          <div class="score-label" id="scoreLabelText">—</div>
+        </div>
+      </div>
+
+      <!-- Joints -->
+      <div class="panel-section">
+        <div class="panel-label" id="lblJoints">관절 각도</div>
+        <div class="joint-list" id="jointList">
+          <div class="joint-item">
+            <div class="joint-row"><span class="joint-name" id="jn0">왼쪽 팔꿈치</span><span class="joint-val" id="jv0">—°</span></div>
+            <div class="joint-bar-wrap"><div class="joint-bar" id="jb0" style="width:0%"></div></div>
+          </div>
+          <div class="joint-item">
+            <div class="joint-row"><span class="joint-name" id="jn1">오른쪽 팔꿈치</span><span class="joint-val" id="jv1">—°</span></div>
+            <div class="joint-bar-wrap"><div class="joint-bar" id="jb1" style="width:0%"></div></div>
+          </div>
+          <div class="joint-item">
+            <div class="joint-row"><span class="joint-name" id="jn2">왼쪽 무릎</span><span class="joint-val" id="jv2">—°</span></div>
+            <div class="joint-bar-wrap"><div class="joint-bar" id="jb2" style="width:0%"></div></div>
+          </div>
+          <div class="joint-item">
+            <div class="joint-row"><span class="joint-name" id="jn3">오른쪽 무릎</span><span class="joint-val" id="jv3">—°</span></div>
+            <div class="joint-bar-wrap"><div class="joint-bar" id="jb3" style="width:0%"></div></div>
+          </div>
+          <div class="joint-item">
+            <div class="joint-row"><span class="joint-name" id="jn4">어깨 균형</span><span class="joint-val" id="jv4">—°</span></div>
+            <div class="joint-bar-wrap"><div class="joint-bar" id="jb4" style="width:0%"></div></div>
+          </div>
+          <div class="joint-item">
+            <div class="joint-row"><span class="joint-name" id="jn5">골반 균형</span><span class="joint-val" id="jv5">—°</span></div>
+            <div class="joint-bar-wrap"><div class="joint-bar" id="jb5" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="panel-section">
+        <div class="panel-label" id="lblFeedback">AI 피드백</div>
+        <div class="feedback-list" id="feedbackList">
+          <div class="feedback-item" id="fb0">카메라를 시작하면 자세 분석이 시작됩니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+<script>
+// ── i18n ──
+const T = {
+  ko: {
+    enter:'Press Enter', go:'계속하기', backLang:'← 언어',
+    lblStatus:'상태', lblScore:'자세 점수', lblJoints:'관절 각도', lblFeedback:'AI 피드백',
+    statusWait:'대기 중', statusLive:'분석 중',
+    startBtn:'분석 시작', stopBtn:'■ 정지',
+    camHint:'카메라를 시작하면\nAI가 실시간으로 자세를 분석합니다',
+    joints:['왼쪽 팔꿈치','오른쪽 팔꿈치','왼쪽 무릎','오른쪽 무릎','어깨 균형','골반 균형'],
+    scoreLabels:['측정 대기','개선 필요','보통','좋음','우수','완벽'],
+    fbWait:'카메라를 시작하면 자세 분석이 시작됩니다.',
+    fbDetecting:'전신이 카메라에 잡히도록 뒤로 이동해주세요.',
+  },
+  en: {
+    enter:'Press Enter', go:'Continue', backLang:'← Language',
+    lblStatus:'Status', lblScore:'Pose Score', lblJoints:'Joint Angles', lblFeedback:'AI Feedback',
+    statusWait:'Standby', statusLive:'Analyzing',
+    startBtn:'Start Analysis', stopBtn:'■ Stop',
+    camHint:'Start the camera to begin\nreal-time AI pose analysis',
+    joints:['Left Elbow','Right Elbow','Left Knee','Right Knee','Shoulder Balance','Hip Balance'],
+    scoreLabels:['Waiting','Needs Work','Fair','Good','Excellent','Perfect'],
+    fbWait:'Start camera to begin pose analysis.',
+    fbDetecting:'Step back so your full body is visible.',
+  },
+  zh: {
+    enter:'按回车键', go:'继续',  backLang:'← 语言',
+    lblStatus:'状态', lblScore:'姿势评分', lblJoints:'关节角度', lblFeedback:'AI反馈',
+    statusWait:'待机', statusLive:'分析中',
+    startBtn:'开始分析', stopBtn:'■ 停止',
+    camHint:'启动摄像头\n开始实时AI姿势分析',
+    joints:['左肘','右肘','左膝','右膝','肩部平衡','髋部平衡'],
+    scoreLabels:['等待','需改善','一般','良好','优秀','完美'],
+    fbWait:'启动摄像头开始姿势分析。',
+    fbDetecting:'请后退，使全身进入摄像头视野。',
+  },
+  ja: {
+    enter:'Enterキーを押す', go:'続ける', backLang:'← 言語',
+    lblStatus:'ステータス', lblScore:'姿勢スコア', lblJoints:'関節角度', lblFeedback:'AIフィードバック',
+    statusWait:'待機中', statusLive:'分析中',
+    startBtn:'分析開始', stopBtn:'■ 停止',
+    camHint:'カメラを起動して\nリアルタイム姿勢分析を開始',
+    joints:['左肘','右肘','左膝','右膝','肩バランス','腰バランス'],
+    scoreLabels:['待機','要改善','普通','良い','優秀','完璧'],
+    fbWait:'カメラを起動して姿勢分析を開始してください。',
+    fbDetecting:'全身がカメラに映るよう後退してください。',
+  },
+  es: {
+    enter:'Presiona Enter', go:'Continuar', backLang:'← Idioma',
+    lblStatus:'Estado', lblScore:'Puntuación', lblJoints:'Ángulos', lblFeedback:'Retroalimentación',
+    statusWait:'En espera', statusLive:'Analizando',
+    startBtn:'Iniciar Análisis', stopBtn:'■ Detener',
+    camHint:'Inicia la cámara para comenzar\nel análisis de postura en tiempo real',
+    joints:['Codo Izq','Codo Der','Rodilla Izq','Rodilla Der','Balance Hombros','Balance Cadera'],
+    scoreLabels:['Esperando','Mejorar','Regular','Bien','Excelente','Perfecto'],
+    fbWait:'Inicia la cámara para analizar tu postura.',
+    fbDetecting:'Retrocede para que tu cuerpo completo sea visible.',
+  },
+  fr: { enter:'Appuyez sur Entrée', go:'Continuer', backLang:'← Langue', lblStatus:'Statut', lblScore:'Score', lblJoints:'Angles', lblFeedback:'Retour AI', statusWait:'Attente', statusLive:'Analyse', startBtn:'Démarrer', stopBtn:'■ Arrêter', camHint:'Démarrez la caméra\npour analyser votre posture', joints:['Coude G','Coude D','Genou G','Genou D','Épaules','Hanches'], scoreLabels:['Attente','À améliorer','Moyen','Bon','Excellent','Parfait'], fbWait:'Démarrez la caméra pour analyser.', fbDetecting:'Reculez pour que tout votre corps soit visible.' },
+  de: { enter:'Enter drücken', go:'Weiter', backLang:'← Sprache', lblStatus:'Status', lblScore:'Haltungswert', lblJoints:'Gelenkwinkel', lblFeedback:'KI-Feedback', statusWait:'Bereit', statusLive:'Analyse läuft', startBtn:'Analyse starten', stopBtn:'■ Stop', camHint:'Starte die Kamera für\nEchtzeit-Körperhaltungsanalyse', joints:['Linker Ellbogen','Rechter Ellbogen','Linkes Knie','Rechtes Knie','Schulterbalance','Hüftbalance'], scoreLabels:['Warten','Verbesserung nötig','Mittelmäßig','Gut','Ausgezeichnet','Perfekt'], fbWait:'Starte die Kamera für die Analyse.', fbDetecting:'Bitte zurücktreten, damit der ganze Körper sichtbar ist.' },
+  pt: { enter:'Pressione Enter', go:'Continuar', backLang:'← Idioma', lblStatus:'Status', lblScore:'Pontuação', lblJoints:'Ângulos', lblFeedback:'Feedback IA', statusWait:'Aguardando', statusLive:'Analisando', startBtn:'Iniciar Análise', stopBtn:'■ Parar', camHint:'Inicie a câmera para começar\na análise de postura em tempo real', joints:['Cotovelo Esq','Cotovelo Dir','Joelho Esq','Joelho Dir','Equilíbrio Ombros','Equilíbrio Quadril'], scoreLabels:['Aguardando','Melhorar','Regular','Bom','Excelente','Perfeito'], fbWait:'Inicie a câmera para analisar sua postura.', fbDetecting:'Recue para que seu corpo inteiro apareça.' },
+  ar: { enter:'اضغط Enter', go:'متابعة', backLang:'← اللغة', lblStatus:'الحالة', lblScore:'نقاط الوضعية', lblJoints:'زوايا المفاصل', lblFeedback:'ملاحظات الذكاء', statusWait:'انتظار', statusLive:'تحليل', startBtn:'بدء التحليل', stopBtn:'■ إيقاف', camHint:'ابدأ الكاميرا لتحليل\nوضعيتك في الوقت الفعلي', joints:['كوع أيسر','كوع أيمن','ركبة يسرى','ركبة يمنى','توازن الكتف','توازن الورك'], scoreLabels:['انتظار','يحتاج تحسين','متوسط','جيد','ممتاز','مثالي'], fbWait:'ابدأ الكاميرا لتحليل وضعيتك.', fbDetecting:'تراجع للخلف حتى يظهر جسمك بالكامل.' },
+  hi: { enter:'Enter दबाएं', go:'जारी रखें', backLang:'← भाषा', lblStatus:'स्थिति', lblScore:'मुद्रा स्कोर', lblJoints:'जोड़ कोण', lblFeedback:'AI फ़ीडबैक', statusWait:'प्रतीक्षा', statusLive:'विश्लेषण', startBtn:'विश्लेषण शुरू', stopBtn:'■ बंद', camHint:'कैमरा शुरू करें\nAI मुद्रा विश्लेषण के लिए', joints:['बायीं कोहनी','दाहिनी कोहनी','बायाँ घुटना','दाहिना घुटना','कंधे संतुलन','कूल्हे संतुलन'], scoreLabels:['प्रतीक्षा','सुधार जरूरी','ठीक','अच्छा','उत्कृष्ट','परफेक्ट'], fbWait:'मुद्रा विश्लेषण के लिए कैमरा शुरू करें।', fbDetecting:'पीछे हटें ताकि पूरा शरीर दिखे।' },
+};
+
+let lang = 'ko';
+let currentScreen = 1;
+let poseDetector = null;
+let cameraStream = null;
+let mpCamera = null;
+let isRunning = false;
+let lastPose = null;
+let animFrame = null;
+
+function goTo(n) {
+  document.getElementById('s'+currentScreen).classList.remove('active');
+  currentScreen = n;
+  document.getElementById('s'+n).classList.add('active');
+  if (n === 3) applyUI();
+  if (n !== 3 && isRunning) stopCamera();
+}
+
+function pickLang(el, l) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  lang = l;
+  const t = T[l] || T.en;
+  document.getElementById('enterText').textContent = t.enter;
+  document.getElementById('langGoBtn').textContent = t.go;
+}
+
+function applyUI() {
+  const t = T[lang] || T.en;
+  document.getElementById('backLangBtn').textContent = t.backLang;
+  document.getElementById('lblStatus').textContent = t.lblStatus;
+  document.getElementById('lblScore').textContent = t.lblScore;
+  document.getElementById('lblJoints').textContent = t.lblJoints;
+  document.getElementById('lblFeedback').textContent = t.lblFeedback;
+  document.getElementById('statusText').textContent = t.statusWait;
+  document.getElementById('startBtn').textContent = t.startBtn;
+  document.getElementById('stopBtn').textContent = t.stopBtn;
+  document.getElementById('camHint').innerHTML = t.camHint.replace('\n','<br>');
+  document.getElementById('fb0').textContent = t.fbWait;
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById('jn'+i);
+    if (el) el.textContent = t.joints[i];
+  }
+}
+
+// ── Camera + MediaPipe ──
+async function startCamera() {
+  const t = T[lang] || T.en;
+  try {
+    const video = document.getElementById('videoEl');
+    const canvas = document.getElementById('canvasEl');
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } });
+    video.srcObject = cameraStream;
+    video.style.display = 'block';
+    document.getElementById('camPlaceholder').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'block';
+    document.getElementById('statusDot').classList.add('live');
+    document.getElementById('statusText').textContent = t.statusLive;
+    isRunning = true;
+
+    // MediaPipe Pose
+    if (typeof Pose !== 'undefined') {
+      poseDetector = new Pose({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}` });
+      poseDetector.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+      poseDetector.onResults(onPoseResults);
+
+      mpCamera = new Camera(video, {
+        onFrame: async () => { if (isRunning) await poseDetector.send({ image: video }); },
+        width: 1280, height: 720
+      });
+      mpCamera.start();
+    } else {
+      // fallback: draw loop without MediaPipe
+      drawLoop();
+    }
+  } catch (err) {
+    alert('카메라 접근 권한이 필요합니다.\nCamera access is required.');
+  }
+}
+
+function stopCamera() {
+  isRunning = false;
+  if (mpCamera) { mpCamera.stop(); mpCamera = null; }
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  const video = document.getElementById('videoEl');
+  video.srcObject = null; video.style.display = 'none';
+  const canvas = document.getElementById('canvasEl');
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height);
+  document.getElementById('camPlaceholder').style.display = 'flex';
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('statusDot').classList.remove('live');
+  document.getElementById('statusText').textContent = (T[lang]||T.en).statusWait;
+  resetUI();
+}
+
+function resetUI() {
+  document.getElementById('scoreNum').textContent = '—';
+  document.getElementById('scoreArc').style.strokeDashoffset = '239';
+  document.getElementById('scoreLabelText').textContent = '—';
+  document.getElementById('headerScore').textContent = '— pts';
+  for (let i = 0; i < 6; i++) {
+    const v = document.getElementById('jv'+i); if(v) v.textContent = '—°';
+    const b = document.getElementById('jb'+i); if(b) b.style.width = '0%';
+  }
+  const fl = document.getElementById('feedbackList');
+  fl.innerHTML = `<div class="feedback-item" id="fb0">${(T[lang]||T.en).fbWait}</div>`;
+}
+
+// ── Pose results ──
+function onPoseResults(results) {
+  const canvas = document.getElementById('canvasEl');
+  const video = document.getElementById('videoEl');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!results.poseLandmarks) {
+    document.getElementById('feedbackList').innerHTML =
+      `<div class="feedback-item">${(T[lang]||T.en).fbDetecting}</div>`;
+    return;
+  }
+
+  const lm = results.poseLandmarks;
+
+  // Draw skeleton
+  drawConnectors(ctx, lm, POSE_CONNECTIONS, { color: 'rgba(201,168,76,0.6)', lineWidth: 2 });
+  drawLandmarks(ctx, lm, { color: '#C9A84C', lineWidth: 1, radius: 4 });
+
+  // Calculate angles
+  const angles = {
+    leftElbow:  calcAngle(lm[11], lm[13], lm[15]),
+    rightElbow: calcAngle(lm[12], lm[14], lm[16]),
+    leftKnee:   calcAngle(lm[23], lm[25], lm[27]),
+    rightKnee:  calcAngle(lm[24], lm[26], lm[28]),
+    shoulder:   Math.abs((lm[11].y - lm[12].y) * 180),
+    hip:        Math.abs((lm[23].y - lm[24].y) * 180),
+  };
+
+  updateJoints(angles);
+  const score = calcScore(angles);
+  updateScore(score);
+  updateFeedback(angles, score);
+}
+
+function calcAngle(a, b, c) {
+  const radians = Math.atan2(c.y-b.y, c.x-b.x) - Math.atan2(a.y-b.y, a.x-b.x);
+  let angle = Math.abs(radians * 180 / Math.PI);
+  if (angle > 180) angle = 360 - angle;
+  return Math.round(angle);
+}
+
+function updateJoints(angles) {
+  const vals = [angles.leftElbow, angles.rightElbow, angles.leftKnee, angles.rightKnee, Math.round(angles.shoulder), Math.round(angles.hip)];
+  const maxes = [180, 180, 180, 180, 30, 30];
+  vals.forEach((v, i) => {
+    const el = document.getElementById('jv'+i); if(el) el.textContent = v+'°';
+    const b = document.getElementById('jb'+i); if(b) b.style.width = Math.min(100, (v/maxes[i]*100))+'%';
+  });
+}
+
+function calcScore(a) {
+  let s = 100;
+  const symE = Math.abs(a.leftElbow - a.rightElbow);
+  const symK = Math.abs(a.leftKnee - a.rightKnee);
+  if (symE > 30) s -= 15;
+  if (symK > 30) s -= 15;
+  if (a.shoulder > 10) s -= Math.min(20, a.shoulder * 2);
+  if (a.hip > 10) s -= Math.min(20, a.hip * 2);
+  return Math.max(0, Math.round(s));
+}
+
+function updateScore(score) {
+  const t = T[lang] || T.en;
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('headerScore').textContent = score + ' pts';
+  const offset = 239 - (239 * score / 100);
+  document.getElementById('scoreArc').style.strokeDashoffset = offset;
+  const idx = score >= 95 ? 5 : score >= 80 ? 4 : score >= 65 ? 3 : score >= 50 ? 2 : score > 0 ? 1 : 0;
+  document.getElementById('scoreLabelText').textContent = t.scoreLabels[idx];
+}
+
+function updateFeedback(a, score) {
+  const t = T[lang] || T.en;
+  const items = [];
+  const symE = Math.abs(a.leftElbow - a.rightElbow);
+  const symK = Math.abs(a.leftKnee - a.rightKnee);
+
+  if (score >= 85) items.push({ cls:'good', text: lang==='ko'?'자세가 매우 좋습니다!': lang==='ja'?'姿勢が非常に良いです！': lang==='zh'?'姿势非常好！':'Excellent posture!' });
+  if (symE > 30) items.push({ cls:'warn', text: lang==='ko'?'양팔 균형을 맞춰주세요': lang==='ja'?'腕のバランスを整えてください': lang==='zh'?'请保持双臂平衡':'Balance both arms evenly' });
+  if (symK > 30) items.push({ cls:'warn', text: lang==='ko'?'양다리 균형을 확인하세요': lang==='ja'?'脚のバランスを確認してください': lang==='zh'?'请检查双腿平衡':'Check leg symmetry' });
+  if (a.shoulder > 12) items.push({ cls:'warn', text: lang==='ko'?'어깨가 기울어져 있습니다': lang==='ja'?'肩が傾いています': lang==='zh'?'肩膀倾斜':'Shoulders are uneven' });
+  if (a.hip > 12) items.push({ cls:'warn', text: lang==='ko'?'골반을 수평으로 유지하세요': lang==='ja'?'骨盤を水平に保ってください': lang==='zh'?'保持骨盆水平':'Keep hips level' });
+  if (items.length === 0) items.push({ cls:'good', text: lang==='ko'?'균형 잡힌 자세입니다': lang==='ja'?'バランスの取れた姿勢です': lang==='zh'?'姿势平衡':'Balanced posture' });
+
+  const fl = document.getElementById('feedbackList');
+  fl.innerHTML = items.map(i => `<div class="feedback-item ${i.cls}">${i.text}</div>`).join('');
+}
+
+// Fallback loop (no MediaPipe)
+function drawLoop() {
+  const video = document.getElementById('videoEl');
+  const canvas = document.getElementById('canvasEl');
+  const ctx = canvas.getContext('2d');
+  function loop() {
+    if (!isRunning) return;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    animFrame = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && currentScreen === 1) goTo(2);
+});
+
+// Init
+applyUI();
+</script>
+</body>
+</html>
