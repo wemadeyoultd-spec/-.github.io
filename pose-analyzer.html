@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POSE ANALYZER — 동작 분석</title>
+<title>RESPECT ATHLETIC — 동작 분석</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
@@ -122,13 +122,11 @@
     position: absolute;
     width: 100%; height: 100%;
     object-fit: cover;
-    transform: scaleX(-1);
   }
 
   #canvas {
     position: absolute;
     width: 100%; height: 100%;
-    transform: scaleX(-1);
   }
 
   .overlay-grid {
@@ -398,14 +396,14 @@
 
 <!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-logo">POSE ANALYZER</div>
+  <div class="loading-logo">RESPECT ATHLETIC</div>
   <div class="loading-bar"><div class="loading-fill"></div></div>
   <div class="loading-text">AI 모델 로딩 중...</div>
 </div>
 
 <!-- HEADER -->
 <header>
-  <div class="logo">POSE<span>ANALYZER</span></div>
+  <div class="logo">RESPECT<span> ATHLETIC</span></div>
   <div>
     <span class="status-dot" id="statusDot"></span>
     <span class="status-label" id="statusLabel">대기 중</span>
@@ -808,7 +806,8 @@ async function startCamera() {
         await pose.send({ image: video });
       },
       width: 480,
-      height: 640
+      height: 640,
+      facingMode: 'environment'
     });
 
     await camera.start();
