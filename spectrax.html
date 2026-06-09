@@ -85,7 +85,11 @@
     display: flex; flex-direction: column; align-items: center; gap: 12px;
     opacity: 0; animation: fadeIn 1.5s 1.5s forwards;
   }
-  .enter-text { font-size: 9px; font-weight: 500; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; }
+  /* 1.5배 크게 + 영어 고정 스타일 */
+  .enter-text {
+    font-size: 14px; font-weight: 500; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase;
+  }
   .enter-arrow {
     width: 1px; height: 40px;
     background: linear-gradient(to bottom, var(--gold), transparent);
@@ -152,7 +156,7 @@
 
   .login-box {
     background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-    border-radius: 2px; padding: 52px 48px; width: 100%; max-width: 420px;
+    border-radius: 2px; padding: 52px 48px; width: 100%; max-width: 440px;
     text-align: center; position: relative;
   }
   .login-box::before {
@@ -160,10 +164,25 @@
     background: linear-gradient(90deg, transparent, var(--gold), transparent);
   }
   .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; letter-spacing: 0.2em; color: var(--white); margin-bottom: 6px; }
-  .login-sub { font-size: 9px; font-weight: 500; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 36px; }
-  .login-divider { width: 40px; height: 1px; background: var(--border); margin: 0 auto 32px; }
-  .login-welcome { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--white); letter-spacing: 0.05em; margin-bottom: 8px; }
-  .login-desc { font-size: 11px; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; line-height: 1.7; margin-bottom: 36px; }
+  .login-sub { font-size: 9px; font-weight: 500; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 28px; }
+  .login-divider { width: 40px; height: 1px; background: var(--border); margin: 0 auto 24px; }
+
+  /* 슬로건 스타일 */
+  .login-slogan {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px; font-weight: 300; font-style: italic;
+    color: var(--gold-light); letter-spacing: 0.04em;
+    line-height: 1.6; margin-bottom: 6px;
+    padding: 0 8px;
+  }
+  .login-slogan::before { content: '\201C'; }
+  .login-slogan::after  { content: '\201D'; }
+  .login-slogan-line {
+    width: 60px; height: 1px; margin: 14px auto 20px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+  }
+
+  .login-desc { font-size: 11px; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; line-height: 1.7; margin-bottom: 32px; }
 
   .google-btn {
     display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -176,7 +195,8 @@
   .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
 
   .login-terms { font-size: 9px; font-weight: 300; color: rgba(248,244,238,0.25); letter-spacing: 0.08em; line-height: 1.8; margin-top: 24px; }
-  .login-terms a { color: var(--gold); text-decoration: none; }
+  .login-terms a { color: var(--gold); text-decoration: none; transition: color 0.2s; }
+  .login-terms a:hover { color: var(--gold-light); }
 
   .back-btn {
     position: fixed; top: 32px; left: 32px; z-index: 100;
@@ -241,7 +261,7 @@
     <div class="lang-btn" onclick="selectLang(this,'ar')"><div class="lang-flag">🇸🇦</div><div class="lang-native">العربية</div><div class="lang-name">AR</div></div>
     <div class="lang-btn" onclick="selectLang(this,'pt')"><div class="lang-flag">🇧🇷</div><div class="lang-native">Português</div><div class="lang-name">PT</div></div>
     <div class="lang-btn" onclick="selectLang(this,'fr')"><div class="lang-flag">🇫🇷</div><div class="lang-native">Français</div><div class="lang-name">FR</div></div>
-    <div class="lang-btn" onclick="selectLang(this,'ru')"><div class="lang-flag">🇷🇺</div><div class="lang-native">Русский</div><div class="lang-name">RU</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'de')"><div class="lang-flag">🇩🇪</div><div class="lang-native">Deutsch</div><div class="lang-name">DE</div></div>
     <div class="lang-btn" onclick="selectLang(this,'ja')"><div class="lang-flag">🇯🇵</div><div class="lang-native">日本語</div><div class="lang-name">JA</div></div>
     <div class="lang-btn selected" onclick="selectLang(this,'ko')"><div class="lang-flag">🇰🇷</div><div class="lang-native">한국어</div><div class="lang-name">KO</div></div>
   </div>
@@ -254,7 +274,8 @@
     <div class="login-logo">SPECTRAX</div>
     <div class="login-sub" id="loginSub">Member Access</div>
     <div class="login-divider"></div>
-    <div class="login-welcome" id="loginWelcome">Welcome</div>
+    <div class="login-slogan" id="loginSlogan">You cannot improve what you don't measure.</div>
+    <div class="login-slogan-line"></div>
     <div class="login-desc" id="loginDesc">Sign in to access your personalized<br>performance dashboard</div>
     <button class="google-btn" onclick="googleLogin()">
       <svg class="google-icon" viewBox="0 0 24 24">
@@ -267,116 +288,131 @@
     </button>
     <div class="login-terms" id="loginTerms">
       By continuing, you agree to SPECTRAX<br>
-      <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>
     </div>
   </div>
 </div>
+
+<!-- Firebase Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDF7tgdEZXWItvlWahfut0OIBXu5s_LC4I",
+    authDomain: "spectrax-e7ade.firebaseapp.com",
+    projectId: "spectrax-e7ade",
+    storageBucket: "spectrax-e7ade.firebasestorage.app",
+    messagingSenderId: "217131554720",
+    appId: "1:217131554720:web:636491d86ec5dea660b6c5",
+    measurementId: "G-WS0SGWYYM5"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
 
 <script>
 let currentPage = 1;
 let selectedLang = 'ko';
 
-// 언어별 텍스트
 const i18n = {
   en: {
     back: 'Back',
     enter: 'Press Enter',
     continue: 'Continue',
     loginSub: 'Member Access',
-    loginWelcome: 'Welcome',
+    loginSlogan: 'You cannot improve what you don\'t measure.',
     loginDesc: 'Sign in to access your personalized<br>performance dashboard',
     googleBtn: 'Continue with Google',
-    terms: 'By continuing, you agree to SPECTRAX<br><a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>'
+    terms: 'By continuing, you agree to SPECTRAX<br><a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>'
   },
   zh: {
     back: '返回',
     enter: '按回车键',
     continue: '继续',
     loginSub: '会员通道',
-    loginWelcome: '欢迎',
+    loginSlogan: '无法衡量的，就无法提升。',
     loginDesc: '登录以访问您的个性化<br>性能仪表板',
     googleBtn: '通过 Google 继续',
-    terms: '继续即表示您同意 SPECTRAX<br><a href="#">服务条款</a>和<a href="#">隐私政策</a>'
+    terms: '继续即表示您同意 SPECTRAX<br><a href="terms.html" target="_blank">服务条款</a>和<a href="privacy.html" target="_blank">隐私政策</a>'
   },
   es: {
     back: 'Volver',
     enter: 'Presiona Enter',
     continue: 'Continuar',
     loginSub: 'Acceso de Miembro',
-    loginWelcome: 'Bienvenido',
+    loginSlogan: 'No puedes mejorar lo que no mides.',
     loginDesc: 'Inicia sesión para acceder a tu panel<br>de rendimiento personalizado',
     googleBtn: 'Continuar con Google',
-    terms: 'Al continuar, aceptas los<br><a href="#">Términos</a> y <a href="#">Privacidad</a> de SPECTRAX'
+    terms: 'Al continuar, aceptas los<br><a href="terms.html" target="_blank">Términos</a> y <a href="privacy.html" target="_blank">Privacidad</a> de SPECTRAX'
   },
   hi: {
     back: 'वापस',
     enter: 'Enter दबाएं',
     continue: 'जारी रखें',
     loginSub: 'सदस्य पहुंच',
-    loginWelcome: 'स्वागत है',
+    loginSlogan: 'You cannot improve what you don\'t measure.',
     loginDesc: 'अपने व्यक्तिगत प्रदर्शन<br>डैशबोर्ड तक पहुंचने के लिए साइन इन करें',
     googleBtn: 'Google से जारी रखें',
-    terms: 'जारी रखने पर, आप SPECTRAX की<br><a href="#">सेवा शर्तें</a> और <a href="#">गोपनीयता नीति</a> से सहमत हैं'
+    terms: 'जारी रखने पर, आप SPECTRAX की<br><a href="terms.html" target="_blank">सेवा शर्तें</a> और <a href="privacy.html" target="_blank">गोपनीयता नीति</a> से सहमत हैं'
   },
   ar: {
     back: 'رجوع',
     enter: 'اضغط Enter',
     continue: 'متابعة',
     loginSub: 'وصول الأعضاء',
-    loginWelcome: 'مرحباً',
+    loginSlogan: 'You cannot improve what you don\'t measure.',
     loginDesc: 'سجّل دخولك للوصول إلى لوحة<br>الأداء المخصصة لك',
     googleBtn: 'المتابعة مع Google',
-    terms: 'بالمتابعة، أنت توافق على<br><a href="#">شروط الخدمة</a> و<a href="#">سياسة الخصوصية</a>'
+    terms: 'بالمتابعة، أنت توافق على<br><a href="terms.html" target="_blank">شروط الخدمة</a> و<a href="privacy.html" target="_blank">سياسة الخصوصية</a>'
   },
   pt: {
     back: 'Voltar',
     enter: 'Pressione Enter',
     continue: 'Continuar',
     loginSub: 'Acesso de Membro',
-    loginWelcome: 'Bem-vindo',
+    loginSlogan: 'You cannot improve what you don\'t measure.',
     loginDesc: 'Entre para acessar seu painel<br>de desempenho personalizado',
     googleBtn: 'Continuar com Google',
-    terms: 'Ao continuar, você concorda com os<br><a href="#">Termos</a> e <a href="#">Privacidade</a> da SPECTRAX'
+    terms: 'Ao continuar, você concorda com os<br><a href="terms.html" target="_blank">Termos</a> e <a href="privacy.html" target="_blank">Privacidade</a> da SPECTRAX'
   },
   fr: {
     back: 'Retour',
     enter: 'Appuyez sur Entrée',
     continue: 'Continuer',
     loginSub: 'Accès Membre',
-    loginWelcome: 'Bienvenue',
+    loginSlogan: 'Vous ne pouvez pas améliorer ce que vous ne mesurez pas.',
     loginDesc: 'Connectez-vous pour accéder à votre<br>tableau de bord personnalisé',
     googleBtn: 'Continuer avec Google',
-    terms: 'En continuant, vous acceptez les<br><a href="#">Conditions</a> et la <a href="#">Confidentialité</a> de SPECTRAX'
+    terms: 'En continuant, vous acceptez les<br><a href="terms.html" target="_blank">Conditions</a> et la <a href="privacy.html" target="_blank">Confidentialité</a> de SPECTRAX'
   },
-  ru: {
-    back: 'Назад',
-    enter: 'Нажмите Enter',
-    continue: 'Продолжить',
-    loginSub: 'Доступ для участников',
-    loginWelcome: 'Добро пожаловать',
-    loginDesc: 'Войдите, чтобы получить доступ к<br>вашей персональной панели',
-    googleBtn: 'Продолжить с Google',
-    terms: 'Продолжая, вы соглашаетесь с<br><a href="#">Условиями</a> и <a href="#">Конфиденциальностью</a>'
+  de: {
+    back: 'Zurück',
+    enter: 'Enter drücken',
+    continue: 'Weiter',
+    loginSub: 'Mitgliederzugang',
+    loginSlogan: 'Was man nicht misst, kann man nicht verbessern.',
+    loginDesc: 'Melden Sie sich an, um auf Ihr<br>persönliches Leistungs-Dashboard zuzugreifen',
+    googleBtn: 'Mit Google fortfahren',
+    terms: 'Mit dem Fortfahren stimmen Sie den<br><a href="terms.html" target="_blank">Nutzungsbedingungen</a> und der <a href="privacy.html" target="_blank">Datenschutzrichtlinie</a> von SPECTRAX zu'
   },
   ja: {
     back: '戻る',
     enter: 'Enterキーを押す',
     continue: '続ける',
     loginSub: 'メンバーアクセス',
-    loginWelcome: 'ようこそ',
+    loginSlogan: '測定できないものは改善できません。',
     loginDesc: 'パーソナライズされたパフォーマンス<br>ダッシュボードにサインイン',
     googleBtn: 'Googleで続ける',
-    terms: '続行することで、SPECTRAXの<br><a href="#">利用規約</a>と<a href="#">プライバシーポリシー</a>に同意します'
+    terms: '続行することで、SPECTRAXの<br><a href="terms.html" target="_blank">利用規約</a>と<a href="privacy.html" target="_blank">プライバシーポリシー</a>に同意します'
   },
   ko: {
     back: '뒤로',
-    enter: 'Enter 를 누르세요',
+    enter: 'Press Enter',
     continue: '계속하기',
     loginSub: '멤버 로그인',
-    loginWelcome: '환영합니다',
+    loginSlogan: '측정하지 못하는 것은 향상시킬 수 없습니다.',
     loginDesc: '개인 맞춤형 퍼포먼스<br>대시보드에 로그인하세요',
     googleBtn: 'Google로 계속하기',
-    terms: '계속 진행 시 SPECTRAX의<br><a href="#">서비스 약관</a> 및 <a href="#">개인정보 처리방침</a>에 동의합니다'
+    terms: '계속 진행 시 SPECTRAX의<br><a href="terms.html" target="_blank">서비스 약관</a> 및 <a href="privacy.html" target="_blank">개인정보 처리방침</a>에 동의합니다'
   }
 };
 
@@ -386,7 +422,7 @@ function applyLang(lang) {
   document.getElementById('enterText').textContent = t.enter;
   document.getElementById('continueBtn').textContent = t.continue;
   document.getElementById('loginSub').textContent = t.loginSub;
-  document.getElementById('loginWelcome').textContent = t.loginWelcome;
+  document.getElementById('loginSlogan').textContent = t.loginSlogan;
   document.getElementById('loginDesc').innerHTML = t.loginDesc;
   document.getElementById('googleBtnText').textContent = t.googleBtn;
   document.getElementById('loginTerms').innerHTML = t.terms;
@@ -414,15 +450,51 @@ function goBack() {
   if (currentPage > 1) goTo(currentPage - 1);
 }
 
-function googleLogin() {
-  alert(i18n[selectedLang]?.googleBtn + '\n\n실제 서비스 시 Firebase Auth로 연결됩니다.');
+async function googleLogin() {
+  const btn = document.querySelector('.google-btn');
+  const btnText = document.getElementById('googleBtnText');
+  const t = i18n[selectedLang] || i18n['en'];
+
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  btnText.textContent = '...';
+
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    btnText.textContent = '✓  ' + (user.displayName || user.email);
+    btn.style.background = '#e8f5e9';
+    btn.style.color = '#2e7d32';
+
+    setTimeout(() => {
+      window.location.href = 'payment.html';
+    }, 900);
+
+  } catch (error) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.background = '';
+    btn.style.color = '';
+
+    if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+      btnText.textContent = t.googleBtn;
+    } else if (error.code === 'auth/popup-blocked') {
+      btnText.textContent = '팝업 차단됨 — 허용 후 재시도';
+      setTimeout(() => { btnText.textContent = t.googleBtn; }, 3000);
+    } else {
+      btnText.textContent = '오류 발생 — 다시 시도해주세요';
+      setTimeout(() => { btnText.textContent = t.googleBtn; }, 3000);
+      console.error('Firebase 로그인 오류:', error.code, error.message);
+    }
+  }
 }
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && currentPage === 1) goTo(2);
 });
 
-// 기본 한국어 적용
 applyLang('ko');
 </script>
 </body>
