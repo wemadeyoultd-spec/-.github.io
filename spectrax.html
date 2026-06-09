@@ -296,6 +296,7 @@
 <!-- Firebase Compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDF7tgdEZXWItvlWahfut0OIBXu5s_LC4I",
@@ -450,6 +451,11 @@ function goBack() {
   if (currentPage > 1) goTo(currentPage - 1);
 }
 
+// 관리자 이메일 목록 (무료 접근)
+const ADMIN_EMAILS = [
+  'wemadeyoultd@gmail.com'
+];
+
 async function googleLogin() {
   const btn = document.querySelector('.google-btn');
   const btnText = document.getElementById('googleBtnText');
@@ -468,9 +474,36 @@ async function googleLogin() {
     btn.style.background = '#e8f5e9';
     btn.style.color = '#2e7d32';
 
-    setTimeout(() => {
-      window.location.href = 'payment.html';
-    }, 900);
+    // 1. 관리자 이메일이면 → 바로 pose-analyzer로 이동
+    if (ADMIN_EMAILS.includes(user.email)) {
+      setTimeout(() => {
+        window.location.href = 'pose-analyzer.html';
+      }, 900);
+      return;
+    }
+
+    // 2. 일반 사용자 → Firestore에서 구독 상태 확인
+    try {
+      const db = firebase.firestore();
+      const doc = await db.collection('subscriptions').doc(user.uid).get();
+
+      if (doc.exists && doc.data().status === 'active') {
+        // 구독 활성 → pose-analyzer로 이동
+        setTimeout(() => {
+          window.location.href = 'pose-analyzer.html';
+        }, 900);
+      } else {
+        // 구독 없음 → 결제 페이지로 이동
+        setTimeout(() => {
+          window.location.href = 'payment.html';
+        }, 900);
+      }
+    } catch (dbError) {
+      // Firestore 오류 시 → 결제 페이지로
+      setTimeout(() => {
+        window.location.href = 'payment.html';
+      }, 900);
+    }
 
   } catch (error) {
     btn.disabled = false;
@@ -490,6 +523,29 @@ async function googleLogin() {
     }
   }
 }
+
+// 로그아웃 함수 (pose-analyzer.html에서 호출 가능)
+async function logout() {
+  await firebase.auth().signOut();
+  window.location.href = 'spectrax.html';
+}
+
+// 이미 로그인된 상태면 자동 처리
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user && currentPage === 3) {
+    if (ADMIN_EMAILS.includes(user.email)) {
+      window.location.href = 'pose-analyzer.html';
+    } else {
+      try {
+        const db = firebase.firestore();
+        const doc = await db.collection('subscriptions').doc(user.uid).get();
+        if (doc.exists && doc.data().status === 'active') {
+          window.location.href = 'pose-analyzer.html';
+        }
+      } catch (e) {}
+    }
+  }
+});
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && currentPage === 1) goTo(2);
