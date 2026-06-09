@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPECTRAX</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+
+  :root {
+    --black: #050505;
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --white: #F8F4EE;
+    --muted: rgba(248,244,238,0.4);
+    --border: rgba(201,168,76,0.2);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .page {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1);
+    z-index: 1;
+  }
+  .page.active { opacity: 1; pointer-events: all; z-index: 2; }
+
+  /* PAGE 1 */
+  #page1 { background: var(--black); cursor: pointer; }
+
+  .main-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 100% 100% at 50% 100%, rgba(201,168,76,0.04) 0%, transparent 60%);
+  }
+  .main-lines {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+  .main-content { position: relative; text-align: center; z-index: 2; }
+
+  .main-eyebrow {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.4em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 1.2s 0.3s forwards;
+  }
+  .main-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(72px, 14vw, 160px); font-weight: 300;
+    letter-spacing: 0.15em; color: var(--white); line-height: 1;
+    opacity: 0; animation: fadeUp 1.2s 0.5s forwards; position: relative;
+  }
+  .main-logo::after {
+    content: ''; position: absolute; bottom: -8px; left: 50%;
+    transform: translateX(-50%); width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0; animation: fadeIn 1.2s 1s forwards;
+  }
+  .main-tagline {
+    font-size: 11px; font-weight: 300; letter-spacing: 0.5em;
+    color: var(--muted); text-transform: uppercase; margin-top: 32px;
+    opacity: 0; animation: fadeUp 1.2s 0.7s forwards;
+  }
+  .main-enter {
+    position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    opacity: 0; animation: fadeIn 1.5s 1.5s forwards;
+  }
+  .enter-text { font-size: 9px; font-weight: 500; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; }
+  .enter-arrow {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: arrowPulse 2s infinite;
+  }
+  @keyframes arrowPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  .corner-deco { position: absolute; width: 30px; height: 30px; border-color: rgba(201,168,76,0.3); border-style: solid; }
+  .corner-deco.tl { top:24px; left:24px; border-width:1px 0 0 1px; }
+  .corner-deco.tr { top:24px; right:24px; border-width:1px 1px 0 0; }
+  .corner-deco.bl { bottom:24px; left:24px; border-width:0 0 1px 1px; }
+  .corner-deco.br { bottom:24px; right:24px; border-width:0 1px 1px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  /* PAGE 2 */
+  #page2 { background: var(--black); }
+  .page2-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,0.04) 0%, transparent 70%); }
+
+  .lang-header { text-align: center; margin-bottom: 52px; }
+  .lang-eyebrow { font-size: 9px; font-weight: 500; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; }
+  .lang-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 300; color: var(--white); letter-spacing: 0.08em; }
+
+  .lang-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 700px; width: 90%; }
+
+  .lang-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 20px 12px; border: 1px solid var(--border); border-radius: 2px;
+    cursor: pointer; background: transparent; transition: all 0.3s ease;
+    position: relative; overflow: hidden;
+  }
+  .lang-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .lang-btn:hover::before, .lang-btn.selected::before { opacity: 1; }
+  .lang-btn:hover, .lang-btn.selected {
+    border-color: var(--gold); transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201,168,76,0.12);
+  }
+  .lang-flag { font-size: 28px; line-height: 1; }
+  .lang-name { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; transition: color 0.3s; }
+  .lang-native { font-size: 11px; color: var(--white); font-weight: 400; }
+  .lang-btn:hover .lang-name, .lang-btn.selected .lang-name { color: var(--gold); }
+
+  .lang-continue {
+    margin-top: 36px; padding: 14px 48px; background: transparent;
+    border: 1px solid var(--gold); color: var(--gold);
+    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
+    transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .lang-continue::before {
+    content: ''; position: absolute; inset: 0; background: var(--gold);
+    transform: translateX(-100%); transition: transform 0.3s ease; z-index: -1;
+  }
+  .lang-continue:hover::before { transform: translateX(0); }
+  .lang-continue:hover { color: var(--black); }
+
+  /* PAGE 3 */
+  #page3 { background: var(--black); }
+
+  .login-box {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+    border-radius: 2px; padding: 52px 48px; width: 100%; max-width: 420px;
+    text-align: center; position: relative;
+  }
+  .login-box::before {
+    content: ''; position: absolute; top:0; left:20%; right:20%; height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; letter-spacing: 0.2em; color: var(--white); margin-bottom: 6px; }
+  .login-sub { font-size: 9px; font-weight: 500; letter-spacing: 0.4em; color: var(--gold); text-transform: uppercase; margin-bottom: 36px; }
+  .login-divider { width: 40px; height: 1px; background: var(--border); margin: 0 auto 32px; }
+  .login-welcome { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--white); letter-spacing: 0.05em; margin-bottom: 8px; }
+  .login-desc { font-size: 11px; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; line-height: 1.7; margin-bottom: 36px; }
+
+  .google-btn {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; padding: 14px 24px; background: var(--white); border: none;
+    border-radius: 2px; cursor: pointer; transition: all 0.3s;
+    font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 500;
+    color: #1a1a1a; letter-spacing: 0.05em; margin-bottom: 16px;
+  }
+  .google-btn:hover { background: #f0ece4; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,0.15); }
+  .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .login-terms { font-size: 9px; font-weight: 300; color: rgba(248,244,238,0.25); letter-spacing: 0.08em; line-height: 1.8; margin-top: 24px; }
+  .login-terms a { color: var(--gold); text-decoration: none; }
+
+  .back-btn {
+    position: fixed; top: 32px; left: 32px; z-index: 100;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.3em;
+    color: var(--muted); text-transform: uppercase; cursor: pointer;
+    transition: color 0.3s; background: none; border: none;
+    opacity: 0; pointer-events: none;
+  }
+  .back-btn.visible { opacity: 1; pointer-events: all; }
+  .back-btn:hover { color: var(--gold); }
+
+  .page-indicator {
+    position: fixed; right: 32px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .ind-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(201,168,76,0.3); transition: all 0.3s; }
+  .ind-dot.active { background: var(--gold); box-shadow: 0 0 8px rgba(201,168,76,0.5); height: 16px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<button class="back-btn" id="backBtn" onclick="goBack()">← <span id="backText">Back</span></button>
+
+<div class="page-indicator">
+  <div class="ind-dot active" id="dot1"></div>
+  <div class="ind-dot" id="dot2"></div>
+  <div class="ind-dot" id="dot3"></div>
+</div>
+
+<!-- PAGE 1 -->
+<div class="page active" id="page1" onclick="goTo(2)">
+  <div class="main-bg"></div>
+  <div class="main-lines"></div>
+  <div class="corner-deco tl"></div>
+  <div class="corner-deco tr"></div>
+  <div class="corner-deco bl"></div>
+  <div class="corner-deco br"></div>
+  <div class="main-content">
+    <div class="main-eyebrow">Performance · Innovation · Excellence</div>
+    <div class="main-logo">SPECTRAX</div>
+    <div class="main-tagline">Redefine Your Limits</div>
+  </div>
+  <div class="main-enter">
+    <div class="enter-text" id="enterText">Press Enter</div>
+    <div class="enter-arrow"></div>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page2">
+  <div class="page2-bg"></div>
+  <div class="lang-header">
+    <div class="lang-eyebrow">Select Your Language</div>
+    <div class="lang-title">Choose Your Language</div>
+  </div>
+  <div class="lang-grid">
+    <div class="lang-btn" onclick="selectLang(this,'en')"><div class="lang-flag">🇺🇸</div><div class="lang-native">English</div><div class="lang-name">EN</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'zh')"><div class="lang-flag">🇨🇳</div><div class="lang-native">中文</div><div class="lang-name">ZH</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'es')"><div class="lang-flag">🇪🇸</div><div class="lang-native">Español</div><div class="lang-name">ES</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'hi')"><div class="lang-flag">🇮🇳</div><div class="lang-native">हिन्दी</div><div class="lang-name">HI</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'ar')"><div class="lang-flag">🇸🇦</div><div class="lang-native">العربية</div><div class="lang-name">AR</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'pt')"><div class="lang-flag">🇧🇷</div><div class="lang-native">Português</div><div class="lang-name">PT</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'fr')"><div class="lang-flag">🇫🇷</div><div class="lang-native">Français</div><div class="lang-name">FR</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'ru')"><div class="lang-flag">🇷🇺</div><div class="lang-native">Русский</div><div class="lang-name">RU</div></div>
+    <div class="lang-btn" onclick="selectLang(this,'ja')"><div class="lang-flag">🇯🇵</div><div class="lang-native">日本語</div><div class="lang-name">JA</div></div>
+    <div class="lang-btn selected" onclick="selectLang(this,'ko')"><div class="lang-flag">🇰🇷</div><div class="lang-native">한국어</div><div class="lang-name">KO</div></div>
+  </div>
+  <button class="lang-continue" id="continueBtn" onclick="goTo(3)">Continue</button>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="page3">
+  <div class="login-box">
+    <div class="login-logo">SPECTRAX</div>
+    <div class="login-sub" id="loginSub">Member Access</div>
+    <div class="login-divider"></div>
+    <div class="login-welcome" id="loginWelcome">Welcome</div>
+    <div class="login-desc" id="loginDesc">Sign in to access your personalized<br>performance dashboard</div>
+    <button class="google-btn" onclick="googleLogin()">
+      <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      <span id="googleBtnText">Continue with Google</span>
+    </button>
+    <div class="login-terms" id="loginTerms">
+      By continuing, you agree to SPECTRAX<br>
+      <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentPage = 1;
+let selectedLang = 'ko';
+
+// 언어별 텍스트
+const i18n = {
+  en: {
+    back: 'Back',
+    enter: 'Press Enter',
+    continue: 'Continue',
+    loginSub: 'Member Access',
+    loginWelcome: 'Welcome',
+    loginDesc: 'Sign in to access your personalized<br>performance dashboard',
+    googleBtn: 'Continue with Google',
+    terms: 'By continuing, you agree to SPECTRAX<br><a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>'
+  },
+  zh: {
+    back: '返回',
+    enter: '按回车键',
+    continue: '继续',
+    loginSub: '会员通道',
+    loginWelcome: '欢迎',
+    loginDesc: '登录以访问您的个性化<br>性能仪表板',
+    googleBtn: '通过 Google 继续',
+    terms: '继续即表示您同意 SPECTRAX<br><a href="#">服务条款</a>和<a href="#">隐私政策</a>'
+  },
+  es: {
+    back: 'Volver',
+    enter: 'Presiona Enter',
+    continue: 'Continuar',
+    loginSub: 'Acceso de Miembro',
+    loginWelcome: 'Bienvenido',
+    loginDesc: 'Inicia sesión para acceder a tu panel<br>de rendimiento personalizado',
+    googleBtn: 'Continuar con Google',
+    terms: 'Al continuar, aceptas los<br><a href="#">Términos</a> y <a href="#">Privacidad</a> de SPECTRAX'
+  },
+  hi: {
+    back: 'वापस',
+    enter: 'Enter दबाएं',
+    continue: 'जारी रखें',
+    loginSub: 'सदस्य पहुंच',
+    loginWelcome: 'स्वागत है',
+    loginDesc: 'अपने व्यक्तिगत प्रदर्शन<br>डैशबोर्ड तक पहुंचने के लिए साइन इन करें',
+    googleBtn: 'Google से जारी रखें',
+    terms: 'जारी रखने पर, आप SPECTRAX की<br><a href="#">सेवा शर्तें</a> और <a href="#">गोपनीयता नीति</a> से सहमत हैं'
+  },
+  ar: {
+    back: 'رجوع',
+    enter: 'اضغط Enter',
+    continue: 'متابعة',
+    loginSub: 'وصول الأعضاء',
+    loginWelcome: 'مرحباً',
+    loginDesc: 'سجّل دخولك للوصول إلى لوحة<br>الأداء المخصصة لك',
+    googleBtn: 'المتابعة مع Google',
+    terms: 'بالمتابعة، أنت توافق على<br><a href="#">شروط الخدمة</a> و<a href="#">سياسة الخصوصية</a>'
+  },
+  pt: {
+    back: 'Voltar',
+    enter: 'Pressione Enter',
+    continue: 'Continuar',
+    loginSub: 'Acesso de Membro',
+    loginWelcome: 'Bem-vindo',
+    loginDesc: 'Entre para acessar seu painel<br>de desempenho personalizado',
+    googleBtn: 'Continuar com Google',
+    terms: 'Ao continuar, você concorda com os<br><a href="#">Termos</a> e <a href="#">Privacidade</a> da SPECTRAX'
+  },
+  fr: {
+    back: 'Retour',
+    enter: 'Appuyez sur Entrée',
+    continue: 'Continuer',
+    loginSub: 'Accès Membre',
+    loginWelcome: 'Bienvenue',
+    loginDesc: 'Connectez-vous pour accéder à votre<br>tableau de bord personnalisé',
+    googleBtn: 'Continuer avec Google',
+    terms: 'En continuant, vous acceptez les<br><a href="#">Conditions</a> et la <a href="#">Confidentialité</a> de SPECTRAX'
+  },
+  ru: {
+    back: 'Назад',
+    enter: 'Нажмите Enter',
+    continue: 'Продолжить',
+    loginSub: 'Доступ для участников',
+    loginWelcome: 'Добро пожаловать',
+    loginDesc: 'Войдите, чтобы получить доступ к<br>вашей персональной панели',
+    googleBtn: 'Продолжить с Google',
+    terms: 'Продолжая, вы соглашаетесь с<br><a href="#">Условиями</a> и <a href="#">Конфиденциальностью</a>'
+  },
+  ja: {
+    back: '戻る',
+    enter: 'Enterキーを押す',
+    continue: '続ける',
+    loginSub: 'メンバーアクセス',
+    loginWelcome: 'ようこそ',
+    loginDesc: 'パーソナライズされたパフォーマンス<br>ダッシュボードにサインイン',
+    googleBtn: 'Googleで続ける',
+    terms: '続行することで、SPECTRAXの<br><a href="#">利用規約</a>と<a href="#">プライバシーポリシー</a>に同意します'
+  },
+  ko: {
+    back: '뒤로',
+    enter: 'Enter 를 누르세요',
+    continue: '계속하기',
+    loginSub: '멤버 로그인',
+    loginWelcome: '환영합니다',
+    loginDesc: '개인 맞춤형 퍼포먼스<br>대시보드에 로그인하세요',
+    googleBtn: 'Google로 계속하기',
+    terms: '계속 진행 시 SPECTRAX의<br><a href="#">서비스 약관</a> 및 <a href="#">개인정보 처리방침</a>에 동의합니다'
+  }
+};
+
+function applyLang(lang) {
+  const t = i18n[lang] || i18n['en'];
+  document.getElementById('backText').textContent = t.back;
+  document.getElementById('enterText').textContent = t.enter;
+  document.getElementById('continueBtn').textContent = t.continue;
+  document.getElementById('loginSub').textContent = t.loginSub;
+  document.getElementById('loginWelcome').textContent = t.loginWelcome;
+  document.getElementById('loginDesc').innerHTML = t.loginDesc;
+  document.getElementById('googleBtnText').textContent = t.googleBtn;
+  document.getElementById('loginTerms').innerHTML = t.terms;
+}
+
+function selectLang(el, lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedLang = lang;
+  applyLang(lang);
+}
+
+function goTo(num) {
+  document.getElementById('page' + currentPage).classList.remove('active');
+  document.getElementById('dot' + currentPage).classList.remove('active');
+  currentPage = num;
+  document.getElementById('page' + currentPage).classList.add('active');
+  document.getElementById('dot' + currentPage).classList.add('active');
+  const back = document.getElementById('backBtn');
+  if (currentPage > 1) back.classList.add('visible');
+  else back.classList.remove('visible');
+}
+
+function goBack() {
+  if (currentPage > 1) goTo(currentPage - 1);
+}
+
+function googleLogin() {
+  alert(i18n[selectedLang]?.googleBtn + '\n\n실제 서비스 시 Firebase Auth로 연결됩니다.');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && currentPage === 1) goTo(2);
+});
+
+// 기본 한국어 적용
+applyLang('ko');
+</script>
+</body>
+</html>
