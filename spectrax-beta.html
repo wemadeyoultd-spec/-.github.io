@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SPECTRAX SCOUTER BETA</title>
-
-<!-- TensorFlow.js + MoveNet (loaded in <head> so they're ready) -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500;600;700&display=swap');
 :root{
@@ -16,7 +11,7 @@
   --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,.15);
   --white:#F8F4EE;--muted:rgba(248,244,238,.45);--muted2:rgba(248,244,238,.22);
   --border:rgba(201,168,76,.18);--border2:rgba(248,244,238,.07);
-  --green:#22C55E;--red:#EF4444;--orange:#F97316;--blue:#3B82F6;
+  --green:#22C55E;--red:#EF4444;--orange:#F97316;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;background:var(--black);color:var(--white);font-family:'Montserrat',sans-serif;overflow:hidden;}
@@ -97,7 +92,7 @@ html,body{height:100%;background:var(--black);color:var(--white);font-family:'Mo
 .ex-desc{font-size:9px;font-weight:300;color:var(--muted);letter-spacing:.02em;line-height:1.6;}
 .ex-start{font-size:8px;font-weight:700;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;padding:5px 10px;border:1px solid rgba(201,168,76,.28);border-radius:2px;white-space:nowrap;flex-shrink:0;}
 
-/* ═══ MEASUREMENT ═══ */
+/* MEASUREMENT */
 #s5{background:#060608;}
 .meas-header{height:50px;flex-shrink:0;background:rgba(6,6,8,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
 .meas-ex{font-size:13px;font-weight:600;letter-spacing:.07em;}
@@ -105,19 +100,27 @@ html,body{height:100%;background:var(--black);color:var(--white);font-family:'Mo
 .h-score{font-size:10px;font-weight:700;color:var(--gold);border:1px solid var(--border);padding:4px 10px;border-radius:2px;}
 
 /* Init overlay */
-.init-overlay{position:absolute;inset:0;background:rgba(6,6,8,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;gap:12px;padding:24px;text-align:center;}
+.init-overlay{position:absolute;inset:0;background:rgba(4,4,6,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:20px;gap:10px;text-align:center;}
 .init-overlay.hidden{display:none;}
-.init-spinner{width:32px;height:32px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;flex-shrink:0;}
-.init-step{font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
-.init-log{width:100%;max-width:320px;background:rgba(0,0,0,.5);border:1px solid rgba(59,130,246,.2);border-radius:2px;padding:10px;font-size:9px;color:rgba(96,165,250,.8);font-family:monospace;text-align:left;line-height:1.8;max-height:140px;overflow-y:auto;}
-.init-error{font-size:10px;color:var(--red);line-height:1.8;max-width:320px;}
-.init-retry{padding:10px 24px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;transition:all .3s;margin-top:4px;}
+.init-spinner{width:30px;height:30px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .9s linear infinite;}
+.init-title{font-size:11px;letter-spacing:.2em;color:var(--white);text-transform:uppercase;}
+.init-steps{width:100%;max-width:300px;display:flex;flex-direction:column;gap:4px;}
+.init-row{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.08em;color:var(--muted);text-align:left;}
+.init-row .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.1);flex-shrink:0;transition:all .3s;}
+.init-row.ok .dot{background:var(--green);}
+.init-row.active .dot{background:var(--gold);animation:blink .8s infinite;}
+.init-row.err .dot{background:var(--red);}
+.init-row.ok{color:rgba(248,244,238,.6);}
+.init-row.active{color:var(--white);}
+.init-row.err{color:var(--red);}
+.err-box{width:100%;max-width:320px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:2px;padding:10px;font-size:9px;color:#F87171;line-height:1.8;font-family:monospace;text-align:left;display:none;}
+.init-retry{padding:10px 24px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;transition:all .3s;display:none;}
 .init-retry:hover{background:var(--gold);color:var(--black);}
 
-/* Tracking bar */
+/* Track bar */
 .track-bar{flex-shrink:0;background:rgba(6,6,8,.95);border-bottom:1px solid rgba(255,255,255,.05);padding:5px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .tq{display:flex;align-items:center;gap:4px;font-size:8px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
-.tq-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);flex-shrink:0;transition:background .3s;}
+.tq-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);flex-shrink:0;transition:all .3s;}
 .tq-dot.ok{background:var(--green);box-shadow:0 0 4px var(--green);}
 .tq-dot.warn{background:var(--orange);}
 .tq-dot.bad{background:var(--red);}
@@ -126,61 +129,61 @@ html,body{height:100%;background:var(--black);color:var(--white);font-family:'Mo
 
 /* Body */
 .meas-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 240px;overflow:hidden;}
-.cam-zone{position:relative;background:#030305;overflow:hidden;}
+.cam-zone{position:relative;background:#020204;overflow:hidden;}
 #videoEl{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transform-origin:center center;}
 #canvasEl{position:absolute;inset:0;width:100%;height:100%;}
 
 /* Cam placeholder */
-.cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:5;padding:20px;text-align:center;}
-.cam-icon-big{font-size:48px;opacity:.14;}
+.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:5;padding:20px;text-align:center;}
+.cam-icon{font-size:48px;opacity:.14;}
 .cam-hint{font-size:9px;letter-spacing:.15em;color:var(--muted);line-height:2;text-transform:uppercase;}
 .cam-start-btn{padding:12px 30px;background:var(--gold);color:var(--black);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;border:none;border-radius:2px;transition:all .3s;}
 .cam-start-btn:hover{background:var(--gold-light);}
 
-/* Camera controls */
+/* Controls */
 .cam-ctrl{position:absolute;top:10px;right:10px;display:none;flex-direction:column;gap:7px;z-index:10;}
 .cam-ctrl.show{display:flex;}
-.ctrl-btn{width:36px;height:36px;border-radius:50%;background:rgba(5,5,5,.85);border:1px solid var(--border);color:var(--gold);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;backdrop-filter:blur(8px);}
+.ctrl-btn{width:36px;height:36px;border-radius:50%;background:rgba(5,5,5,.88);border:1px solid var(--border);color:var(--gold);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .3s;}
 .ctrl-btn:hover{border-color:var(--gold);}
-.zoom-ctrl{background:rgba(5,5,5,.85);border:1px solid var(--border);border-radius:18px;padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;backdrop-filter:blur(8px);}
+.zoom-ctrl{background:rgba(5,5,5,.88);border:1px solid var(--border);border-radius:18px;padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;backdrop-filter:blur(8px);}
 .zoom-lbl{font-size:7px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
 .zoom-num{font-size:9px;font-weight:600;color:var(--white);}
-input[type=range].z-slider{-webkit-appearance:none;appearance:none;writing-mode:vertical-lr;direction:rtl;width:4px;height:64px;background:rgba(201,168,76,.15);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range].z-slider{-webkit-appearance:none;writing-mode:vertical-lr;direction:rtl;width:4px;height:64px;background:rgba(201,168,76,.15);border-radius:2px;outline:none;cursor:pointer;}
 input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);}
 
 /* Status */
-.status-bar{position:absolute;top:10px;left:10px;background:rgba(5,5,5,.88);border:1px solid var(--border);padding:5px 10px;border-radius:2px;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;display:none;z-index:10;}
+.status-bar{position:absolute;top:10px;left:10px;background:rgba(5,5,5,.9);border:1px solid var(--border);padding:5px 10px;border-radius:2px;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;display:none;z-index:10;}
 .status-bar.show{display:block;}
 .status-bar.live{color:var(--green);border-color:rgba(34,197,94,.3);}
 .status-bar.rec{color:#F87171;border-color:rgba(239,68,68,.3);}
-.ex-state-badge{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.9);border:1px solid var(--border);padding:5px 14px;border-radius:2px;font-size:8px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;display:none;z-index:10;white-space:nowrap;}
-.ex-state-badge.show{display:block;}
-.rep-overlay{position:absolute;bottom:86px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.9);border:1px solid var(--border);padding:8px 16px;border-radius:2px;text-align:center;display:none;z-index:10;}
-.rep-overlay.show{display:block;}
-.rep-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--gold);line-height:1;}
-.rep-lbl{font-size:7px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
+.ex-state-b{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.92);border:1px solid var(--border);padding:5px 14px;border-radius:2px;font-size:8px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;display:none;z-index:10;white-space:nowrap;}
+.ex-state-b.show{display:block;}
+.rep-ov{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.92);border:1px solid var(--border);padding:8px 14px;border-radius:2px;text-align:center;display:none;z-index:10;}
+.rep-ov.show{display:block;}
+.rep-n{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--gold);line-height:1;}
+.rep-lb{font-size:7px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
 
 /* Record */
-.rec-area{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:6px;z-index:10;}
+.rec-area{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:5px;z-index:10;}
 .rec-area.show{display:flex;}
 .rec-lbl{font-size:8px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;}
-.rec-btns{display:flex;gap:8px;}
-.btn-rec,.btn-stop-rec,.btn-replay,.btn-save,.btn-del{padding:9px 14px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;border:1px solid;}
+.rec-btns{display:flex;gap:7px;}
+.btn-rec,.btn-stop-r,.btn-replay,.btn-save,.btn-del{padding:8px 13px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;border:1px solid;}
 .btn-rec{background:rgba(239,68,68,.1);border-color:var(--red);color:#F87171;}
 .btn-rec.active{background:rgba(239,68,68,.3);animation:recPulse 1s infinite;}
-.btn-stop-rec{background:rgba(255,255,255,.04);border-color:var(--border2);color:var(--muted);}
+.btn-stop-r{background:rgba(255,255,255,.04);border-color:var(--border2);color:var(--muted);}
 .btn-replay{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#60A5FA;}
 .btn-save{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green);}
 .btn-del{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#F87171;}
-.post-btns{display:flex;gap:6px;}
+.post-btns{display:flex;gap:5px;}
 
 /* Side panel */
-.side-panel{background:rgba(7,7,9,.99);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:14px 12px;gap:12px;}
+.side-panel{background:rgba(7,7,9,.99);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:12px 10px;gap:12px;}
 .side-panel::-webkit-scrollbar{width:2px;}
 .side-panel::-webkit-scrollbar-thumb{background:var(--border);}
 .p-sec{border-bottom:1px solid rgba(201,168,76,.05);padding-bottom:10px;}
 .p-sec:last-child{border-bottom:none;padding-bottom:0;}
-.p-lbl{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.p-lbl{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;}
 .s-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.1);display:inline-block;margin-right:6px;transition:all .3s;}
 .s-dot.live{background:var(--green);box-shadow:0 0 5px var(--green);animation:blink 1.5s infinite;}
 .s-dot.rec{background:var(--red);box-shadow:0 0 5px var(--red);animation:blink .8s infinite;}
@@ -207,7 +210,8 @@ input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:1
 .fb-item{font-size:8px;font-weight:300;color:var(--muted);letter-spacing:.02em;line-height:1.7;padding:5px 7px;border-left:2px solid var(--border);background:rgba(255,255,255,.02);}
 .fb-item.good{border-color:var(--green);color:rgba(248,244,238,.7);}
 .fb-item.warn{border-color:var(--gold);}
-.debug-box{background:rgba(0,0,0,.5);border:1px solid rgba(59,130,246,.2);border-radius:2px;padding:8px;font-size:8px;color:rgba(96,165,250,.85);letter-spacing:.04em;line-height:1.9;font-family:monospace;}
+/* Debug panel */
+.dbg{background:rgba(0,0,0,.6);border:1px solid rgba(59,130,246,.2);border-radius:2px;padding:8px;font-size:8px;color:rgba(96,165,250,.85);letter-spacing:.04em;line-height:1.9;font-family:monospace;word-break:break-all;}
 
 @media(max-width:640px){
   .meas-body{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;}
@@ -326,43 +330,51 @@ input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:1
       <video id="videoEl" autoplay playsinline muted webkit-playsinline x5-playsinline></video>
       <canvas id="canvasEl"></canvas>
 
-      <!-- Init overlay -->
+      <!-- Init overlay: shows steps as they complete -->
       <div class="init-overlay" id="initOverlay">
         <div class="init-spinner" id="initSpinner"></div>
-        <div class="init-step" id="initStep">준비 중...</div>
-        <div class="init-log" id="initLog"></div>
-        <div class="init-error" id="initError" style="display:none"></div>
-        <button class="init-retry" id="initRetry" style="display:none" onclick="startCamera()">🔄 다시 시도</button>
+        <div class="init-title" id="initTitle">초기화 중...</div>
+        <div class="init-steps">
+          <div class="init-row" id="ir0"><div class="dot"></div><span id="ir0t">브라우저 환경 확인</span></div>
+          <div class="init-row" id="ir1"><div class="dot"></div><span id="ir1t">카메라 권한 요청</span></div>
+          <div class="init-row" id="ir2"><div class="dot"></div><span id="ir2t">비디오 스트림 연결</span></div>
+          <div class="init-row" id="ir3"><div class="dot"></div><span id="ir3t">AI 포즈 모델 로딩</span></div>
+          <div class="init-row" id="ir4"><div class="dot"></div><span id="ir4t">포즈 감지 시작</span></div>
+        </div>
+        <div class="err-box" id="errBox"></div>
+        <button class="init-retry" id="initRetry" onclick="startCamera()">🔄 다시 시도</button>
       </div>
 
-      <!-- Placeholder -->
-      <div class="cam-placeholder" id="camPlaceholder">
-        <div class="cam-icon-big">📷</div>
+      <!-- Placeholder (shown before camera starts) -->
+      <div class="cam-ph" id="camPh">
+        <div class="cam-icon">📷</div>
         <div class="cam-hint">카메라 시작 후<br>전신이 보이도록 물러서세요</div>
         <button class="cam-start-btn" onclick="startCamera()">Start Camera</button>
       </div>
 
       <div class="status-bar" id="statusBar"></div>
-      <div class="ex-state-badge" id="exState"></div>
-      <div class="rep-overlay" id="repOverlay"><div class="rep-num" id="repNum">0</div><div class="rep-lbl">REPS</div></div>
+      <div class="ex-state-b" id="exState"></div>
+      <div class="rep-ov" id="repOv"><div class="rep-n" id="repN">0</div><div class="rep-lb">REPS</div></div>
+
       <div class="cam-ctrl" id="camCtrl">
         <button class="ctrl-btn" id="flipBtn" onclick="flipCamera()">🔄</button>
         <div class="zoom-ctrl">
           <div class="zoom-lbl">ZOOM</div>
           <input type="range" class="z-slider" id="zoomSlider" min="1" max="3" step="0.1" value="1" oninput="applyZoom(this.value)">
-          <div class="zoom-num" id="zoomVal">1.0×</div>
+          <div class="zoom-num" id="zoomVal">1×</div>
         </div>
       </div>
+
       <div class="rec-area" id="recArea">
-        <div class="rec-lbl" id="recLbl">READY TO RECORD</div>
+        <div class="rec-lbl" id="recLbl">READY</div>
         <div class="rec-btns">
           <button class="btn-rec" id="btnRec" onclick="startRec()">⏺ Record</button>
-          <button class="btn-stop-rec" id="btnStop" onclick="stopRec()" style="display:none">■ Stop</button>
+          <button class="btn-stop-r" id="btnStop" onclick="stopRec()" style="display:none">■ Stop</button>
         </div>
         <div class="post-btns" id="postBtns" style="display:none">
-          <button class="btn-replay" onclick="replayRec()">▶ Replay</button>
+          <button class="btn-replay" onclick="replayRec()">▶</button>
           <button class="btn-save" onclick="saveRec()">✓ Save</button>
-          <button class="btn-del" onclick="delRec()">✕ Del</button>
+          <button class="btn-del" onclick="delRec()">✕</button>
         </div>
       </div>
     </div>
@@ -407,139 +419,114 @@ input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:1
         </div>
       </div>
       <div class="p-sec">
-        <div class="p-lbl">🔧 Debug</div>
-        <div class="debug-box" id="debugBox">Waiting...</div>
+        <div class="p-lbl">🔧 System Debug</div>
+        <div class="dbg" id="dbgBox">Waiting to start...</div>
       </div>
       <div class="p-sec">
         <div class="p-lbl">AI 피드백</div>
-        <div class="fb-list" id="fbList"><div class="fb-item">카메라를 시작하면 분석이 시작됩니다.</div></div>
+        <div class="fb-list" id="fbList"><div class="fb-item">카메라를 시작하세요.</div></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════
-// DATA
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// EXERCISES DATA
+// ═══════════════════════════════════════
 const EXERCISES={
   sbd:{name:'SBD',tag:'SBD · POWERLIFTING',items:[
-    {id:'squat',icon:'🏋️',name:'Squat',nameKo:'스쿼트',desc:'무릎 각도, 엉덩이 깊이, 트렁크 각도, 균형, 반복 횟수',joints:['무릎 L','무릎 R','엉덩이 L','엉덩이 R','어깨','트렁크']},
+    {id:'squat',icon:'🏋️',name:'Squat',nameKo:'스쿼트',desc:'무릎 각도, 엉덩이 깊이, 트렁크, 균형, 반복 횟수',joints:['무릎 L','무릎 R','엉덩이 L','엉덩이 R','어깨','트렁크']},
     {id:'bench',icon:'💪',name:'Bench Press',nameKo:'벤치프레스',desc:'팔꿈치 각도, 좌우 균형, 프레스 속도',joints:['팔꿈치 L','팔꿈치 R','어깨 L','어깨 R','균형','경로']},
     {id:'deadlift',icon:'⬆️',name:'Deadlift',nameKo:'데드리프트',desc:'엉덩이 높이, 트렁크 각도, 당기기 속도',joints:['엉덩이 높이','트렁크','무릎 L','무릎 R','어깨','속도']},
   ]},
   athletic:{name:'Athletic Performance',tag:'ATHLETIC · PERFORMANCE',items:[
     {id:'vjump',icon:'🦘',name:'Vertical Jump',nameKo:'수직 점프',desc:'점프 높이, 비행 시간, 착지 안정성',joints:['무릎 L','무릎 R','엉덩이','발목','어깨','착지']},
-    {id:'rjump',icon:'🔁',name:'Repeated Jump',nameKo:'반복 점프',desc:'반복 점프, 피로 지수, 일관성',joints:['무릎 L','무릎 R','엉덩이','발목','어깨','피로']},
+    {id:'rjump',icon:'🔁',name:'Repeated Jump',nameKo:'반복 점프',desc:'반복, 피로 지수, 일관성',joints:['무릎 L','무릎 R','엉덩이','발목','어깨','피로']},
     {id:'sprint',icon:'🏃',name:'Sprint',nameKo:'스프린트',desc:'케이던스, 스트라이드, 무릎 구동',joints:['무릎 구동','트렁크','스트라이드','팔 스윙','발','케이던스']},
-    {id:'agility',icon:'🎯',name:'Agility',nameKo:'민첩성',desc:'방향 전환, 몸 제어, 발 위치',joints:['방향 전환','몸 제어','발 위치','균형','속도','반응']},
-    {id:'balance',icon:'⚖️',name:'Balance',nameKo:'균형',desc:'자세 제어, 좌우 균형, 안정성',joints:['좌 균형','우 균형','골반','트렁크','발목','무게 중심']},
-    {id:'reaction',icon:'⚡',name:'Reaction',nameKo:'반응 속도',desc:'반응 시간, 첫 동작 타이밍',joints:['첫 동작','반응','이동','속도','정확도','품질']},
+    {id:'agility',icon:'🎯',name:'Agility',nameKo:'민첩성',desc:'방향 전환, 몸 제어',joints:['방향 전환','몸 제어','발 위치','균형','속도','반응']},
+    {id:'balance',icon:'⚖️',name:'Balance',nameKo:'균형',desc:'자세 제어, 안정성',joints:['좌 균형','우 균형','골반','트렁크','발목','무게 중심']},
+    {id:'reaction',icon:'⚡',name:'Reaction',nameKo:'반응 속도',desc:'반응 시간, 첫 동작',joints:['첫 동작','반응','이동','속도','정확도','품질']},
   ]},
   hyrox:{name:'HYROX',tag:'HYROX · FUNCTIONAL',items:[
-    {id:'run',icon:'🏃',name:'Run Analysis',nameKo:'런 분석',desc:'케이던스, 트렁크, 무릎 구동',joints:['케이던스','트렁크','무릎','팔 스윙','엉덩이','피로']},
-    {id:'skierg',icon:'🎿',name:'Ski Erg',nameKo:'스키 에르그',desc:'당기기 리듬, 스트로크 속도',joints:['리듬','스트로크','트렁크','팔 경로','대칭','속도']},
-    {id:'sledpush',icon:'🛷',name:'Sled Push',nameKo:'슬레드 푸시',desc:'몸 기울기, 스텝, 엉덩이 구동',joints:['기울기','스텝','엉덩이','트렁크','발','일관성']},
-    {id:'sledpull',icon:'🔗',name:'Sled Pull',nameKo:'슬레드 풀',desc:'당기기 리듬, 어깨 안정성',joints:['리듬','트렁크','엉덩이','어깨','팔','대칭']},
-    {id:'burpee',icon:'🤸',name:'Burpee Broad Jump',nameKo:'버피 점프',desc:'반복 횟수, 타이밍, 착지',joints:['횟수','타이밍','거리','착지','무릎','피로']},
-    {id:'rowerg',icon:'🚣',name:'Row Erg',nameKo:'로우 에르그',desc:'스트로크, 드라이브 시퀀스',joints:['스트로크','속도','캐치','드라이브','트렁크','리듬']},
-    {id:'farmers',icon:'🏋️',name:'Farmers Carry',nameKo:'파머스 캐리',desc:'스텝, 어깨 기울기, 안정성',joints:['스텝','어깨','트렁크','골반','대칭','안정성']},
-    {id:'lunges',icon:'🦵',name:'Sandbag Lunges',nameKo:'샌드백 런지',desc:'런지 깊이, 무릎 제어, 균형',joints:['깊이','무릎 L','무릎 R','골반','균형','템포']},
-    {id:'wallball',icon:'🏀',name:'Wall Balls',nameKo:'월 볼',desc:'스쿼트 깊이, 팔 신장, 리듬',joints:['스쿼트 깊이','무릎','엉덩이','트렁크','팔','리듬']},
+    {id:'run',icon:'🏃',name:'Run Analysis',nameKo:'런',desc:'케이던스, 트렁크, 무릎 구동',joints:['케이던스','트렁크','무릎','팔 스윙','엉덩이','피로']},
+    {id:'skierg',icon:'🎿',name:'Ski Erg',nameKo:'스키 에르그',desc:'당기기 리듬, 스트로크',joints:['리듬','스트로크','트렁크','팔','대칭','속도']},
+    {id:'sledpush',icon:'🛷',name:'Sled Push',nameKo:'슬레드 푸시',desc:'몸 기울기, 스텝',joints:['기울기','스텝','엉덩이','트렁크','발','일관성']},
+    {id:'sledpull',icon:'🔗',name:'Sled Pull',nameKo:'슬레드 풀',desc:'당기기 리듬, 어깨',joints:['리듬','트렁크','엉덩이','어깨','팔','대칭']},
+    {id:'burpee',icon:'🤸',name:'Burpee Broad Jump',nameKo:'버피',desc:'반복, 타이밍, 착지',joints:['횟수','타이밍','거리','착지','무릎','피로']},
+    {id:'rowerg',icon:'🚣',name:'Row Erg',nameKo:'로우 에르그',desc:'스트로크, 드라이브',joints:['스트로크','속도','캐치','드라이브','트렁크','리듬']},
+    {id:'farmers',icon:'🏋️',name:'Farmers Carry',nameKo:'파머스 캐리',desc:'스텝, 어깨 기울기',joints:['스텝','어깨','트렁크','골반','대칭','안정성']},
+    {id:'lunges',icon:'🦵',name:'Sandbag Lunges',nameKo:'샌드백 런지',desc:'런지 깊이, 무릎 제어',joints:['깊이','무릎 L','무릎 R','골반','균형','템포']},
+    {id:'wallball',icon:'🏀',name:'Wall Balls',nameKo:'월 볼',desc:'스쿼트 깊이, 팔 신장',joints:['스쿼트 깊이','무릎','엉덩이','트렁크','팔','리듬']},
   ]}
 };
 
-// ════════════════════════════════════════════════
-// MoveNet keypoint indices
-// nose=0, leftEye=1, rightEye=2, leftEar=3, rightEar=4,
-// leftShoulder=5, rightShoulder=6,
-// leftElbow=7, rightElbow=8, leftWrist=9, rightWrist=10,
-// leftHip=11, rightHip=12,
-// leftKnee=13, rightKnee=14,
-// leftAnkle=15, rightAnkle=16
-// ════════════════════════════════════════════════
-const KP={
-  NOSE:0,L_EYE:1,R_EYE:2,L_EAR:3,R_EAR:4,
-  L_SH:5,R_SH:6,L_EL:7,R_EL:8,L_WR:9,R_WR:10,
-  L_HIP:11,R_HIP:12,L_KN:13,R_KN:14,L_AN:15,R_AN:16
-};
-const SKEL_PAIRS=[
-  [KP.NOSE,KP.L_EYE],[KP.NOSE,KP.R_EYE],
-  [KP.L_SH,KP.R_SH],[KP.L_SH,KP.L_EL],[KP.R_SH,KP.R_EL],
-  [KP.L_EL,KP.L_WR],[KP.R_EL,KP.R_WR],
-  [KP.L_SH,KP.L_HIP],[KP.R_SH,KP.R_HIP],
-  [KP.L_HIP,KP.R_HIP],
-  [KP.L_HIP,KP.L_KN],[KP.R_HIP,KP.R_KN],
-  [KP.L_KN,KP.L_AN],[KP.R_KN,KP.R_AN]
-];
+// MoveNet keypoints
+const KP={NS:0,LS:5,RS:6,LE:7,RE:8,LW:9,RW:10,LH:11,RH:12,LK:13,RK:14,LA:15,RA:16};
+const CONNECTIONS=[[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
 const KP_LABELS={0:'NOSE',5:'L.SH',6:'R.SH',11:'L.HIP',12:'R.HIP',13:'L.KNEE',14:'R.KNEE',15:'L.ANK',16:'R.ANK'};
+const MIN_CONF=0.3;
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // STATE
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 let lang='ko',curScreen=1,curCat=null,curEx=null;
-let cameraStream=null,detector=null,rafId=null;
+let videoStream=null,detector=null,rafId=null;
 let isRunning=false,isRecording=false,canRecord=false;
 let facingMode='environment',curZoom=1.0;
-let cameraDevices=[],currentDeviceIdx=0;
+let camDevices=[],camDevIdx=0;
 let mediaRecorder=null,recordedBlob=null,recChunks=[];
-const SMOOTH=8,FB_INTERVAL=20;
+const SMOOTH=8,FB_INT=20;
 let aBuf={lk:[],rk:[],lh:[],rh:[],sh:[],tr:[]};
-let hipYBuf=[],symBuf=[],fbCount=0,lastFBStr='';
-let repCount=0,sqState='standing',hipBaseline=null,baseFrames=0;
-let lastStateChange=0;
-const MIN_CONF=0.35;
+let hipYBuf=[],symBuf=[],fbCnt=0,lastFBStr='';
+let repCount=0,sqState='standing',hipBaseline=null,bFrames=0,lastSC=0;
 
-// ════════════════════════════════════════════════
-// LOG HELPERS
-// ════════════════════════════════════════════════
-const logLines=[];
-function dblog(msg,type='info'){
-  const t=new Date().toTimeString().slice(0,8);
-  const entry=`[${t}] ${msg}`;
-  logLines.push(entry);
-  if(logLines.length>20)logLines.shift();
-  const el=document.getElementById('initLog');
-  if(el){el.textContent=logLines.slice(-8).join('\n');el.scrollTop=el.scrollHeight;}
-  console[type==='error'?'error':type==='warn'?'warn':'log']('[SPECTRAX]',msg);
+// ═══════════════════════════════════════
+// DEBUG
+// ═══════════════════════════════════════
+function dbg(lines){
+  const el=document.getElementById('dbgBox');
+  if(el)el.textContent=lines.join('\n');
 }
-function setInitStep(msg){
-  const el=document.getElementById('initStep');
-  if(el)el.textContent=msg;
-  dblog(msg);
+function stepOk(i,txt){
+  const row=document.getElementById('ir'+i);
+  const t=document.getElementById('ir'+i+'t');
+  if(row)row.className='init-row ok';
+  if(t&&txt)t.textContent='✅ '+txt;
 }
-function showInitError(msg){
-  const overlay=document.getElementById('initOverlay');
-  const spinner=document.getElementById('initSpinner');
-  const errDiv=document.getElementById('initError');
-  const retryBtn=document.getElementById('initRetry');
-  spinner.style.display='none';
-  errDiv.style.display='block';
-  errDiv.textContent=msg;
-  retryBtn.style.display='block';
-  overlay.classList.remove('hidden');
-  dblog('ERROR: '+msg,'error');
+function stepActive(i,txt){
+  // Reset all rows to default first if starting fresh
+  const row=document.getElementById('ir'+i);
+  const t=document.getElementById('ir'+i+'t');
+  if(row)row.className='init-row active';
+  if(t&&txt)t.textContent=txt;
 }
-function updateDebug(d){
-  const el=document.getElementById('debugBox');
-  if(!el)return;
-  el.innerHTML=
-    `Model: ${d.model}\n`+
-    `Camera: ${d.cam}\n`+
-    `Landmarks: ${d.lm}\n`+
-    `Confidence: ${d.conf}\n`+
-    `State: ${d.state}`;
+function stepErr(i,txt){
+  const row=document.getElementById('ir'+i);
+  const t=document.getElementById('ir'+i+'t');
+  if(row)row.className='init-row err';
+  if(t&&txt)t.textContent='❌ '+txt;
+}
+function showErr(msg){
+  console.error('[SPECTRAX]',msg);
+  const eb=document.getElementById('errBox');
+  const sp=document.getElementById('initSpinner');
+  const rt=document.getElementById('initRetry');
+  const ti=document.getElementById('initTitle');
+  if(eb){eb.style.display='block';eb.textContent=msg;}
+  if(sp)sp.style.display='none';
+  if(rt)rt.style.display='block';
+  if(ti)ti.textContent='초기화 실패';
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // NAV
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 function goTo(n){
   document.getElementById('s'+curScreen).classList.remove('active');
   curScreen=n; document.getElementById('s'+n).classList.add('active');
-  applyLangUI();
 }
-function exitMeas(){stopCamera();goTo(4);}
+function exitMeas(){stopAll();goTo(4);}
 function openCat(cat){
   curCat=cat;
   const d=EXERCISES[cat];
@@ -562,172 +549,263 @@ function openEx(exId){
   document.getElementById('measCat').textContent=EXERCISES[curCat].tag;
   document.getElementById('measEx').textContent=curEx.name+(lang==='ko'&&curEx.nameKo?' / '+curEx.nameKo:'');
   (curEx.joints||[]).forEach((j,i)=>{const el=document.getElementById('jn'+i);if(el)el.textContent=j;});
-  resetMeasUI();
+  resetUI();
   goTo(5);
 }
 function pickLang(el,l){
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel'); lang=l;
-  document.getElementById('langGoBtn').textContent=(({ko:'계속하기',en:'Continue',zh:'继续',ja:'続ける',es:'Continuar',fr:'Continuer',de:'Weiter',pt:'Continuar',ar:'متابعة',hi:'जारी रखें'})[l])||'Continue';
-}
-function applyLangUI(){
-  ['s3Back','s4Back','s5Back'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='← Back';});
+  const map={ko:'계속하기',en:'Continue',zh:'继续',ja:'続ける',es:'Continuar',fr:'Continuer',de:'Weiter',pt:'Continuar',ar:'متابعة',hi:'जारी रखें'};
+  document.getElementById('langGoBtn').textContent=map[l]||'Continue';
 }
 
-// ════════════════════════════════════════════════
-// CAMERA INIT
-// ════════════════════════════════════════════════
-async function getCameraDevices(){
-  try{
-    const devs=await navigator.mediaDevices.enumerateDevices();
-    cameraDevices=devs.filter(d=>d.kind==='videoinput');
-    dblog(`Cameras found: ${cameraDevices.length}`);
-  }catch(e){dblog('enumerateDevices failed: '+e.message,'warn');}
+// ═══════════════════════════════════════
+// LOAD SCRIPT HELPER
+// ═══════════════════════════════════════
+function loadScript(url,timeoutMs){
+  return new Promise((resolve,reject)=>{
+    // Check if already loaded
+    if(document.querySelector('script[src="'+url+'"]')){
+      resolve(); return;
+    }
+    const s=document.createElement('script');
+    s.src=url;
+    s.async=true;
+    const timer=setTimeout(()=>{
+      reject(new Error('Script load timeout: '+url));
+    },timeoutMs||15000);
+    s.onload=()=>{clearTimeout(timer);resolve();};
+    s.onerror=(e)=>{clearTimeout(timer);reject(new Error('Script load failed: '+url));};
+    document.head.appendChild(s);
+  });
 }
 
+// ═══════════════════════════════════════
+// MAIN INIT SEQUENCE
+// ═══════════════════════════════════════
 async function startCamera(){
-  // Reset error state
+  // Reset overlay
   const overlay=document.getElementById('initOverlay');
-  const spinner=document.getElementById('initSpinner');
-  const errDiv=document.getElementById('initError');
-  const retryBtn=document.getElementById('initRetry');
   overlay.classList.remove('hidden');
-  spinner.style.display='block';
-  errDiv.style.display='none';
-  retryBtn.style.display='none';
-  document.getElementById('initLog').textContent='';
-  logLines.length=0;
+  document.getElementById('initSpinner').style.display='block';
+  document.getElementById('initTitle').textContent='초기화 중...';
+  document.getElementById('errBox').style.display='none';
+  document.getElementById('initRetry').style.display='none';
+  // Reset all step rows
+  for(let i=0;i<5;i++){
+    const r=document.getElementById('ir'+i);
+    if(r)r.className='init-row';
+    const t=document.getElementById('ir'+i+'t');
+    if(t)t.textContent=['브라우저 환경 확인','카메라 권한 요청','비디오 스트림 연결','AI 포즈 모델 로딩','포즈 감지 시작'][i];
+  }
 
-  updateDebug({model:'Loading...',cam:'Waiting',lm:'—',conf:'—',state:'init'});
-  setTQ(3,'warn');
+  dbg(['Browser: '+navigator.userAgent.slice(0,80),'Status: Initializing...','WebGL: checking...','Model: not loaded','Camera: not started']);
 
-  // ── STEP 1: Check TF.js ──
-  setInitStep('① TensorFlow.js 확인 중...');
-  await new Promise(r=>setTimeout(r,50));
+  // ─── STEP 0: Browser check ───
+  stepActive(0,'브라우저 환경 확인 중...');
+  const ua=navigator.userAgent;
+  const isIOS=/iPad|iPhone|iPod/.test(ua);
+  const isAndroid=/Android/.test(ua);
+  const hasCam=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+  const hasWGL=!!window.WebGLRenderingContext;
 
-  if(typeof tf==='undefined'){
-    showInitError('TensorFlow.js 로드 실패.\n인터넷 연결을 확인하고 다시 시도하세요.');
-    updateDebug({model:'❌ TF.js missing',cam:'—',lm:'—',conf:'—',state:'error'});
+  dbg([
+    'Browser: '+(isIOS?'iOS':isAndroid?'Android':'Desktop'),
+    'Camera API: '+(hasCam?'✅':'❌'),
+    'WebGL: '+(hasWGL?'✅':'❌ (CPU fallback)'),
+    'Model: loading...',
+    'Pose: waiting'
+  ]);
+
+  if(!hasCam){
+    stepErr(0,'카메라 API 없음 - HTTPS 필요');
+    showErr('카메라 API를 사용할 수 없습니다.\nhttps:// 주소에서 접속하세요.\n\n'+window.location.href);
     return;
   }
-  dblog('TF.js ready. Backend: '+tf.getBackend());
+  stepOk(0,'환경 확인 완료 ('+(isIOS?'iOS':isAndroid?'Android':'Desktop')+')' );
 
-  // ── STEP 2: Check pose-detection lib ──
-  setInitStep('② Pose Detection 라이브러리 확인...');
-  if(typeof poseDetection==='undefined'){
-    showInitError('Pose Detection 라이브러리 로드 실패.\n인터넷 연결을 확인하세요.');
-    updateDebug({model:'❌ poseDetection missing',cam:'—',lm:'—',conf:'—',state:'error'});
-    return;
-  }
-  dblog('poseDetection lib ready');
-
-  // ── STEP 3: Camera permission + stream ──
-  setInitStep('③ 카메라 권한 요청...');
+  // ─── STEP 1: Camera permission ───
+  stepActive(1,'카메라 권한 요청 중...');
   try{
-    if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-    cameraStream=await navigator.mediaDevices.getUserMedia({
+    if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
+    videoStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode,width:{ideal:1280},height:{ideal:720}},
       audio:false
     });
-    dblog('Camera stream obtained');
-    setTQ(3,'ok');
+    stepOk(1,'카메라 권한 허용됨');
   }catch(e){
-    let msg='카메라 접근 실패: '+e.message;
-    if(e.name==='NotAllowedError')msg='카메라 권한이 거부되었습니다.\n브라우저 설정에서 카메라를 허용하세요.';
-    else if(e.name==='NotFoundError')msg='카메라를 찾을 수 없습니다.';
-    showInitError(msg);
-    updateDebug({model:'—',cam:'❌ '+e.name,lm:'—',conf:'—',state:'camera error'});
+    stepErr(1,e.name);
+    const msg=e.name==='NotAllowedError'?
+      '카메라 권한이 거부되었습니다.\n브라우저 설정 → 카메라 허용':
+      e.name==='NotFoundError'?'카메라를 찾을 수 없습니다':'카메라 오류: '+e.message;
+    showErr(msg+'\n\n['+e.name+']: '+e.message);
+    dbg(['Camera: ❌ '+e.name,'→ '+e.message]);
     return;
   }
 
-  // ── STEP 4: Attach video ──
-  setInitStep('④ 비디오 스트림 연결...');
+  // ─── STEP 2: Video stream ───
+  stepActive(2,'비디오 스트림 연결 중...');
   const video=document.getElementById('videoEl');
-  video.srcObject=cameraStream;
+  video.srcObject=videoStream;
   video.style.display='block';
+  document.getElementById('camPh').style.display='none';
 
-  // Wait for video ready (with timeout)
-  await new Promise((resolve,reject)=>{
-    const timer=setTimeout(()=>reject(new Error('Video load timeout')),8000);
-    video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};
-    video.onerror=(e)=>{clearTimeout(timer);reject(new Error('Video error: '+e));};
-  }).catch(e=>{
-    showInitError('비디오 스트림 연결 실패: '+e.message);
-    return Promise.reject(e);
+  // Show video immediately, wait for metadata
+  const videoReady=await new Promise((resolve)=>{
+    const t=setTimeout(()=>resolve(false),8000);
+    video.onloadedmetadata=()=>{clearTimeout(t);resolve(true);};
+    video.oncanplay=()=>{clearTimeout(t);resolve(true);};
   });
 
-  try{await video.play();}catch(e){dblog('video.play() failed (ok on some browsers): '+e.message,'warn');}
-  dblog(`Video ready: ${video.videoWidth}x${video.videoHeight}`);
+  try{await video.play();}catch(e){console.warn('video.play():', e.message);}
 
-  // ── STEP 5: Load MoveNet model (with 10s timeout) ──
-  setInitStep('⑤ MoveNet 포즈 모델 로딩...');
-  updateDebug({model:'Loading MoveNet...',cam:'✅ Ready',lm:'—',conf:'—',state:'loading model'});
+  if(!videoReady){
+    stepErr(2,'비디오 스트림 타임아웃');
+    showErr('비디오 스트림 연결 타임아웃\n카메라가 다른 앱에서 사용 중일 수 있습니다.');
+    return;
+  }
+  stepOk(2,'비디오 연결 완료 '+video.videoWidth+'×'+video.videoHeight);
 
-  const MODEL_TIMEOUT=10000;
-  try{
-    if(detector){try{detector.dispose();}catch(e){}detector=null;}
+  // ─── STEP 3: Load TF.js + pose-detection ───
+  stepActive(3,'TF.js 로딩...');
 
-    const modelConfig={
-      modelType:poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-      enableSmoothing:true,
-      minPoseScore:0.25
-    };
+  // Try to load TF.js with fallback URLs
+  const tfUrls=[
+    'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js',
+    'https://unpkg.com/@tensorflow/tfjs@4.22.0/dist/tf.min.js'
+  ];
+  const pdUrls=[
+    'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js',
+    'https://unpkg.com/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js'
+  ];
 
-    detector=await Promise.race([
-      poseDetection.createDetector(poseDetection.SupportedModels.MoveNet,modelConfig),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('Model load timeout (10s)')),MODEL_TIMEOUT))
-    ]);
+  let tfLoaded=false;
+  if(typeof tf!=='undefined'){
+    tfLoaded=true;
+    console.log('[SPECTRAX] TF.js already loaded');
+  } else {
+    for(const url of tfUrls){
+      try{
+        document.getElementById('ir3t').textContent='TF.js 로딩: '+url.split('/')[2]+'...';
+        await loadScript(url,12000);
+        if(typeof tf!=='undefined'){tfLoaded=true;break;}
+      }catch(e){console.warn('TF URL failed:',url,e.message);}
+    }
+  }
 
-    dblog('MoveNet model loaded successfully');
-    setInitStep('⑥ 포즈 감지 테스트...');
-
-  }catch(e){
-    showInitError('포즈 모델 로드 실패\n\n'+e.message+'\n\n인터넷 연결 상태를 확인하고 다시 시도하세요.');
-    updateDebug({model:'❌ '+e.message,cam:'✅',lm:'—',conf:'—',state:'model error'});
+  if(!tfLoaded){
+    stepErr(3,'TF.js 로드 실패');
+    showErr('TensorFlow.js를 로드할 수 없습니다.\n인터넷 연결을 확인하고 다시 시도하세요.\n\nCDN: cdn.jsdelivr.net / unpkg.com');
     return;
   }
 
-  // ── STEP 6: Test one pose detection ──
+  // Set TF backend
+  document.getElementById('ir3t').textContent='TF backend 설정...';
   try{
-    setInitStep('⑥ 포즈 감지 초기화...');
-    await detector.estimatePoses(video,{flipHorizontal:facingMode==='user'});
-    dblog('Pose detection test passed');
+    if(hasWGL){
+      await tf.setBackend('webgl');
+      await tf.ready();
+      console.log('[SPECTRAX] WebGL backend ready');
+    }
   }catch(e){
-    dblog('Pose test warn (non-fatal): '+e.message,'warn');
+    console.warn('[SPECTRAX] WebGL failed, trying CPU:', e.message);
+    try{await tf.setBackend('cpu');await tf.ready();}catch(e2){}
+  }
+  const backend=tf.getBackend();
+
+  // Load pose-detection
+  let pdLoaded=false;
+  if(typeof poseDetection!=='undefined'){
+    pdLoaded=true;
+  } else {
+    for(const url of pdUrls){
+      try{
+        document.getElementById('ir3t').textContent='pose-detection 로딩: '+url.split('/')[2]+'...';
+        await loadScript(url,12000);
+        if(typeof poseDetection!=='undefined'){pdLoaded=true;break;}
+      }catch(e){console.warn('PD URL failed:',url,e.message);}
+    }
   }
 
-  // ── STEP 7: All ready ──
-  setInitStep('✅ 준비 완료!');
-  await new Promise(r=>setTimeout(r,300));
+  if(!pdLoaded){
+    stepErr(3,'pose-detection 로드 실패');
+    showErr('pose-detection 라이브러리를 로드할 수 없습니다.\nCDN 접근 불가 또는 네트워크 오류.\n\n인터넷 연결 확인 후 다시 시도하세요.');
+    return;
+  }
+
+  // Create MoveNet detector
+  document.getElementById('ir3t').textContent='MoveNet 모델 초기화...';
+  try{
+    if(detector){try{detector.dispose();}catch(e){}detector=null;}
+    detector=await Promise.race([
+      poseDetection.createDetector(
+        poseDetection.SupportedModels.MoveNet,
+        {
+          modelType:poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+          enableSmoothing:true,
+          minPoseScore:0.2
+        }
+      ),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('모델 로드 5초 타임아웃')),12000))
+    ]);
+  }catch(e){
+    stepErr(3,'모델 초기화 실패: '+e.message);
+    showErr('MoveNet 모델을 초기화할 수 없습니다.\n\n오류: '+e.message+'\nBackend: '+backend+'\n\n인터넷 연결을 확인하고 다시 시도하세요.');
+    dbg(['TF.js: ✅ '+tf.version.tfjs,'Backend: '+backend,'pose-detection: ✅','MoveNet: ❌ '+e.message]);
+    return;
+  }
+
+  stepOk(3,'모델 준비 완료 (backend: '+backend+')');
+  dbg([
+    'TF.js: ✅ v'+tf.version.tfjs,
+    'Backend: '+backend,
+    'Model: ✅ MoveNet Lightning',
+    'Video: '+video.videoWidth+'×'+video.videoHeight,
+    'Camera: '+facingMode
+  ]);
+  setTQ(3,'ok');
+
+  // ─── STEP 4: Test pose + start loop ───
+  stepActive(4,'포즈 감지 테스트...');
+  try{
+    const testPoses=await detector.estimatePoses(video,{flipHorizontal:facingMode==='user'});
+    console.log('[SPECTRAX] Test pose result:', testPoses.length,'poses');
+    stepOk(4,'포즈 감지 활성화');
+  }catch(e){
+    console.warn('[SPECTRAX] Test pose warn (non-fatal):', e.message);
+    stepOk(4,'포즈 감지 시작 (경고 있음)');
+  }
+
+  // All done!
+  document.getElementById('initTitle').textContent='✅ 준비 완료';
+  await new Promise(r=>setTimeout(r,400));
   overlay.classList.add('hidden');
-  document.getElementById('camPlaceholder').style.display='none';
   document.getElementById('camCtrl').classList.add('show');
 
-  // Camera devices for flip
-  await getCameraDevices();
-  const activeId=cameraStream.getVideoTracks()[0]?.getSettings()?.deviceId;
-  if(activeId){const idx=cameraDevices.findIndex(d=>d.deviceId===activeId);if(idx>=0)currentDeviceIdx=idx;}
+  // Camera device list for flip
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    camDevices=devs.filter(d=>d.kind==='videoinput');
+    const activeId=videoStream.getVideoTracks()[0]?.getSettings()?.deviceId;
+    if(activeId){const idx=camDevices.findIndex(d=>d.deviceId===activeId);if(idx>=0)camDevIdx=idx;}
+  }catch(e){}
 
   applyZoom(curZoom);
   isRunning=true;canRecord=false;
   resetDetection();
 
-  const sb=document.getElementById('statusBar');
-  sb.className='status-bar show live'; sb.textContent='● Tracking Active';
+  document.getElementById('statusBar').className='status-bar show live';
+  document.getElementById('statusBar').textContent='● Tracking Active';
   document.getElementById('sDot').className='s-dot live';
   document.getElementById('sWord').textContent='분석 중';
   document.getElementById('tqMsg').textContent='몸 전체가 보이도록 위치를 잡으세요';
 
-  updateDebug({model:'✅ MoveNet',cam:'✅ Active',lm:'Detecting...',conf:'—',state:'running'});
-  dblog('Starting pose loop');
-
-  // ── STEP 8: Start pose loop ──
   poseLoop();
 }
 
-// ════════════════════════════════════════════════
-// POSE LOOP (requestAnimationFrame based)
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// POSE LOOP
+// ═══════════════════════════════════════
 async function poseLoop(){
   if(!isRunning||!detector)return;
   const video=document.getElementById('videoEl');
@@ -739,84 +817,66 @@ async function poseLoop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   try{
-    const poses=await detector.estimatePoses(video,{
-      flipHorizontal:facingMode==='user',
-      maxPoses:1
-    });
-
-    if(poses&&poses.length>0&&poses[0].keypoints){
-      const kps=poses[0].keypoints;
-      const score=poses[0].score||0;
-      processKeypoints(kps,score,ctx,canvas);
+    const poses=await detector.estimatePoses(video,{flipHorizontal:facingMode==='user',maxPoses:1});
+    if(poses&&poses.length>0&&poses[0].keypoints&&poses[0].keypoints.length>0){
+      processKP(poses[0],ctx,canvas);
     } else {
-      noBodyDetected();
+      onNoBody();
     }
   }catch(e){
-    dblog('Pose error: '+e.message,'warn');
+    console.warn('[SPECTRAX] pose error:',e.message);
   }
 
   rafId=requestAnimationFrame(poseLoop);
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // PROCESS KEYPOINTS
-// ════════════════════════════════════════════════
-function processKeypoints(kps,poseScore,ctx,canvas){
-  const W=canvas.width, H=canvas.height;
+// ═══════════════════════════════════════
+function processKP(pose,ctx,canvas){
+  const kps=pose.keypoints;
+  const W=canvas.width,H=canvas.height;
+  const g=(i)=>kps[i]||{x:0,y:0,score:0};
+  const ok=(i)=>(g(i).score||0)>=MIN_CONF;
 
-  // Quality check
-  const get=(i)=>kps[i]||{x:0,y:0,score:0};
-  const vis=(i)=>(get(i).score||0)>MIN_CONF;
-
-  const headOk=vis(KP.NOSE)||vis(KP.L_EYE)||vis(KP.R_EYE);
-  const feetOk=vis(KP.L_AN)&&vis(KP.R_AN);
-  const bodyOk=vis(KP.L_SH)&&vis(KP.R_SH)&&vis(KP.L_HIP)&&vis(KP.R_HIP);
+  const headOk=ok(KP.NS)||ok(1)||ok(2);
+  const feetOk=ok(KP.LA)&&ok(KP.RA);
+  const bodyOk=ok(KP.LS)&&ok(KP.RS)&&ok(KP.LH)&&ok(KP.RH);
   const full=headOk&&feetOk&&bodyOk;
+  const avgConf=Math.round((pose.score||0)*100);
 
   setTQ(0,full?'ok':'bad');
   setTQ(1,headOk?'ok':'warn');
   setTQ(2,feetOk?'ok':'warn');
   setTQ(3,'ok');
 
-  const avgConf=Math.round(poseScore*100);
-  updateDebug({
-    model:'✅ MoveNet',
-    cam:'✅ Active',
-    lm:full?'✅ Full body':'⚠ Partial ('+avgConf+'%)',
-    conf:avgConf+'%',
-    state:sqState
-  });
-
   if(!full){
     document.getElementById('tqMsg').textContent='몸 전체가 보이게 카메라를 맞춰주세요';
     document.getElementById('tqMsg').className='tq-msg';
     canRecord=false;
-    // Still draw partial skeleton
-    drawSkeleton(kps,ctx,W,H);
+    drawSkel(kps,ctx,W,H); // still draw partial
+    dbg(['TF/Model: ✅','Video: '+W+'×'+H,'Landmarks: ⚠ partial ('+avgConf+'%)','Body: HEAD='+headOk+' BODY='+bodyOk+' FEET='+feetOk,'State: '+sqState]);
     return;
   }
 
-  document.getElementById('tqMsg').textContent=isRecording?'녹화 중...':'분석 준비 완료 — Record를 누르세요';
+  document.getElementById('tqMsg').textContent=isRecording?'⏺ 녹화 중':'✅ 분석 준비 완료 — Record';
   document.getElementById('tqMsg').className='tq-msg ok';
   if(!canRecord&&!isRecording){
     canRecord=true;
     document.getElementById('recArea').classList.add('show');
   }
 
-  // Draw skeleton
-  drawSkeleton(kps,ctx,W,H);
+  drawSkel(kps,ctx,W,H);
 
-  // Angles
   const a={
-    lk:smooth('lk',calcAngle3(get(KP.L_HIP),get(KP.L_KN),get(KP.L_AN))),
-    rk:smooth('rk',calcAngle3(get(KP.R_HIP),get(KP.R_KN),get(KP.R_AN))),
-    lh:smooth('lh',calcAngle3(get(KP.L_SH),get(KP.L_HIP),get(KP.L_KN))),
-    rh:smooth('rh',calcAngle3(get(KP.R_SH),get(KP.R_HIP),get(KP.R_KN))),
-    sh:smooth('sh',Math.round(Math.abs((get(KP.L_SH).y-get(KP.R_SH).y)*H))),
-    tr:smooth('tr',calcTrunkAngle(get(KP.L_SH),get(KP.R_SH),get(KP.L_HIP),get(KP.R_HIP),H)),
+    lk:sm('lk',ang3(g(KP.LH),g(KP.LK),g(KP.LA))),
+    rk:sm('rk',ang3(g(KP.RH),g(KP.RK),g(KP.RA))),
+    lh:sm('lh',ang3(g(KP.LS),g(KP.LH),g(KP.LK))),
+    rh:sm('rh',ang3(g(KP.RS),g(KP.RH),g(KP.RK))),
+    sh:sm('sh',Math.round(Math.abs((g(KP.LS).y-g(KP.RS).y)*H))),
+    tr:sm('tr',trunkAngle(g(KP.LS),g(KP.RS),g(KP.LH),g(KP.RH))),
   };
-
-  const sym=Math.round(pushBuf(symBuf,100-Math.min(50,(Math.abs(a.lk-a.rk)/2+Math.abs(a.lh-a.rh)/2+Math.min(a.sh/2,15))),12));
+  const sym=Math.round(pb(symBuf,100-Math.min(50,(Math.abs(a.lk-a.rk)/2+Math.abs(a.lh-a.rh)/2+Math.min(a.sh/2,15))),12));
   document.getElementById('sv3').textContent=sym;
 
   updateJoints(a);
@@ -824,125 +884,111 @@ function processKeypoints(kps,poseScore,ctx,canvas){
   updateScore(score);
 
   // Height estimate
-  if(vis(KP.NOSE)&&vis(KP.L_AN)&&vis(KP.R_AN)){
-    const headY=get(KP.NOSE).y*H;
-    const feetY=Math.max(get(KP.L_AN).y,get(KP.R_AN).y)*H;
+  if(ok(KP.NS)&&ok(KP.LA)&&ok(KP.RA)){
+    const headY=g(KP.NS).y*H;
+    const feetY=Math.max(g(KP.LA).y,g(KP.RA).y)*H;
     const px=feetY-headY;
-    if(px>60){
-      const est=Math.max(140,Math.min(220,Math.round((px/H)*185*1.1)));
-      document.getElementById('sv1').textContent=est;
-    }
+    if(px>60)document.getElementById('sv1').textContent=Math.max(140,Math.min(220,Math.round((px/H)*185*1.1)));
   }
 
-  // Squat detection
-  const hipY=(get(KP.L_HIP).y+get(KP.R_HIP).y)/2;
-  const sHipY=pushBuf(hipYBuf,hipY,6);
-  if(isRecording) updateSquatState(sHipY,a);
+  // Squat
+  const hipY=(g(KP.LH).y+g(KP.RH).y)/2;
+  if(isRecording)squatFSM(pb(hipYBuf,hipY,6),a);
 
-  // Feedback (throttled)
-  fbCount++;
-  if(fbCount>=FB_INTERVAL){fbCount=0;updateFeedback(a,score,sym);}
+  fbCnt++;if(fbCnt>=FB_INT){fbCnt=0;updateFB(a,score,sym);}
+
+  dbg(['TF/Model: ✅ MoveNet','Landmarks: ✅ ('+avgConf+'%)','L.Knee='+a.lk+'° R.Knee='+a.rk+'°','Trunk='+a.tr+'° Sym='+sym+'%','State: '+sqState+(isRecording?' [REC]':'')]);
 }
 
-function noBodyDetected(){
+function onNoBody(){
   setTQAll('bad');
   document.getElementById('tqMsg').textContent='몸 전체가 보이게 카메라를 맞춰주세요';
   document.getElementById('tqMsg').className='tq-msg';
   canRecord=false;
-  updateDebug({model:'✅ MoveNet',cam:'✅ Active',lm:'❌ No body',conf:'0%',state:'no body'});
+  dbg(['TF/Model: ✅','Landmarks: ❌ No body detected','→ Move back from camera','→ Ensure full body visible','State: no body']);
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // DRAW
-// ════════════════════════════════════════════════
-function drawSkeleton(kps,ctx,W,H){
-  // Lines
-  ctx.strokeStyle='rgba(201,168,76,0.7)';
-  ctx.lineWidth=2;
-  SKEL_PAIRS.forEach(([a,b])=>{
+// ═══════════════════════════════════════
+function drawSkel(kps,ctx,W,H){
+  ctx.lineWidth=2.5;
+  CONNECTIONS.forEach(([a,b])=>{
     const pa=kps[a],pb=kps[b];
-    if(!pa||!pb)return;
-    if((pa.score||0)<MIN_CONF||(pb.score||0)<MIN_CONF)return;
-    ctx.beginPath();
-    ctx.moveTo(pa.x*W,pa.y*H);
-    ctx.lineTo(pb.x*W,pb.y*H);
-    ctx.stroke();
+    if(!pa||!pb||(pa.score||0)<MIN_CONF||(pb.score||0)<MIN_CONF)return;
+    const grad=ctx.createLinearGradient(pa.x*W,pa.y*H,pb.x*W,pb.y*H);
+    grad.addColorStop(0,'rgba(201,168,76,0.8)');
+    grad.addColorStop(1,'rgba(232,201,122,0.6)');
+    ctx.strokeStyle=grad;
+    ctx.beginPath();ctx.moveTo(pa.x*W,pa.y*H);ctx.lineTo(pb.x*W,pb.y*H);ctx.stroke();
   });
-  // Points
   kps.forEach((kp,i)=>{
     if(!kp||(kp.score||0)<MIN_CONF)return;
-    const r=(kp.score||0)>0.7?5:3;
+    const r=(kp.score||0)>0.7?6:4;
+    ctx.fillStyle='#E8C97A';
+    ctx.beginPath();ctx.arc(kp.x*W,kp.y*H,r,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#C9A84C';
-    ctx.beginPath();
-    ctx.arc(kp.x*W,kp.y*H,r,0,Math.PI*2);
-    ctx.fill();
+    ctx.beginPath();ctx.arc(kp.x*W,kp.y*H,r-2,0,Math.PI*2);ctx.fill();
   });
-  // Labels
   ctx.font='bold 9px sans-serif';
-  ctx.fillStyle='rgba(232,201,122,0.9)';
-  ctx.shadowColor='rgba(0,0,0,0.9)';
-  ctx.shadowBlur=3;
+  ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=4;
   Object.entries(KP_LABELS).forEach(([i,lbl])=>{
     const kp=kps[i];
     if(!kp||(kp.score||0)<0.5)return;
-    ctx.fillText(lbl,kp.x*W+6,kp.y*H-4);
+    ctx.fillStyle='rgba(232,201,122,0.95)';
+    ctx.fillText(lbl,kp.x*W+7,kp.y*H-5);
   });
   ctx.shadowBlur=0;
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // MATH
-// ════════════════════════════════════════════════
-function calcAngle3(a,b,c){
+// ═══════════════════════════════════════
+function ang3(a,b,c){
   if(!a||!b||!c)return 0;
   let r=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x);
-  let d=Math.abs(r*180/Math.PI); if(d>180)d=360-d; return Math.round(d);
+  let d=Math.abs(r*180/Math.PI);if(d>180)d=360-d;return Math.round(d);
 }
-function calcTrunkAngle(lSh,rSh,lHip,rHip,H){
-  const smx=(lSh.x+rSh.x)/2, smy=(lSh.y+rSh.y)/2;
-  const hmx=(lHip.x+rHip.x)/2, hmy=(lHip.y+rHip.y)/2;
-  const angle=Math.abs(Math.atan2(smx-hmx,smy-hmy)*180/Math.PI);
-  return Math.round(angle);
+function trunkAngle(ls,rs,lh,rh){
+  const smx=(ls.x+rs.x)/2,smy=(ls.y+rs.y)/2;
+  const hmx=(lh.x+rh.x)/2,hmy=(lh.y+rh.y)/2;
+  return Math.round(Math.abs(Math.atan2(smx-hmx,smy-hmy)*180/Math.PI));
 }
-function smooth(k,v){return Math.round(pushBuf(aBuf[k],v,SMOOTH));}
-function pushBuf(buf,v,max){buf.push(v);if(buf.length>max)buf.shift();return buf.reduce((a,b)=>a+b,0)/buf.length;}
+function sm(k,v){return Math.round(pb(aBuf[k],v,SMOOTH));}
+function pb(buf,v,max){buf.push(v);if(buf.length>max)buf.shift();return buf.reduce((a,b)=>a+b,0)/buf.length;}
 function calcScore(a,sym){
   let s=100;
   if(Math.abs(a.lk-a.rk)>25)s-=15;
   if(Math.abs(a.lh-a.rh)>20)s-=10;
-  if(a.sh>10)s-=Math.min(15,a.sh);
-  if(a.tr>25)s-=Math.min(15,a.tr);
+  if(a.sh>10)s-=Math.min(12,a.sh);
+  if(a.tr>25)s-=Math.min(12,a.tr);
   if(sym<80)s-=8;
   return Math.max(0,Math.round(s));
 }
 
-// ════════════════════════════════════════════════
-// SQUAT STATE
-// ════════════════════════════════════════════════
-function updateSquatState(hipY,a){
-  if(hipBaseline===null){
-    baseFrames++;
-    hipBaseline=hipY;
-    if(baseFrames<20)return;
-  }
+// ═══════════════════════════════════════
+// SQUAT FSM
+// ═══════════════════════════════════════
+function squatFSM(hipY,a){
+  if(hipBaseline===null){bFrames++;hipBaseline=hipY;if(bFrames<20)return;}
   if(sqState==='standing')hipBaseline=hipBaseline*0.98+hipY*0.02;
   const drop=hipY-hipBaseline;
   const avgK=(a.lk+a.rk)/2;
   const now=performance.now();
   const CD=400;
   let ns=sqState;
-  if(sqState==='standing'&&drop>0.055&&avgK<130&&now-lastStateChange>CD)ns='descending';
-  else if(sqState==='descending'){if(avgK<100)ns='bottom';else if(drop<0.02&&now-lastStateChange>CD)ns='standing';}
-  else if(sqState==='bottom'&&avgK>130&&drop<0.03&&now-lastStateChange>CD)ns='ascending';
+  if(sqState==='standing'&&drop>0.055&&avgK<130&&now-lastSC>CD)ns='descending';
+  else if(sqState==='descending'){if(avgK<100)ns='bottom';else if(drop<0.02&&now-lastSC>CD)ns='standing';}
+  else if(sqState==='bottom'&&avgK>130&&drop<0.03&&now-lastSC>CD)ns='ascending';
   else if(sqState==='ascending'){
-    if(drop<0.015&&avgK>155&&now-lastStateChange>CD){
+    if(drop<0.015&&avgK>155&&now-lastSC>CD){
       ns='standing';repCount++;
       document.getElementById('sv0').textContent=repCount;
-      document.getElementById('repNum').textContent=repCount;
+      document.getElementById('repN').textContent=repCount;
     }else if(avgK<100)ns='bottom';
   }
   if(ns!==sqState){
-    sqState=ns;lastStateChange=now;
+    sqState=ns;lastSC=now;
     const lbl={standing:'STANDING',descending:'DESCENDING',bottom:'BOTTOM ▼',ascending:'ASCENDING'};
     const es=document.getElementById('exState');
     es.textContent=lbl[sqState]||sqState.toUpperCase();
@@ -950,26 +996,26 @@ function updateSquatState(hipY,a){
   }
 }
 
-// ════════════════════════════════════════════════
-// UI
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════
 function setTQ(i,cls){const d=document.getElementById('tq'+i);if(d)d.className='tq-dot'+(cls?' '+cls:'');}
 function setTQAll(cls){for(let i=0;i<4;i++)setTQ(i,cls);}
 function updateJoints(a){
-  const vals=[a.lk,a.rk,a.lh,a.rh,a.sh,a.tr],maxes=[180,180,180,180,30,45];
+  const vals=[a.lk,a.rk,a.lh,a.rh,a.sh,a.tr],mx=[180,180,180,180,30,45];
   vals.forEach((v,i)=>{
     const ve=document.getElementById('jv'+i);if(ve)ve.textContent=v+'°';
-    const be=document.getElementById('jb'+i);if(be)be.style.width=Math.min(100,(v/maxes[i]*100))+'%';
+    const be=document.getElementById('jb'+i);if(be)be.style.width=Math.min(100,(v/mx[i]*100))+'%';
   });
 }
 function updateScore(s){
   document.getElementById('scoreNum').textContent=s;
   document.getElementById('hScore').textContent=s+' pts';
   document.getElementById('scoreArc').style.strokeDashoffset=207-(207*s/100);
-  const lb=['—','개선 필요','보통','좋음','우수','완벽'];
-  document.getElementById('scoreLbl').textContent=lb[s>=95?5:s>=80?4:s>=65?3:s>=50?2:s>0?1:0];
+  const l=['—','개선 필요','보통','좋음','우수','완벽'];
+  document.getElementById('scoreLbl').textContent=l[s>=95?5:s>=80?4:s>=65?3:s>=50?2:s>0?1:0];
 }
-function updateFeedback(a,score,sym){
+function updateFB(a,score,sym){
   const items=[];
   if(score>=85)items.push({c:'good',t:'✓ 자세 우수'});
   const kd=Math.abs(a.lk-a.rk);
@@ -983,74 +1029,68 @@ function updateFeedback(a,score,sym){
   if(s!==lastFBStr){lastFBStr=s;document.getElementById('fbList').innerHTML=items.map(i=>`<div class="fb-item ${i.c}">${i.t}</div>`).join('');}
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // CAMERA CONTROLS
-// ════════════════════════════════════════════════
-function stopCamera(){
+// ═══════════════════════════════════════
+function stopAll(){
   isRunning=false;isRecording=false;canRecord=false;
   if(rafId){cancelAnimationFrame(rafId);rafId=null;}
   if(mediaRecorder&&mediaRecorder.state!=='inactive'){try{mediaRecorder.stop();}catch(e){}}
   if(detector){try{detector.dispose();}catch(e){}detector=null;}
-  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
   const video=document.getElementById('videoEl');
   if(video){video.srcObject=null;video.style.display='none';}
   const ctx=document.getElementById('canvasEl').getContext('2d');
   ctx.clearRect(0,0,9999,9999);
-  document.getElementById('camPlaceholder').style.display='flex';
+  document.getElementById('camPh').style.display='flex';
   document.getElementById('camCtrl').classList.remove('show');
   document.getElementById('recArea').classList.remove('show');
-  document.getElementById('repOverlay').classList.remove('show');
+  document.getElementById('repOv').classList.remove('show');
   document.getElementById('exState').classList.remove('show');
   document.getElementById('statusBar').className='status-bar';
   document.getElementById('initOverlay').classList.remove('hidden');
   document.getElementById('initSpinner').style.display='none';
-  document.getElementById('initStep').textContent='준비 중...';
-  document.getElementById('initError').style.display='none';
+  document.getElementById('initTitle').textContent='준비 중...';
+  document.getElementById('errBox').style.display='none';
   document.getElementById('initRetry').style.display='none';
-  document.getElementById('initLog').textContent='';
   setTQAll('');
   document.getElementById('tqMsg').textContent='카메라를 시작하세요';
   document.getElementById('tqMsg').className='tq-msg';
   document.getElementById('sDot').className='s-dot';
   document.getElementById('sWord').textContent='대기';
-  resetMeasUI();
-  updateDebug({model:'—',cam:'—',lm:'—',conf:'—',state:'idle'});
+  resetUI();dbg(['Stopped.']);
 }
 
 async function flipCamera(){
   const btn=document.getElementById('flipBtn');
   btn.disabled=true;btn.style.opacity='.4';
   try{
-    if(cameraDevices.length>=2){
-      currentDeviceIdx=(currentDeviceIdx+1)%cameraDevices.length;
-      const dev=cameraDevices[currentDeviceIdx];
+    if(camDevices.length>=2){
+      camDevIdx=(camDevIdx+1)%camDevices.length;
+      const dev=camDevices[camDevIdx];
       const lbl=(dev.label||'').toLowerCase();
       facingMode=(lbl.includes('front')||lbl.includes('facetime')||lbl.includes('user'))?'user':'environment';
-      if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-      cameraStream=await navigator.mediaDevices.getUserMedia({
+      if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
+      videoStream=await navigator.mediaDevices.getUserMedia({
         video:{deviceId:{exact:dev.deviceId},width:{ideal:1280},height:{ideal:720}},audio:false
       });
-      const video=document.getElementById('videoEl');
-      video.srcObject=cameraStream;
-      try{await video.play();}catch(e){}
-      applyZoom(curZoom);
     }else{
       facingMode=facingMode==='user'?'environment':'user';
-      if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-      cameraStream=await navigator.mediaDevices.getUserMedia({
+      if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
+      videoStream=await navigator.mediaDevices.getUserMedia({
         video:{facingMode,width:{ideal:1280},height:{ideal:720}},audio:false
       });
-      const video=document.getElementById('videoEl');
-      video.srcObject=cameraStream;
-      try{await video.play();}catch(e){}
-      applyZoom(curZoom);
     }
-  }catch(e){dblog('Flip camera error: '+e.message,'error');}
+    const video=document.getElementById('videoEl');
+    video.srcObject=videoStream;
+    try{await video.play();}catch(e){}
+    applyZoom(curZoom);
+  }catch(e){console.error('flip error:',e);}
   btn.disabled=false;btn.style.opacity='1';
 }
 
-function applyZoom(val){
-  curZoom=parseFloat(val);
+function applyZoom(v){
+  curZoom=parseFloat(v);
   document.getElementById('zoomVal').textContent=curZoom.toFixed(1)+'×';
   const video=document.getElementById('videoEl');
   const flip=facingMode==='user';
@@ -1059,9 +1099,9 @@ function applyZoom(val){
   document.getElementById('canvasEl').style.transform=flip?'scaleX(-1)':'none';
 }
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // RECORD
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 function startRec(){
   if(!canRecord)return;
   isRecording=true;repCount=0;resetDetection();
@@ -1071,20 +1111,20 @@ function startRec(){
   document.getElementById('postBtns').style.display='none';
   document.getElementById('recLbl').textContent='⏺ REC';
   document.getElementById('recLbl').style.color='#F87171';
-  document.getElementById('repOverlay').classList.add('show');
-  const sb=document.getElementById('statusBar');
-  sb.className='status-bar show rec';sb.textContent='⏺ Recording';
+  document.getElementById('repOv').classList.add('show');
+  document.getElementById('statusBar').className='status-bar show rec';
+  document.getElementById('statusBar').textContent='⏺ Recording';
   document.getElementById('sDot').className='s-dot rec';
   document.getElementById('sWord').textContent='녹화 중';
-  if(cameraStream){
+  if(videoStream){
     try{
       recChunks=[];recordedBlob=null;
-      const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4',''].find(m=>!m||MediaRecorder.isTypeSupported(m))||'';
-      mediaRecorder=new MediaRecorder(cameraStream,mime?{mimeType:mime}:{});
+      const m=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4',''].find(m=>!m||MediaRecorder.isTypeSupported(m))||'';
+      mediaRecorder=new MediaRecorder(videoStream,m?{mimeType:m}:{});
       mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)recChunks.push(e.data);};
       mediaRecorder.onstop=()=>{recordedBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||'video/webm'});};
       mediaRecorder.start(200);
-    }catch(e){dblog('MediaRecorder error: '+e.message,'warn');mediaRecorder=null;}
+    }catch(e){mediaRecorder=null;}
   }
 }
 function stopRec(){
@@ -1100,37 +1140,21 @@ function stopRec(){
   document.getElementById('statusBar').textContent='● Stopped';
   document.getElementById('sDot').className='s-dot live';
 }
-function replayRec(){
-  if(!recordedBlob){alert('No recording.');return;}
-  const url=URL.createObjectURL(recordedBlob);
-  const w=window.open();
-  w.document.write(`<body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh"><video src="${url}" controls autoplay style="max-width:100%;max-height:100%"></video></body>`);
-}
-function saveRec(){
-  if(!recordedBlob){alert('No recording.');return;}
-  const a=document.createElement('a');a.href=URL.createObjectURL(recordedBlob);
-  a.download='spectrax-'+Date.now()+'.webm';a.click();
-  document.getElementById('recLbl').textContent='SAVED ✓';
-}
-function delRec(){
-  recordedBlob=null;recChunks=[];
-  document.getElementById('postBtns').style.display='none';
-  document.getElementById('btnRec').style.display='block';
-  document.getElementById('recLbl').textContent='READY TO RECORD';
-  document.getElementById('recLbl').style.color='var(--muted)';
-}
+function replayRec(){if(!recordedBlob)return;const url=URL.createObjectURL(recordedBlob);const w=window.open();w.document.write('<body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh"><video src="'+url+'" controls autoplay style="max-width:100%;max-height:100%"></video></body>');}
+function saveRec(){if(!recordedBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(recordedBlob);a.download='spectrax-'+Date.now()+'.webm';a.click();document.getElementById('recLbl').textContent='SAVED ✓';}
+function delRec(){recordedBlob=null;recChunks=[];document.getElementById('postBtns').style.display='none';document.getElementById('btnRec').style.display='block';document.getElementById('recLbl').textContent='READY';document.getElementById('recLbl').style.color='var(--muted)';}
 
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // RESET
-// ════════════════════════════════════════════════
+// ═══════════════════════════════════════
 function resetDetection(){
-  repCount=0;sqState='standing';hipBaseline=null;baseFrames=0;lastStateChange=0;
+  repCount=0;sqState='standing';hipBaseline=null;bFrames=0;lastSC=0;
   Object.keys(aBuf).forEach(k=>aBuf[k]=[]);
-  hipYBuf=[];symBuf=[];fbCount=0;lastFBStr='';
-  document.getElementById('repNum').textContent='0';
+  hipYBuf=[];symBuf=[];fbCnt=0;lastFBStr='';
+  document.getElementById('repN').textContent='0';
   document.getElementById('sv0').textContent='0';
 }
-function resetMeasUI(){
+function resetUI(){
   resetDetection();
   document.getElementById('scoreNum').textContent='—';
   document.getElementById('scoreArc').style.strokeDashoffset='207';
@@ -1141,21 +1165,21 @@ function resetMeasUI(){
     const v=document.getElementById('jv'+i);if(v)v.textContent='—°';
     const b=document.getElementById('jb'+i);if(b)b.style.width='0%';
   }
-  document.getElementById('fbList').innerHTML='<div class="fb-item">카메라를 시작하면 분석이 시작됩니다.</div>';
+  document.getElementById('fbList').innerHTML='<div class="fb-item">카메라를 시작하세요.</div>';
   document.getElementById('btnRec').style.display='block';
   document.getElementById('btnRec').classList.remove('active');
   document.getElementById('btnStop').style.display='none';
   document.getElementById('postBtns').style.display='none';
-  document.getElementById('recLbl').textContent='READY TO RECORD';
+  document.getElementById('recLbl').textContent='READY';
   document.getElementById('recLbl').style.color='var(--muted)';
   document.getElementById('recArea').classList.remove('show');
-  document.getElementById('repOverlay').classList.remove('show');
+  document.getElementById('repOv').classList.remove('show');
   document.getElementById('exState').classList.remove('show');
   isRecording=false;canRecord=false;
 }
 
+// Fix template literal syntax error in stepOk
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&curScreen===1)goTo(2);});
-applyLangUI();
 </script>
 </body>
 </html>
