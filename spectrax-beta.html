@@ -357,7 +357,7 @@ input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:1
       <div class="rep-ov" id="repOv"><div class="rep-n" id="repN">0</div><div class="rep-lb">REPS</div></div>
 
       <div class="cam-ctrl" id="camCtrl">
-        <button class="ctrl-btn" id="flipBtn" onclick="flipCamera()">🔄</button>
+      
         <div class="zoom-ctrl">
           <div class="zoom-lbl">ZOOM</div>
           <input type="range" class="z-slider" id="zoomSlider" min="1" max="3" step="0.1" value="1" oninput="applyZoom(this.value)">
@@ -473,8 +473,7 @@ const MIN_CONF=0.3;
 let lang='ko',curScreen=1,curCat=null,curEx=null;
 let videoStream=null,detector=null,rafId=null;
 let isRunning=false,isRecording=false,canRecord=false;
-let facingMode='environment',curZoom=1.0;
-let camDevices=[],camDevIdx=0;
+let curZoom=1.0;
 let mediaRecorder=null,recordedBlob=null,recChunks=[];
 const SMOOTH=8,FB_INT=20;
 let aBuf={lk:[],rk:[],lh:[],rh:[],sh:[],tr:[]};
@@ -624,22 +623,38 @@ async function startCamera(){
   }
   stepOk(0,'환경 확인 완료 ('+(isIOS?'iOS':isAndroid?'Android':'Desktop')+')' );
 
-  // ─── STEP 1: Camera permission ───
-  stepActive(1,'카메라 권한 요청 중...');
+  // ─── STEP 1: Camera permission - REAR ONLY ───
+  stepActive(1,'후방 카메라 권한 요청 중...');
   try{
     if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
     videoStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode,width:{ideal:1280},height:{ideal:720}},
+      video:{
+        facingMode:{ideal:'environment'},
+        width:{ideal:1280},
+        height:{ideal:720}
+      },
       audio:false
     });
-    stepOk(1,'카메라 권한 허용됨');
+    // Verify it's actually rear camera
+    const track=videoStream.getVideoTracks()[0];
+    const settings=track.getSettings();
+    const label=(track.label||'').toLowerCase();
+    const isFront=settings.facingMode==='user'||label.includes('front')||label.includes('facetime');
+    if(isFront){
+      videoStream.getTracks().forEach(t=>t.stop());
+      videoStream=null;
+      stepErr(1,'후방 카메라 없음');
+      showErr('후방 카메라를 사용할 수 없습니다.\n이 기기에 후방 카메라가 없거나\n다른 앱에서 사용 중입니다.');
+      return;
+    }
+    stepOk(1,'후방 카메라 연결됨');
   }catch(e){
     stepErr(1,e.name);
     const msg=e.name==='NotAllowedError'?
       '카메라 권한이 거부되었습니다.\n브라우저 설정 → 카메라 허용':
-      e.name==='NotFoundError'?'카메라를 찾을 수 없습니다':'카메라 오류: '+e.message;
+      e.name==='NotFoundError'?'후방 카메라를 사용할 수 없습니다.':
+      '후방 카메라를 사용할 수 없습니다.\n오류: '+e.message;
     showErr(msg+'\n\n['+e.name+']: '+e.message);
-    dbg(['Camera: ❌ '+e.name,'→ '+e.message]);
     return;
   }
 
@@ -761,14 +776,14 @@ async function startCamera(){
     'Backend: '+backend,
     'Model: ✅ MoveNet Lightning',
     'Video: '+video.videoWidth+'×'+video.videoHeight,
-    'Camera: '+facingMode
+    'Camera: rear (environment)'
   ]);
   setTQ(3,'ok');
 
   // ─── STEP 4: Test pose + start loop ───
   stepActive(4,'포즈 감지 테스트...');
   try{
-    const testPoses=await detector.estimatePoses(video,{flipHorizontal:facingMode==='user'});
+    const testPoses=await detector.estimatePoses(video,{flipHorizontal:false});
     console.log('[SPECTRAX] Test pose result:', testPoses.length,'poses');
     stepOk(4,'포즈 감지 활성화');
   }catch(e){
@@ -781,14 +796,6 @@ async function startCamera(){
   await new Promise(r=>setTimeout(r,400));
   overlay.classList.add('hidden');
   document.getElementById('camCtrl').classList.add('show');
-
-  // Camera device list for flip
-  try{
-    const devs=await navigator.mediaDevices.enumerateDevices();
-    camDevices=devs.filter(d=>d.kind==='videoinput');
-    const activeId=videoStream.getVideoTracks()[0]?.getSettings()?.deviceId;
-    if(activeId){const idx=camDevices.findIndex(d=>d.deviceId===activeId);if(idx>=0)camDevIdx=idx;}
-  }catch(e){}
 
   applyZoom(curZoom);
   isRunning=true;canRecord=false;
@@ -817,7 +824,7 @@ async function poseLoop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   try{
-    const poses=await detector.estimatePoses(video,{flipHorizontal:facingMode==='user',maxPoses:1});
+    const poses=await detector.estimatePoses(video,{flipHorizontal:false,maxPoses:1});
     if(poses&&poses.length>0&&poses[0].keypoints&&poses[0].keypoints.length>0){
       processKP(poses[0],ctx,canvas);
     } else {
@@ -1061,42 +1068,16 @@ function stopAll(){
   resetUI();dbg(['Stopped.']);
 }
 
-async function flipCamera(){
-  const btn=document.getElementById('flipBtn');
-  btn.disabled=true;btn.style.opacity='.4';
-  try{
-    if(camDevices.length>=2){
-      camDevIdx=(camDevIdx+1)%camDevices.length;
-      const dev=camDevices[camDevIdx];
-      const lbl=(dev.label||'').toLowerCase();
-      facingMode=(lbl.includes('front')||lbl.includes('facetime')||lbl.includes('user'))?'user':'environment';
-      if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
-      videoStream=await navigator.mediaDevices.getUserMedia({
-        video:{deviceId:{exact:dev.deviceId},width:{ideal:1280},height:{ideal:720}},audio:false
-      });
-    }else{
-      facingMode=facingMode==='user'?'environment':'user';
-      if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
-      videoStream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode,width:{ideal:1280},height:{ideal:720}},audio:false
-      });
-    }
-    const video=document.getElementById('videoEl');
-    video.srcObject=videoStream;
-    try{await video.play();}catch(e){}
-    applyZoom(curZoom);
-  }catch(e){console.error('flip error:',e);}
-  btn.disabled=false;btn.style.opacity='1';
-}
+// 카메라 전환 없음 - 후면 카메라 고정
 
 function applyZoom(v){
   curZoom=parseFloat(v);
   document.getElementById('zoomVal').textContent=curZoom.toFixed(1)+'×';
   const video=document.getElementById('videoEl');
-  const flip=facingMode==='user';
-  video.style.transform=(flip?'scaleX(-1) ':'')+'scale('+curZoom+')';
+  // 후면 카메라 - 반전 없음
+  video.style.transform='scale('+curZoom+')';
   video.style.transformOrigin='center center';
-  document.getElementById('canvasEl').style.transform=flip?'scaleX(-1)':'none';
+  document.getElementById('canvasEl').style.transform='none';
 }
 
 // ═══════════════════════════════════════
