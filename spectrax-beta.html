@@ -2,844 +2,1081 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>SPECTRAX BETA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SPECTRAX SCOUTER BETA</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@200;300;400;500;600;700&display=swap');
+:root{
+  --black:#050505;--dark:#0a0a0a;--card:#0f0f0f;
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,.15);
+  --white:#F8F4EE;--muted:rgba(248,244,238,.45);--muted2:rgba(248,244,238,.22);
+  --border:rgba(201,168,76,.18);--border2:rgba(248,244,238,.07);
+  --green:#22C55E;--red:#EF4444;--orange:#F97316;--blue:#3B82F6;
+  --radius:3px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--black);color:var(--white);font-family:'Montserrat',sans-serif;overflow:hidden;}
 
-  :root {
-    --black: #050505;
-    --gold: #C9A84C;
-    --gold-light: #E8C97A;
-    --white: #F8F4EE;
-    --muted: rgba(248,244,238,0.4);
-    --border: rgba(201,168,76,0.2);
-    --red: #e53935;
-  }
+/* SCREENS */
+.screen{position:fixed;inset:0;opacity:0;pointer-events:none;transition:opacity .6s cubic-bezier(.4,0,.2,1);z-index:1;display:flex;flex-direction:column;overflow:hidden;}
+.screen.active{opacity:1;pointer-events:all;z-index:2;}
+.scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.scroll-body::-webkit-scrollbar{width:3px;}
+.scroll-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { height: 100%; overflow: hidden; }
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'Montserrat', sans-serif;
-  }
+/* SHARED HEADER */
+.s-header{height:52px;flex-shrink:0;background:rgba(5,5,5,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:10;}
+.s-header-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;letter-spacing:.2em;}
+.s-header-brand span{color:var(--gold);font-size:8px;letter-spacing:.3em;font-family:'Montserrat',sans-serif;font-weight:700;vertical-align:super;margin-left:5px;}
+.back-btn{font-size:9px;font-weight:500;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;cursor:pointer;background:none;border:none;transition:color .3s;}
+.back-btn:hover{color:var(--gold);}
 
-  /* ── SCREENS ── */
-  .screen {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1);
-    z-index: 1;
-  }
-  .screen.active { opacity: 1; pointer-events: all; z-index: 2; }
+/* SPLASH */
+#s1{align-items:center;justify-content:center;cursor:pointer;}
+.s1-bg{position:absolute;inset:0;background:radial-gradient(ellipse 65% 55% at 50% 45%,rgba(201,168,76,.07) 0%,transparent 70%);}
+.s1-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:80px 80px;}
+.s1-content{position:relative;text-align:center;z-index:2;}
+.s1-eyebrow{font-size:9px;font-weight:500;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;opacity:0;animation:fadeUp 1s .3s forwards;}
+.s1-logo{font-family:'Cormorant Garamond',serif;font-size:clamp(60px,13vw,148px);font-weight:300;letter-spacing:.15em;line-height:1;opacity:0;animation:fadeUp 1s .5s forwards;position:relative;}
+.s1-logo::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;animation:fadeIn 1s 1s forwards;}
+.s1-sub{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:22px;opacity:0;animation:fadeUp 1s .7s forwards;}
+.s1-beta{font-size:8px;font-weight:700;letter-spacing:.35em;color:var(--black);background:var(--gold);padding:4px 12px;text-transform:uppercase;}
+.s1-scouter{font-size:10px;font-weight:500;letter-spacing:.45em;color:var(--muted);text-transform:uppercase;}
+.s1-tagline{font-size:9px;letter-spacing:.4em;color:var(--muted2);text-transform:uppercase;margin-top:18px;opacity:0;animation:fadeUp 1s .9s forwards;}
+.s1-enter{position:absolute;bottom:44px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;animation:fadeIn 1.5s 1.8s forwards;}
+.s1-enter-text{font-size:13px;font-weight:500;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;}
+.s1-line{width:1px;height:36px;background:linear-gradient(to bottom,var(--gold),transparent);animation:pulse 2s infinite;}
+.corner{position:absolute;width:26px;height:26px;border-color:rgba(201,168,76,.22);border-style:solid;}
+.corner.tl{top:18px;left:18px;border-width:1px 0 0 1px;}.corner.tr{top:18px;right:18px;border-width:1px 1px 0 0;}
+.corner.bl{bottom:18px;left:18px;border-width:0 0 1px 1px;}.corner.br{bottom:18px;right:18px;border-width:0 1px 1px 0;}
 
-  /* ── SCREEN 1: SPLASH ── */
-  #s1 { cursor: pointer; }
-  .s1-bg {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,168,76,0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 100% 80% at 50% 100%, rgba(201,168,76,0.04) 0%, transparent 60%);
-  }
-  .s1-grid {
-    position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
-    background-size: 80px 80px;
-  }
-  .s1-content { position: relative; text-align: center; z-index: 2; }
-  .s1-eyebrow {
-    font-size: 9px; font-weight: 500; letter-spacing: 0.5em;
-    color: var(--gold); text-transform: uppercase; margin-bottom: 28px;
-    opacity: 0; animation: fadeUp 1s 0.3s forwards;
-  }
-  .s1-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(64px, 13vw, 150px); font-weight: 300;
-    letter-spacing: 0.15em; color: var(--white); line-height: 1;
-    opacity: 0; animation: fadeUp 1s 0.5s forwards; position: relative;
-  }
-  .s1-logo::after {
-    content: ''; position: absolute; bottom: -8px; left: 50%;
-    transform: translateX(-50%); width: 60%; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    opacity: 0; animation: fadeIn 1s 1s forwards;
-  }
-  .s1-beta {
-    display: inline-block; margin-top: 18px;
-    font-size: 9px; font-weight: 600; letter-spacing: 0.4em;
-    color: var(--black); background: var(--gold);
-    padding: 4px 14px; text-transform: uppercase;
-    opacity: 0; animation: fadeUp 1s 0.7s forwards;
-  }
-  .s1-tagline {
-    font-size: 10px; font-weight: 300; letter-spacing: 0.45em;
-    color: var(--muted); text-transform: uppercase; margin-top: 24px;
-    opacity: 0; animation: fadeUp 1s 0.9s forwards;
-  }
-  .s1-enter {
-    position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    opacity: 0; animation: fadeIn 1.5s 1.8s forwards;
-  }
-  .s1-enter-text {
-    font-size: 13px; font-weight: 500; letter-spacing: 0.4em;
-    color: var(--gold); text-transform: uppercase;
-  }
-  .s1-enter-line {
-    width: 1px; height: 36px;
-    background: linear-gradient(to bottom, var(--gold), transparent);
-    animation: pulse 2s infinite;
-  }
-  .corner { position: absolute; width: 28px; height: 28px; border-color: rgba(201,168,76,0.25); border-style: solid; }
-  .corner.tl { top:20px; left:20px; border-width:1px 0 0 1px; }
-  .corner.tr { top:20px; right:20px; border-width:1px 1px 0 0; }
-  .corner.bl { bottom:20px; left:20px; border-width:0 0 1px 1px; }
-  .corner.br { bottom:20px; right:20px; border-width:0 1px 1px 0; }
+/* LANGUAGE */
+#s2{align-items:center;justify-content:center;}
+.s2-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(201,168,76,.04) 0%,transparent 70%);}
+.lang-wrap{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:26px;width:90%;max-width:680px;}
+.lang-eyebrow{font-size:9px;font-weight:500;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;text-align:center;}
+.lang-title{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,42px);font-weight:300;letter-spacing:.06em;text-align:center;}
+.lang-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;}
+.lang-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:transparent;transition:all .3s;position:relative;overflow:hidden;}
+.lang-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.08),transparent);opacity:0;transition:opacity .3s;}
+.lang-btn:hover::before,.lang-btn.sel::before{opacity:1;}
+.lang-btn:hover,.lang-btn.sel{border-color:var(--gold);transform:translateY(-2px);}
+.lang-flag{font-size:22px;line-height:1;}.lang-native{font-size:10px;color:var(--white);font-weight:400;}
+.lang-code{font-size:8px;font-weight:600;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;transition:color .3s;}
+.lang-btn:hover .lang-code,.lang-btn.sel .lang-code{color:var(--gold);}
+.lang-go{padding:12px 44px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;}
+.lang-go::before{content:'';position:absolute;inset:0;background:var(--gold);transform:translateX(-100%);transition:transform .3s;z-index:-1;}
+.lang-go:hover::before{transform:translateX(0);}.lang-go:hover{color:var(--black);}
 
-  /* ── SCREEN 2: LANGUAGE ── */
-  #s2 { background: var(--black); }
-  .s2-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,0.04) 0%, transparent 70%); }
-  .lang-header { text-align: center; margin-bottom: 44px; position: relative; z-index: 2; }
-  .lang-eyebrow { font-size: 9px; font-weight: 500; letter-spacing: 0.5em; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; }
-  .lang-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(26px, 4vw, 44px); font-weight: 300; color: var(--white); letter-spacing: 0.06em; }
-  .lang-grid {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 10px; max-width: 680px; width: 90%; position: relative; z-index: 2;
-  }
-  .lang-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 7px;
-    padding: 18px 10px; border: 1px solid var(--border); border-radius: 2px;
-    cursor: pointer; background: transparent; transition: all 0.3s ease; position: relative; overflow: hidden;
-  }
-  .lang-btn::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(201,168,76,0.08), transparent);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .lang-btn:hover::before, .lang-btn.sel::before { opacity: 1; }
-  .lang-btn:hover, .lang-btn.sel { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.12); }
-  .lang-flag { font-size: 26px; line-height: 1; }
-  .lang-native { font-size: 11px; color: var(--white); font-weight: 400; }
-  .lang-code { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; transition: color 0.3s; }
-  .lang-btn:hover .lang-code, .lang-btn.sel .lang-code { color: var(--gold); }
-  .lang-go {
-    margin-top: 32px; padding: 13px 44px; background: transparent;
-    border: 1px solid var(--gold); color: var(--gold);
-    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 500;
-    letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
-    transition: all 0.3s; position: relative; overflow: hidden; z-index: 2;
-  }
-  .lang-go::before {
-    content: ''; position: absolute; inset: 0; background: var(--gold);
-    transform: translateX(-100%); transition: transform 0.3s ease; z-index: -1;
-  }
-  .lang-go:hover::before { transform: translateX(0); }
-  .lang-go:hover { color: var(--black); }
+/* SCOUTER MAIN */
+#s3{background:var(--dark);}
+.scouter-hero{padding:32px 20px 20px;text-align:center;flex-shrink:0;}
+.scouter-eyebrow{font-size:8px;font-weight:600;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.scouter-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,46px);font-weight:300;letter-spacing:.06em;margin-bottom:4px;}
+.scouter-sub{font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+.gold-line{width:44px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto 0;}
+.cat-grid{padding:18px 14px 32px;display:grid;grid-template-columns:1fr;gap:12px;}
+.cat-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;padding:24px 20px;display:flex;align-items:center;gap:18px;}
+.cat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.06),transparent);opacity:0;transition:opacity .3s;}
+.cat-card:hover::before{opacity:1;}
+.cat-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 10px 36px rgba(201,168,76,.1);}
+.cat-icon{font-size:38px;flex-shrink:0;width:54px;text-align:center;}
+.cat-info{flex:1;}
+.cat-tag{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
+.cat-name{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;letter-spacing:.05em;margin-bottom:4px;}
+.cat-desc{font-size:9px;font-weight:300;color:var(--muted);letter-spacing:.03em;line-height:1.7;}
+.cat-arrow{font-size:18px;color:var(--gold);opacity:.4;flex-shrink:0;transition:all .3s;}
+.cat-card:hover .cat-arrow{opacity:1;transform:translateX(4px);}
+.cat-badge{position:absolute;top:14px;right:14px;font-size:7px;font-weight:700;letter-spacing:.3em;padding:3px 8px;text-transform:uppercase;}
+.badge-power{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.25);}
+.badge-athletic{background:rgba(59,130,246,.1);color:#60A5FA;border:1px solid rgba(59,130,246,.22);}
+.badge-hyrox{background:rgba(239,68,68,.1);color:#F87171;border:1px solid rgba(239,68,68,.22);}
 
-  /* ── SCREEN 3: POSE ANALYZER ── */
-  #s3 {
-    background: #080808;
-    flex-direction: column;
-    justify-content: flex-start;
-    overflow: hidden;
-  }
+/* EXERCISE LIST */
+#s4{background:var(--dark);}
+.ex-hero{padding:24px 18px 16px;flex-shrink:0;}
+.ex-category-tag{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
+.ex-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,38px);font-weight:300;letter-spacing:.05em;margin-bottom:3px;}
+.ex-subtitle{font-size:9px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
+.ex-divider{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:14px 0 0;opacity:.25;}
+.ex-grid{padding:14px 14px 32px;display:grid;grid-template-columns:1fr;gap:8px;}
+.ex-card{border:1px solid var(--border2);border-radius:var(--radius);background:rgba(15,15,15,.8);cursor:pointer;transition:all .3s;position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:16px 14px;}
+.ex-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.04),transparent);opacity:0;transition:opacity .3s;}
+.ex-card:hover::before{opacity:1;}
+.ex-card:hover{border-color:var(--border);transform:translateX(3px);}
+.ex-icon{width:44px;height:44px;border-radius:var(--radius);background:rgba(201,168,76,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ex-info{flex:1;}
+.ex-name{font-size:12px;font-weight:500;color:var(--white);letter-spacing:.04em;margin-bottom:3px;}
+.ex-desc{font-size:9px;font-weight:300;color:var(--muted);letter-spacing:.02em;line-height:1.6;}
+.ex-start{font-size:8px;font-weight:700;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;padding:5px 10px;border:1px solid rgba(201,168,76,.28);border-radius:var(--radius);transition:all .3s;white-space:nowrap;flex-shrink:0;}
+.ex-card:hover .ex-start{background:var(--gold-dim);border-color:var(--gold);}
 
-  /* Header bar */
-  .app-header {
-    width: 100%; height: 52px; flex-shrink: 0;
-    background: rgba(5,5,5,0.95);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; z-index: 10;
-  }
-  .app-brand { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; letter-spacing: 0.2em; color: var(--white); }
-  .app-brand span { color: var(--gold); font-size: 9px; letter-spacing: 0.3em; font-family: 'Montserrat', sans-serif; font-weight: 600; vertical-align: super; margin-left: 6px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .score-badge {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-    color: var(--gold); border: 1px solid var(--border); padding: 4px 12px; border-radius: 2px;
-  }
-  .back-lang {
-    font-size: 9px; font-weight: 500; letter-spacing: 0.2em; color: var(--muted);
-    text-transform: uppercase; cursor: pointer; background: none; border: none;
-    transition: color 0.3s;
-  }
-  .back-lang:hover { color: var(--gold); }
+/* ══ MEASUREMENT SCREEN ══ */
+#s5{background:#060608;}
+.meas-header{height:50px;flex-shrink:0;background:rgba(6,6,8,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
+.meas-exercise{font-size:13px;font-weight:600;letter-spacing:.07em;}
+.meas-category{font-size:7px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+.header-score{font-size:10px;font-weight:700;color:var(--gold);border:1px solid var(--border);padding:4px 10px;border-radius:2px;font-variant-numeric:tabular-nums;}
 
-  /* Main layout */
-  .app-body {
-    flex: 1; width: 100%; display: grid;
-    grid-template-columns: 1fr 280px;
-    overflow: hidden;
-  }
+/* Tracking Quality Bar */
+.track-bar{
+  flex-shrink:0;background:rgba(6,6,8,.95);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  padding:6px 14px;display:flex;gap:10px;flex-wrap:wrap;
+}
+.tq-item{display:flex;align-items:center;gap:5px;font-size:8px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;}
+.tq-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);flex-shrink:0;transition:background .4s;}
+.tq-dot.ok{background:var(--green);}
+.tq-dot.warn{background:var(--orange);}
+.tq-dot.bad{background:var(--red);}
+.tq-msg{margin-left:auto;font-size:8px;letter-spacing:.15em;color:var(--orange);text-transform:uppercase;}
 
-  /* Camera zone */
-  .cam-zone {
-    position: relative; background: #0a0a0a;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
-  }
-  #videoEl {
-    width: 100%; height: 100%; object-fit: cover;
-    transform: scaleX(-1); display: none;
-  }
-  #canvasEl {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    transform: scaleX(-1);
-  }
-  .cam-placeholder {
-    display: flex; flex-direction: column; align-items: center; gap: 16px; z-index: 2;
-  }
-  .cam-icon { font-size: 48px; opacity: 0.2; }
-  .cam-hint { font-size: 11px; letter-spacing: 0.2em; color: var(--muted); text-align: center; line-height: 1.8; }
-  .start-btn {
-    margin-top: 8px; padding: 12px 32px;
-    background: var(--gold); color: var(--black);
-    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700;
-    letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
-    border: none; border-radius: 2px; transition: all 0.3s;
-  }
-  .start-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
-  .stop-btn {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    padding: 10px 28px; background: rgba(229,57,53,0.15);
-    border: 1px solid var(--red); color: var(--red);
-    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 600;
-    letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer;
-    border-radius: 2px; transition: all 0.3s; display: none; z-index: 10;
-  }
-  .stop-btn:hover { background: rgba(229,57,53,0.25); }
+/* Camera + panels layout */
+.meas-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 240px;overflow:hidden;}
+.cam-zone{position:relative;background:#030305;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#videoEl{width:100%;height:100%;object-fit:cover;display:none;}
+#canvasEl{position:absolute;inset:0;width:100%;height:100%;}
 
-  /* 카메라 컨트롤 패널 */
-  .cam-controls {
-    position: absolute; top: 14px; right: 14px;
-    display: none; flex-direction: column; gap: 8px; z-index: 10;
-  }
-  .cam-controls.visible { display: flex; }
-  .flip-btn {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: rgba(5,5,5,0.75); border: 1px solid var(--border);
-    color: var(--gold); font-size: 18px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.3s; backdrop-filter: blur(8px);
-  }
-  .flip-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.15); transform: scale(1.08); }
-  .zoom-panel {
-    background: rgba(5,5,5,0.75); border: 1px solid var(--border);
-    border-radius: 20px; padding: 10px 8px;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    backdrop-filter: blur(8px);
-  }
-  .zoom-label { font-size: 8px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; }
-  .zoom-val { font-size: 11px; font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
-  input[type=range].zoom-slider {
-    -webkit-appearance: none; appearance: none;
-    writing-mode: vertical-lr; direction: rtl;
-    width: 6px; height: 80px;
-    background: rgba(201,168,76,0.15); border-radius: 3px; outline: none; cursor: pointer;
-  }
-  input[type=range].zoom-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 16px; height: 16px;
-    border-radius: 50%; background: var(--gold); cursor: pointer;
-    box-shadow: 0 0 6px rgba(201,168,76,0.5);
-  }
-  input[type=range].zoom-slider::-moz-range-thumb {
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--gold); cursor: pointer; border: none;
-  }
+/* Placeholder */
+.cam-placeholder{display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2;text-align:center;padding:20px;}
+.cam-icon-big{font-size:48px;opacity:.16;}
+.cam-hint-text{font-size:9px;letter-spacing:.15em;color:var(--muted);line-height:2;text-transform:uppercase;}
+.cam-start-btn{margin-top:8px;padding:12px 30px;background:var(--gold);color:var(--black);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;border:none;border-radius:var(--radius);transition:all .3s;}
+.cam-start-btn:hover{background:var(--gold-light);transform:translateY(-1px);}
 
-  /* Side panel */
-  .side-panel {
-    background: rgba(8,8,8,0.98);
-    border-left: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow-y: auto; padding: 20px 16px;
-    gap: 20px;
-  }
+/* Camera controls */
+.cam-ctrl{position:absolute;top:10px;right:10px;display:none;flex-direction:column;gap:7px;z-index:10;}
+.cam-ctrl.show{display:flex;}
+.ctrl-btn{width:36px;height:36px;border-radius:50%;background:rgba(5,5,5,.82);border:1px solid var(--border);color:var(--gold);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;backdrop-filter:blur(8px);}
+.ctrl-btn:hover{border-color:var(--gold);background:var(--gold-dim);}
+.zoom-ctrl{background:rgba(5,5,5,.82);border:1px solid var(--border);border-radius:18px;padding:8px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;backdrop-filter:blur(8px);}
+.zoom-lbl{font-size:7px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+.zoom-num{font-size:9px;font-weight:600;color:var(--white);}
+input[type=range].z-slider{-webkit-appearance:none;appearance:none;writing-mode:vertical-lr;direction:rtl;width:4px;height:64px;background:rgba(201,168,76,.15);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);}
 
-  .panel-section { border-bottom: 1px solid rgba(201,168,76,0.08); padding-bottom: 18px; }
-  .panel-section:last-child { border-bottom: none; padding-bottom: 0; }
-  .panel-label {
-    font-size: 8px; font-weight: 600; letter-spacing: 0.4em;
-    color: var(--gold); text-transform: uppercase; margin-bottom: 12px;
-  }
+/* Status bar overlay */
+.status-bar{position:absolute;top:10px;left:10px;background:rgba(5,5,5,.85);border:1px solid var(--border);padding:5px 10px;border-radius:var(--radius);font-size:8px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;display:none;backdrop-filter:blur(8px);}
+.status-bar.show{display:block;}
+.status-bar.live{color:var(--green);border-color:rgba(34,197,94,.3);}
+.status-bar.rec{color:#F87171;border-color:rgba(239,68,68,.3);}
 
-  /* Score ring */
-  .score-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .score-ring { position: relative; width: 90px; height: 90px; }
-  .score-ring svg { transform: rotate(-90deg); }
-  .score-ring-num {
-    position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-  }
-  .score-ring-num .num {
-    font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300;
-    color: var(--white); line-height: 1;
-  }
-  .score-ring-num .pts { font-size: 8px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
-  .score-label { font-size: 10px; letter-spacing: 0.1em; color: var(--gold); font-weight: 500; }
+/* Rep counter overlay */
+.rep-overlay{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.88);border:1px solid var(--border);padding:8px 18px;border-radius:var(--radius);text-align:center;display:none;backdrop-filter:blur(8px);}
+.rep-overlay.show{display:block;}
+.rep-num{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--gold);line-height:1;}
+.rep-lbl{font-size:7px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
 
-  /* Joint angles */
-  .joint-list { display: flex; flex-direction: column; gap: 8px; }
-  .joint-row { display: flex; justify-content: space-between; align-items: center; }
-  .joint-name { font-size: 10px; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; }
-  .joint-val { font-size: 11px; font-weight: 500; color: var(--white); letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
-  .joint-bar-wrap { width: 100%; height: 2px; background: rgba(255,255,255,0.06); border-radius: 1px; margin-top: 3px; }
-  .joint-bar { height: 2px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 1px; transition: width 0.4s ease; }
+/* ── RECORD CONTROLS (3-state) ── */
+.rec-area{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:none;flex-direction:column;align-items:center;gap:8px;z-index:10;
+}
+.rec-area.show{display:flex;}
+.rec-main-btns{display:flex;gap:8px;}
+.btn-rec,.btn-stop,.btn-replay,.btn-del,.btn-save{
+  padding:9px 18px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);transition:all .3s;border:1px solid;
+}
+.btn-rec{background:rgba(239,68,68,.12);border-color:var(--red);color:#F87171;}
+.btn-rec.active{background:rgba(239,68,68,.3);border-color:#F87171;color:#fff;animation:recPulse 1s infinite;}
+.btn-stop{background:rgba(248,244,238,.05);border-color:var(--border2);color:var(--muted);}
+.btn-stop:hover{background:rgba(248,244,238,.1);color:var(--white);}
+.btn-replay{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#60A5FA;}
+.btn-del{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);color:#F87171;}
+.btn-save{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green);}
+.rec-post-btns{display:flex;gap:6px;}
+.rec-state-label{font-size:8px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
 
-  /* Feedback */
-  .feedback-list { display: flex; flex-direction: column; gap: 8px; }
-  .feedback-item {
-    font-size: 10px; font-weight: 300; color: var(--muted);
-    letter-spacing: 0.04em; line-height: 1.6;
-    padding: 8px 10px; border-left: 2px solid var(--border); background: rgba(255,255,255,0.02);
-  }
-  .feedback-item.good { border-color: #43a047; color: rgba(248,244,238,0.7); }
-  .feedback-item.warn { border-color: var(--gold); }
+/* SIDE PANEL */
+.side-panel{background:rgba(7,7,9,.99);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:14px 12px;gap:14px;}
+.side-panel::-webkit-scrollbar{width:2px;}
+.side-panel::-webkit-scrollbar-thumb{background:var(--border);}
+.p-sec{border-bottom:1px solid rgba(201,168,76,.05);padding-bottom:12px;}
+.p-sec:last-child{border-bottom:none;padding-bottom:0;}
+.p-lbl{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:9px;}
+.status-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.1);display:inline-block;margin-right:6px;transition:all .3s;}
+.status-dot.live{background:var(--green);box-shadow:0 0 5px var(--green);animation:blink 1.5s infinite;}
+.status-dot.rec{background:var(--red);box-shadow:0 0 5px var(--red);animation:blink .8s infinite;}
+.status-word{font-size:8px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
 
-  /* Status */
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.15); display: inline-block; margin-right: 6px; }
-  .status-dot.live { background: #43a047; box-shadow: 0 0 6px #43a047; animation: blink 1.5s infinite; }
-  .status-text { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+/* Score ring */
+.score-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.score-ring{position:relative;width:80px;height:80px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--white);line-height:1;}
+.score-pts{font-size:7px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;}
+.score-lbl{font-size:9px;letter-spacing:.1em;color:var(--gold);font-weight:500;}
 
-  /* Skeleton overlay colors */
-  :root { --sk-line: rgba(201,168,76,0.8); --sk-joint: #C9A84C; --sk-active: #E8C97A; }
+/* Stats grid (left-panel metrics) */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-box{background:rgba(255,255,255,.02);border:1px solid var(--border2);border-radius:var(--radius);padding:8px 7px;text-align:center;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--white);line-height:1;font-variant-numeric:tabular-nums;}
+.stat-unit{font-size:7px;color:var(--muted);letter-spacing:.1em;}
+.stat-name{font-size:7px;letter-spacing:.15em;color:var(--muted2);text-transform:uppercase;margin-top:2px;}
 
-  /* Animations */
-  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  @keyframes pulse { 0%,100%{opacity:0.35} 50%{opacity:1} }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* Joints */
+.joint-list{display:flex;flex-direction:column;gap:6px;}
+.j-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.j-name{font-size:8px;font-weight:300;color:var(--muted);letter-spacing:.03em;}
+.j-val{font-size:9px;font-weight:500;color:var(--white);font-variant-numeric:tabular-nums;}
+.j-bar-wrap{width:100%;height:2px;background:rgba(255,255,255,.05);border-radius:1px;}
+.j-bar{height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:1px;transition:width .5s ease;width:0%;}
 
-  /* Mobile */
-  @media (max-width: 640px) {
-    .app-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
-    .side-panel { max-height: 220px; border-left: none; border-top: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; gap: 12px; padding: 14px; overflow-x: auto; }
-    .panel-section { border-bottom: none; padding-bottom: 0; min-width: 140px; }
-    .lang-grid { grid-template-columns: repeat(5, 1fr); }
-  }
+/* Feedback */
+.fb-list{display:flex;flex-direction:column;gap:5px;}
+.fb-item{font-size:8px;font-weight:300;color:var(--muted);letter-spacing:.03em;line-height:1.7;padding:6px 8px;border-left:2px solid var(--border);background:rgba(255,255,255,.02);}
+.fb-item.good{border-color:var(--green);color:rgba(248,244,238,.7);}
+.fb-item.warn{border-color:var(--gold);}
+.fb-item.danger{border-color:var(--red);color:#F87171;}
+
+/* PORTRAIT / LANDSCAPE support */
+@media(orientation:landscape) and (max-height:500px){
+  .meas-body{grid-template-columns:minmax(0,1fr) 200px;}
+  .side-panel{padding:10px 10px;gap:10px;}
+  .p-lbl{margin-bottom:6px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .stat-val{font-size:16px;}
+  .score-ring{width:64px;height:64px;}
+  .score-num{font-size:18px;}
+  .track-bar{padding:4px 12px;gap:8px;}
+  .meas-header{height:42px;}
+}
+@media(max-width:640px){
+  .meas-body{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;}
+  .side-panel{border-left:none;border-top:1px solid var(--border);flex-direction:row;flex-wrap:nowrap;gap:10px;padding:10px;overflow-x:auto;overflow-y:hidden;max-height:180px;}
+  .p-sec{border-bottom:none;padding-bottom:0;min-width:120px;flex-shrink:0;}
+  .lang-grid{grid-template-columns:repeat(5,1fr);}
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
 </style>
 </head>
 <body>
 
-<!-- SCREEN 1: SPLASH -->
+<!-- S1: SPLASH -->
 <div class="screen active" id="s1" onclick="goTo(2)">
-  <div class="s1-bg"></div>
-  <div class="s1-grid"></div>
+  <div class="s1-bg"></div><div class="s1-grid"></div>
   <div class="corner tl"></div><div class="corner tr"></div>
   <div class="corner bl"></div><div class="corner br"></div>
   <div class="s1-content">
     <div class="s1-eyebrow">Performance · Motion · Intelligence</div>
     <div class="s1-logo">SPECTRAX</div>
-    <div class="s1-beta">BETA</div>
-    <div class="s1-tagline">AI Pose Analyzer</div>
+    <div class="s1-sub"><div class="s1-beta">BETA</div><div class="s1-scouter">SCOUTER</div></div>
+    <div class="s1-tagline">Professional Movement Analysis System</div>
   </div>
-  <div class="s1-enter">
-    <div class="s1-enter-text" id="enterText">Press Enter</div>
-    <div class="s1-enter-line"></div>
-  </div>
+  <div class="s1-enter"><div class="s1-enter-text" id="enterText">Press Enter</div><div class="s1-line"></div></div>
 </div>
 
-<!-- SCREEN 2: LANGUAGE -->
+<!-- S2: LANGUAGE -->
 <div class="screen" id="s2">
   <div class="s2-bg"></div>
-  <div class="lang-header">
-    <div class="lang-eyebrow">Select Language</div>
-    <div class="lang-title">Choose Your Language</div>
+  <div class="lang-wrap">
+    <div><div class="lang-eyebrow">Select Language</div><div class="lang-title">Choose Your Language</div></div>
+    <div class="lang-grid">
+      <div class="lang-btn" onclick="pickLang(this,'en')"><div class="lang-flag">🇺🇸</div><div class="lang-native">English</div><div class="lang-code">EN</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'zh')"><div class="lang-flag">🇨🇳</div><div class="lang-native">中文</div><div class="lang-code">ZH</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'es')"><div class="lang-flag">🇪🇸</div><div class="lang-native">Español</div><div class="lang-code">ES</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'fr')"><div class="lang-flag">🇫🇷</div><div class="lang-native">Français</div><div class="lang-code">FR</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'de')"><div class="lang-flag">🇩🇪</div><div class="lang-native">Deutsch</div><div class="lang-code">DE</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'ja')"><div class="lang-flag">🇯🇵</div><div class="lang-native">日本語</div><div class="lang-code">JA</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'pt')"><div class="lang-flag">🇧🇷</div><div class="lang-native">Português</div><div class="lang-code">PT</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'ar')"><div class="lang-flag">🇸🇦</div><div class="lang-native">العربية</div><div class="lang-code">AR</div></div>
+      <div class="lang-btn" onclick="pickLang(this,'hi')"><div class="lang-flag">🇮🇳</div><div class="lang-native">हिन्दी</div><div class="lang-code">HI</div></div>
+      <div class="lang-btn sel" onclick="pickLang(this,'ko')"><div class="lang-flag">🇰🇷</div><div class="lang-native">한국어</div><div class="lang-code">KO</div></div>
+    </div>
+    <button class="lang-go" id="langGoBtn" onclick="goTo(3)">계속하기</button>
   </div>
-  <div class="lang-grid">
-    <div class="lang-btn" onclick="pickLang(this,'en')"><div class="lang-flag">🇺🇸</div><div class="lang-native">English</div><div class="lang-code">EN</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'zh')"><div class="lang-flag">🇨🇳</div><div class="lang-native">中文</div><div class="lang-code">ZH</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'es')"><div class="lang-flag">🇪🇸</div><div class="lang-native">Español</div><div class="lang-code">ES</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'fr')"><div class="lang-flag">🇫🇷</div><div class="lang-native">Français</div><div class="lang-code">FR</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'de')"><div class="lang-flag">🇩🇪</div><div class="lang-native">Deutsch</div><div class="lang-code">DE</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'ja')"><div class="lang-flag">🇯🇵</div><div class="lang-native">日本語</div><div class="lang-code">JA</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'pt')"><div class="lang-flag">🇧🇷</div><div class="lang-native">Português</div><div class="lang-code">PT</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'ar')"><div class="lang-flag">🇸🇦</div><div class="lang-native">العربية</div><div class="lang-code">AR</div></div>
-    <div class="lang-btn" onclick="pickLang(this,'hi')"><div class="lang-flag">🇮🇳</div><div class="lang-native">हिन्दी</div><div class="lang-code">HI</div></div>
-    <div class="lang-btn sel" onclick="pickLang(this,'ko')"><div class="lang-flag">🇰🇷</div><div class="lang-native">한국어</div><div class="lang-code">KO</div></div>
-  </div>
-  <button class="lang-go" id="langGoBtn" onclick="goTo(3)">계속하기</button>
 </div>
 
-<!-- SCREEN 3: POSE ANALYZER -->
+<!-- S3: SCOUTER MAIN -->
 <div class="screen" id="s3">
-  <!-- Header -->
-  <div class="app-header">
-    <div class="app-brand">SPECTRAX <span>BETA</span></div>
-    <div class="header-right">
-      <div class="score-badge" id="headerScore">— pts</div>
-      <button class="back-lang" onclick="goTo(2)" id="backLangBtn">← 언어</button>
+  <div class="s-header"><div class="s-header-brand">SPECTRAX <span>SCOUTER</span></div><button class="back-btn" onclick="goTo(2)" id="s3Back">← 언어</button></div>
+  <div class="scroll-body">
+    <div class="scouter-hero">
+      <div class="scouter-eyebrow">Movement Analysis System</div>
+      <div class="scouter-title" id="scouterTitle">카테고리 선택</div>
+      <div class="scouter-sub" id="scouterSub">훈련 카테고리를 선택하세요</div>
+      <div class="gold-line"></div>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-card" onclick="openCategory('sbd')">
+        <div class="cat-badge badge-power">POWERLIFTING</div>
+        <div class="cat-icon">🏋️</div>
+        <div class="cat-info"><div class="cat-tag">SBD</div><div class="cat-name">SBD</div><div class="cat-desc">Squat · Bench Press · Deadlift</div></div>
+        <div class="cat-arrow">›</div>
+      </div>
+      <div class="cat-card" onclick="openCategory('athletic')">
+        <div class="cat-badge badge-athletic">PERFORMANCE</div>
+        <div class="cat-icon">⚡</div>
+        <div class="cat-info"><div class="cat-tag">ATHLETIC</div><div class="cat-name">Athletic Performance</div><div class="cat-desc">Jump · Sprint · Agility · Balance · Reaction</div></div>
+        <div class="cat-arrow">›</div>
+      </div>
+      <div class="cat-card" onclick="openCategory('hyrox')">
+        <div class="cat-badge badge-hyrox">FUNCTIONAL</div>
+        <div class="cat-icon">🔥</div>
+        <div class="cat-info"><div class="cat-tag">HYROX</div><div class="cat-name">HYROX</div><div class="cat-desc">Run · Ski Erg · Sled · Carry · Wall Balls</div></div>
+        <div class="cat-arrow">›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: EXERCISE LIST -->
+<div class="screen" id="s4">
+  <div class="s-header"><div class="s-header-brand">SPECTRAX <span>SCOUTER</span></div><button class="back-btn" onclick="goTo(3)" id="s4Back">← Back</button></div>
+  <div class="ex-hero">
+    <div class="ex-category-tag" id="exCatTag">SBD</div>
+    <div class="ex-title" id="exTitle">SBD</div>
+    <div class="ex-subtitle" id="exSubtitle">Select Exercise</div>
+    <div class="ex-divider"></div>
+  </div>
+  <div class="scroll-body"><div class="ex-grid" id="exGrid"></div></div>
+</div>
+
+<!-- S5: MEASUREMENT -->
+<div class="screen" id="s5">
+  <div class="meas-header">
+    <div><div class="meas-category" id="measCat">SBD</div><div class="meas-exercise" id="measEx">Squat</div></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="header-score" id="headerScore">— pts</div>
+      <button class="back-btn" onclick="exitMeasurement()" id="s5Back">← Back</button>
     </div>
   </div>
 
-  <!-- Body -->
-  <div class="app-body">
+  <!-- Tracking quality bar -->
+  <div class="track-bar" id="trackBar">
+    <div class="tq-item"><div class="tq-dot" id="tq0"></div><span id="tq0L">전신</span></div>
+    <div class="tq-item"><div class="tq-dot" id="tq1"></div><span id="tq1L">머리</span></div>
+    <div class="tq-item"><div class="tq-dot" id="tq2"></div><span id="tq2L">발</span></div>
+    <div class="tq-item"><div class="tq-dot" id="tq3"></div><span id="tq3L">카메라</span></div>
+    <div class="tq-item"><div class="tq-dot" id="tq4"></div><span id="tq4L">조명</span></div>
+    <div class="tq-msg" id="tqMsg">카메라를 시작하세요</div>
+  </div>
+
+  <div class="meas-body">
     <!-- Camera -->
     <div class="cam-zone" id="camZone">
       <video id="videoEl" autoplay playsinline muted></video>
       <canvas id="canvasEl"></canvas>
       <div class="cam-placeholder" id="camPlaceholder">
-        <div class="cam-icon">📷</div>
-        <div class="cam-hint" id="camHint">카메라를 시작하면<br>AI가 실시간으로 자세를 분석합니다</div>
-        <button class="start-btn" id="startBtn" onclick="startCamera()">분석 시작</button>
+        <div class="cam-icon-big">📷</div>
+        <div class="cam-hint-text" id="camHintTxt">전신이 보이도록 뒤로 물러서세요<br>카메라 시작 후 측정이 시작됩니다</div>
+        <button class="cam-start-btn" id="startCamBtn" onclick="startCamera()">Start Camera</button>
       </div>
-      <button class="stop-btn" id="stopBtn" onclick="stopCamera()">■ 정지</button>
-
-      <!-- 카메라 컨트롤 -->
-      <div class="cam-controls" id="camControls">
-        <button class="flip-btn" onclick="flipCamera()" title="카메라 전환">🔄</button>
-        <div class="zoom-panel">
-          <div class="zoom-label">ZOOM</div>
-          <input type="range" class="zoom-slider" id="zoomSlider"
-            min="1" max="3" step="0.1" value="1"
-            oninput="applyZoom(this.value)">
-          <div class="zoom-val" id="zoomVal">1.0×</div>
+      <div class="status-bar" id="statusBar">● Ready</div>
+      <div class="cam-ctrl" id="camCtrl">
+        <button class="ctrl-btn" onclick="flipCamera()" title="Switch Camera">🔄</button>
+        <div class="zoom-ctrl">
+          <div class="zoom-lbl">ZOOM</div>
+          <input type="range" class="z-slider" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.7" oninput="applyZoom(this.value)">
+          <div class="zoom-num" id="zoomVal">0.8×</div>
+        </div>
+      </div>
+      <div class="rep-overlay" id="repOverlay">
+        <div class="rep-num" id="repNum">0</div>
+        <div class="rep-lbl" id="repLbl">REPS</div>
+      </div>
+      <!-- 3-state Record Controls -->
+      <div class="rec-area" id="recArea">
+        <div class="rec-state-label" id="recStateLabel">READY</div>
+        <div class="rec-main-btns" id="recMainBtns">
+          <button class="btn-rec" id="btnRec" onclick="startRecording()">⏺ Record</button>
+          <button class="btn-stop" id="btnStop" onclick="stopRecording()" style="display:none">■ Stop</button>
+        </div>
+        <div class="rec-post-btns" id="recPostBtns" style="display:none">
+          <button class="btn-replay" onclick="replayRecording()">▶ Replay</button>
+          <button class="btn-save" onclick="saveRecording()">✓ Save</button>
+          <button class="btn-del" onclick="deleteRecording()">✕ Delete</button>
         </div>
       </div>
     </div>
 
     <!-- Side Panel -->
     <div class="side-panel">
-      <!-- Status -->
-      <div class="panel-section">
-        <div class="panel-label" id="lblStatus">상태</div>
-        <div style="display:flex;align-items:center">
-          <span class="status-dot" id="statusDot"></span>
-          <span class="status-text" id="statusText">대기 중</span>
-        </div>
+      <div class="p-sec">
+        <div class="p-lbl" id="pLblStatus">상태</div>
+        <div style="display:flex;align-items:center"><span class="status-dot" id="sDot"></span><span class="status-word" id="sWord">대기 중</span></div>
       </div>
-
-      <!-- Score -->
-      <div class="panel-section">
-        <div class="panel-label" id="lblScore">자세 점수</div>
+      <div class="p-sec">
+        <div class="p-lbl" id="pLblScore">자세 점수</div>
         <div class="score-ring-wrap">
           <div class="score-ring">
-            <svg width="90" height="90" viewBox="0 0 90 90">
-              <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(201,168,76,0.1)" stroke-width="4"/>
-              <circle id="scoreArc" cx="45" cy="45" r="38" fill="none"
-                stroke="url(#goldGrad)" stroke-width="4"
-                stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239"
-                style="transition:stroke-dashoffset 0.6s ease"/>
-              <defs>
-                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#C9A84C"/>
-                  <stop offset="100%" stop-color="#E8C97A"/>
-                </linearGradient>
-              </defs>
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(201,168,76,.1)" stroke-width="4"/>
+              <circle id="scoreArc" cx="40" cy="40" r="33" fill="none" stroke="url(#gGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="207" stroke-dashoffset="207" style="transition:stroke-dashoffset .7s ease"/>
+              <defs><linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C9A84C"/><stop offset="100%" stop-color="#E8C97A"/></linearGradient></defs>
             </svg>
-            <div class="score-ring-num">
-              <span class="num" id="scoreNum">—</span>
-              <span class="pts">pts</span>
-            </div>
+            <div class="score-ring-inner"><span class="score-num" id="scoreNum">—</span><span class="score-pts">pts</span></div>
           </div>
-          <div class="score-label" id="scoreLabelText">—</div>
+          <div class="score-lbl" id="scoreLbl">—</div>
         </div>
       </div>
-
-      <!-- Joints -->
-      <div class="panel-section">
-        <div class="panel-label" id="lblJoints">관절 각도</div>
+      <div class="p-sec" id="statsSection">
+        <div class="p-lbl" id="pLblStats">측정값</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val" id="sv0">—</div><div class="stat-unit" id="su0"></div><div class="stat-name" id="sn0">Reps</div></div>
+          <div class="stat-box"><div class="stat-val" id="sv1">—</div><div class="stat-unit" id="su1">cm</div><div class="stat-name" id="sn1">Height Est.</div></div>
+          <div class="stat-box"><div class="stat-val" id="sv2">—</div><div class="stat-unit" id="su2">ms</div><div class="stat-name" id="sn2">Air Time</div></div>
+          <div class="stat-box"><div class="stat-val" id="sv3">—</div><div class="stat-unit" id="su3">%</div><div class="stat-name" id="sn3">Symmetry</div></div>
+        </div>
+      </div>
+      <div class="p-sec">
+        <div class="p-lbl" id="pLblJoints">관절 각도</div>
         <div class="joint-list" id="jointList">
-          <div class="joint-item">
-            <div class="joint-row"><span class="joint-name" id="jn0">왼쪽 팔꿈치</span><span class="joint-val" id="jv0">—°</span></div>
-            <div class="joint-bar-wrap"><div class="joint-bar" id="jb0" style="width:0%"></div></div>
-          </div>
-          <div class="joint-item">
-            <div class="joint-row"><span class="joint-name" id="jn1">오른쪽 팔꿈치</span><span class="joint-val" id="jv1">—°</span></div>
-            <div class="joint-bar-wrap"><div class="joint-bar" id="jb1" style="width:0%"></div></div>
-          </div>
-          <div class="joint-item">
-            <div class="joint-row"><span class="joint-name" id="jn2">왼쪽 무릎</span><span class="joint-val" id="jv2">—°</span></div>
-            <div class="joint-bar-wrap"><div class="joint-bar" id="jb2" style="width:0%"></div></div>
-          </div>
-          <div class="joint-item">
-            <div class="joint-row"><span class="joint-name" id="jn3">오른쪽 무릎</span><span class="joint-val" id="jv3">—°</span></div>
-            <div class="joint-bar-wrap"><div class="joint-bar" id="jb3" style="width:0%"></div></div>
-          </div>
-          <div class="joint-item">
-            <div class="joint-row"><span class="joint-name" id="jn4">어깨 균형</span><span class="joint-val" id="jv4">—°</span></div>
-            <div class="joint-bar-wrap"><div class="joint-bar" id="jb4" style="width:0%"></div></div>
-          </div>
-          <div class="joint-item">
-            <div class="joint-row"><span class="joint-name" id="jn5">골반 균형</span><span class="joint-val" id="jv5">—°</span></div>
-            <div class="joint-bar-wrap"><div class="joint-bar" id="jb5" style="width:0%"></div></div>
-          </div>
+          <div><div class="j-row"><span class="j-name" id="jn0">무릎 L</span><span class="j-val" id="jv0">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb0"></div></div></div>
+          <div><div class="j-row"><span class="j-name" id="jn1">무릎 R</span><span class="j-val" id="jv1">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb1"></div></div></div>
+          <div><div class="j-row"><span class="j-name" id="jn2">팔꿈치 L</span><span class="j-val" id="jv2">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb2"></div></div></div>
+          <div><div class="j-row"><span class="j-name" id="jn3">팔꿈치 R</span><span class="j-val" id="jv3">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb3"></div></div></div>
+          <div><div class="j-row"><span class="j-name" id="jn4">어깨 기울기</span><span class="j-val" id="jv4">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb4"></div></div></div>
+          <div><div class="j-row"><span class="j-name" id="jn5">골반 기울기</span><span class="j-val" id="jv5">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb5"></div></div></div>
         </div>
       </div>
-
-      <!-- Feedback -->
-      <div class="panel-section">
-        <div class="panel-label" id="lblFeedback">AI 피드백</div>
-        <div class="feedback-list" id="feedbackList">
-          <div class="feedback-item" id="fb0">카메라를 시작하면 자세 분석이 시작됩니다.</div>
-        </div>
+      <div class="p-sec">
+        <div class="p-lbl" id="pLblFb">AI 피드백</div>
+        <div class="fb-list" id="fbList"><div class="fb-item">카메라를 시작하면 분석이 시작됩니다.</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MediaPipe -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-
 <script>
-// ── i18n ──
-const T = {
-  ko: {
-    enter:'Press Enter', go:'계속하기', backLang:'← 언어',
-    lblStatus:'상태', lblScore:'자세 점수', lblJoints:'관절 각도', lblFeedback:'AI 피드백',
-    statusWait:'대기 중', statusLive:'분석 중',
-    startBtn:'분석 시작', stopBtn:'■ 정지',
-    camHint:'카메라를 시작하면\nAI가 실시간으로 자세를 분석합니다',
-    joints:['왼쪽 팔꿈치','오른쪽 팔꿈치','왼쪽 무릎','오른쪽 무릎','어깨 균형','골반 균형'],
-    scoreLabels:['측정 대기','개선 필요','보통','좋음','우수','완벽'],
-    fbWait:'카메라를 시작하면 자세 분석이 시작됩니다.',
-    fbDetecting:'전신이 카메라에 잡히도록 뒤로 이동해주세요.',
-  },
-  en: {
-    enter:'Press Enter', go:'Continue', backLang:'← Language',
-    lblStatus:'Status', lblScore:'Pose Score', lblJoints:'Joint Angles', lblFeedback:'AI Feedback',
-    statusWait:'Standby', statusLive:'Analyzing',
-    startBtn:'Start Analysis', stopBtn:'■ Stop',
-    camHint:'Start the camera to begin\nreal-time AI pose analysis',
-    joints:['Left Elbow','Right Elbow','Left Knee','Right Knee','Shoulder Balance','Hip Balance'],
-    scoreLabels:['Waiting','Needs Work','Fair','Good','Excellent','Perfect'],
-    fbWait:'Start camera to begin pose analysis.',
-    fbDetecting:'Step back so your full body is visible.',
-  },
-  zh: {
-    enter:'按回车键', go:'继续',  backLang:'← 语言',
-    lblStatus:'状态', lblScore:'姿势评分', lblJoints:'关节角度', lblFeedback:'AI反馈',
-    statusWait:'待机', statusLive:'分析中',
-    startBtn:'开始分析', stopBtn:'■ 停止',
-    camHint:'启动摄像头\n开始实时AI姿势分析',
-    joints:['左肘','右肘','左膝','右膝','肩部平衡','髋部平衡'],
-    scoreLabels:['等待','需改善','一般','良好','优秀','完美'],
-    fbWait:'启动摄像头开始姿势分析。',
-    fbDetecting:'请后退，使全身进入摄像头视野。',
-  },
-  ja: {
-    enter:'Enterキーを押す', go:'続ける', backLang:'← 言語',
-    lblStatus:'ステータス', lblScore:'姿勢スコア', lblJoints:'関節角度', lblFeedback:'AIフィードバック',
-    statusWait:'待機中', statusLive:'分析中',
-    startBtn:'分析開始', stopBtn:'■ 停止',
-    camHint:'カメラを起動して\nリアルタイム姿勢分析を開始',
-    joints:['左肘','右肘','左膝','右膝','肩バランス','腰バランス'],
-    scoreLabels:['待機','要改善','普通','良い','優秀','完璧'],
-    fbWait:'カメラを起動して姿勢分析を開始してください。',
-    fbDetecting:'全身がカメラに映るよう後退してください。',
-  },
-  es: {
-    enter:'Presiona Enter', go:'Continuar', backLang:'← Idioma',
-    lblStatus:'Estado', lblScore:'Puntuación', lblJoints:'Ángulos', lblFeedback:'Retroalimentación',
-    statusWait:'En espera', statusLive:'Analizando',
-    startBtn:'Iniciar Análisis', stopBtn:'■ Detener',
-    camHint:'Inicia la cámara para comenzar\nel análisis de postura en tiempo real',
-    joints:['Codo Izq','Codo Der','Rodilla Izq','Rodilla Der','Balance Hombros','Balance Cadera'],
-    scoreLabels:['Esperando','Mejorar','Regular','Bien','Excelente','Perfecto'],
-    fbWait:'Inicia la cámara para analizar tu postura.',
-    fbDetecting:'Retrocede para que tu cuerpo completo sea visible.',
-  },
-  fr: { enter:'Appuyez sur Entrée', go:'Continuer', backLang:'← Langue', lblStatus:'Statut', lblScore:'Score', lblJoints:'Angles', lblFeedback:'Retour AI', statusWait:'Attente', statusLive:'Analyse', startBtn:'Démarrer', stopBtn:'■ Arrêter', camHint:'Démarrez la caméra\npour analyser votre posture', joints:['Coude G','Coude D','Genou G','Genou D','Épaules','Hanches'], scoreLabels:['Attente','À améliorer','Moyen','Bon','Excellent','Parfait'], fbWait:'Démarrez la caméra pour analyser.', fbDetecting:'Reculez pour que tout votre corps soit visible.' },
-  de: { enter:'Enter drücken', go:'Weiter', backLang:'← Sprache', lblStatus:'Status', lblScore:'Haltungswert', lblJoints:'Gelenkwinkel', lblFeedback:'KI-Feedback', statusWait:'Bereit', statusLive:'Analyse läuft', startBtn:'Analyse starten', stopBtn:'■ Stop', camHint:'Starte die Kamera für\nEchtzeit-Körperhaltungsanalyse', joints:['Linker Ellbogen','Rechter Ellbogen','Linkes Knie','Rechtes Knie','Schulterbalance','Hüftbalance'], scoreLabels:['Warten','Verbesserung nötig','Mittelmäßig','Gut','Ausgezeichnet','Perfekt'], fbWait:'Starte die Kamera für die Analyse.', fbDetecting:'Bitte zurücktreten, damit der ganze Körper sichtbar ist.' },
-  pt: { enter:'Pressione Enter', go:'Continuar', backLang:'← Idioma', lblStatus:'Status', lblScore:'Pontuação', lblJoints:'Ângulos', lblFeedback:'Feedback IA', statusWait:'Aguardando', statusLive:'Analisando', startBtn:'Iniciar Análise', stopBtn:'■ Parar', camHint:'Inicie a câmera para começar\na análise de postura em tempo real', joints:['Cotovelo Esq','Cotovelo Dir','Joelho Esq','Joelho Dir','Equilíbrio Ombros','Equilíbrio Quadril'], scoreLabels:['Aguardando','Melhorar','Regular','Bom','Excelente','Perfeito'], fbWait:'Inicie a câmera para analisar sua postura.', fbDetecting:'Recue para que seu corpo inteiro apareça.' },
-  ar: { enter:'اضغط Enter', go:'متابعة', backLang:'← اللغة', lblStatus:'الحالة', lblScore:'نقاط الوضعية', lblJoints:'زوايا المفاصل', lblFeedback:'ملاحظات الذكاء', statusWait:'انتظار', statusLive:'تحليل', startBtn:'بدء التحليل', stopBtn:'■ إيقاف', camHint:'ابدأ الكاميرا لتحليل\nوضعيتك في الوقت الفعلي', joints:['كوع أيسر','كوع أيمن','ركبة يسرى','ركبة يمنى','توازن الكتف','توازن الورك'], scoreLabels:['انتظار','يحتاج تحسين','متوسط','جيد','ممتاز','مثالي'], fbWait:'ابدأ الكاميرا لتحليل وضعيتك.', fbDetecting:'تراجع للخلف حتى يظهر جسمك بالكامل.' },
-  hi: { enter:'Enter दबाएं', go:'जारी रखें', backLang:'← भाषा', lblStatus:'स्थिति', lblScore:'मुद्रा स्कोर', lblJoints:'जोड़ कोण', lblFeedback:'AI फ़ीडबैक', statusWait:'प्रतीक्षा', statusLive:'विश्लेषण', startBtn:'विश्लेषण शुरू', stopBtn:'■ बंद', camHint:'कैमरा शुरू करें\nAI मुद्रा विश्लेषण के लिए', joints:['बायीं कोहनी','दाहिनी कोहनी','बायाँ घुटना','दाहिना घुटना','कंधे संतुलन','कूल्हे संतुलन'], scoreLabels:['प्रतीक्षा','सुधार जरूरी','ठीक','अच्छा','उत्कृष्ट','परफेक्ट'], fbWait:'मुद्रा विश्लेषण के लिए कैमरा शुरू करें।', fbDetecting:'पीछे हटें ताकि पूरा शरीर दिखे।' },
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const EXERCISES={
+  sbd:{name:'SBD',tag:'SBD · POWERLIFTING',items:[
+    {id:'squat',icon:'🏋️',name:'Squat',nameKo:'스쿼트',desc:'Squat depth, knee control, trunk position, balance, tempo, form score',joints:['무릎 L','무릎 R','엉덩이 각도','트렁크 각도','어깨 균형','골반 균형'],instr:'전신이 카메라에 들어오도록 2~3m 뒤로 물러서세요.'},
+    {id:'bench',icon:'💪',name:'Bench Press',nameKo:'벤치프레스',desc:'Wrist path, elbow angle, left/right balance, press speed, lockout',joints:['팔꿈치 L','팔꿈치 R','어깨 균형','손목 각도','팔 대칭','잠금 각도'],instr:'벤치에 누운 자세로 전신이 보이도록 카메라를 설치하세요.'},
+    {id:'deadlift',icon:'⬆️',name:'Deadlift',nameKo:'데드리프트',desc:'Setup position, hip height, trunk angle, pull speed, lockout quality',joints:['엉덩이 높이','트렁크 각도','무릎 L','무릎 R','어깨 균형','당기는 속도'],instr:'바벨 앞 전신이 카메라에 보이도록 2~3m 거리에서 측정하세요.'},
+  ]},
+  athletic:{name:'Athletic Performance',tag:'ATHLETIC · PERFORMANCE',items:[
+    {id:'vjump',icon:'🦘',name:'Vertical Jump',nameKo:'수직 점프',desc:'Jump height, flight time, takeoff power, landing stability, symmetry',joints:['무릎 L','무릎 R','엉덩이 각도','발목 각도','어깨 균형','착지 안정성'],instr:'카메라 앞 2~3m에 서서 전신이 보이도록 하세요.'},
+    {id:'rjump',icon:'🔁',name:'Repeated Jump',nameKo:'반복 점프',desc:'Repeated jump performance, fatigue index, power drop consistency',joints:['무릎 L','무릎 R','엉덩이','발목','어깨','피로 지수'],instr:'반복 점프 측정: 전신이 보이도록 위치를 잡으세요.'},
+    {id:'sprint',icon:'🏃',name:'Sprint',nameKo:'스프린트',desc:'Running form, cadence, stride, knee drive, trunk lean, arm swing',joints:['무릎 구동','트렁크','스트라이드','팔 스윙','발 접촉','케이던스'],instr:'옆면에서 달리는 모습이 보이도록 카메라를 설치하세요.'},
+    {id:'agility',icon:'🎯',name:'Agility',nameKo:'민첩성',desc:'Change of direction, body control, foot placement, speed',joints:['방향 전환','몸 제어','발 위치','균형','이동 속도','반응'],instr:'전체 코스가 카메라에 보이도록 설치하세요.'},
+    {id:'balance',icon:'⚖️',name:'Balance',nameKo:'균형',desc:'Posture control, body sway, left/right balance, stability',joints:['좌 균형','우 균형','골반','트렁크 흔들림','발목','무게 중심'],instr:'카메라 앞 2m에 서서 발을 모으고 자세를 잡으세요.'},
+    {id:'reaction',icon:'⚡',name:'Reaction',nameKo:'반응 속도',desc:'Response time, first movement timing, movement quality',joints:['첫 동작','반응','이동','속도','정확도','품질'],instr:'화면 신호에 반응하여 동작을 수행하세요.'},
+  ]},
+  hyrox:{name:'HYROX',tag:'HYROX · FUNCTIONAL FITNESS',items:[
+    {id:'run',icon:'🏃',name:'Run Analysis',nameKo:'런 분석',desc:'Cadence, trunk lean, knee drive, arm swing, hip stability',joints:['케이던스','트렁크','무릎 구동','팔 스윙','엉덩이','피로'],instr:'러닝 폼 분석: 옆면 카메라를 설치하세요.'},
+    {id:'skierg',icon:'🎿',name:'Ski Erg',nameKo:'스키 에르그',desc:'Pull rhythm, stroke rate, trunk hinge, arm path symmetry',joints:['당기기 리듬','스트로크','트렁크','팔 경로','좌우 대칭','속도'],instr:'스키 에르그 앞에 서서 전신이 보이도록 하세요.'},
+    {id:'sledpush',icon:'🛷',name:'Sled Push',nameKo:'슬레드 푸시',desc:'Body lean, step rate, hip drive, trunk stability',joints:['몸 기울기','스텝','엉덩이','트렁크','발 위치','일관성'],instr:'슬레드 옆에서 전체 동작이 보이도록 설치하세요.'},
+    {id:'sledpull',icon:'🔗',name:'Sled Pull',nameKo:'슬레드 풀',desc:'Pull rhythm, trunk lean, hip hinge, shoulder stability',joints:['리듬','트렁크','엉덩이','어깨','팔 경로','대칭'],instr:'로프를 잡고 전신이 카메라에 보이도록 하세요.'},
+    {id:'burpee',icon:'🤸',name:'Burpee Broad Jump',nameKo:'버피 점프',desc:'Rep count, timing, jump distance, landing stability, knee control',joints:['반복 횟수','타이밍','점프 거리','착지','무릎','피로'],instr:'충분한 공간 확보 후 전체 동작이 보이도록 하세요.'},
+    {id:'rowerg',icon:'🚣',name:'Row Erg',nameKo:'로우 에르그',desc:'Stroke count, rate, catch position, drive sequence',joints:['스트로크','속도','캐치','드라이브','트렁크','리듬'],instr:'로잉 머신 옆에 카메라를 설치하세요.'},
+    {id:'farmers',icon:'🏋️',name:'Farmers Carry',nameKo:'파머스 캐리',desc:'Step count, shoulder tilt, trunk lean, pelvis tilt, symmetry',joints:['스텝','어깨','트렁크','골반','대칭','안정성'],instr:'카메라 앞을 지나가도록 코스를 설정하세요.'},
+    {id:'lunges',icon:'🦵',name:'Sandbag Lunges',nameKo:'샌드백 런지',desc:'Lunge depth, knee control, pelvis stability, balance, tempo',joints:['런지 깊이','무릎 L','무릎 R','골반','좌우 균형','템포'],instr:'전신이 보이도록 카메라를 설치하고 샌드백을 준비하세요.'},
+    {id:'wallball',icon:'🏀',name:'Wall Balls',nameKo:'월 볼',desc:'Squat depth, knee, hip, trunk lean, arm extension, rhythm',joints:['스쿼트 깊이','무릎','엉덩이','트렁크','팔 신장','리듬'],instr:'벽 앞에 서서 전신이 카메라에 보이도록 위치를 잡으세요.'},
+  ]}
 };
 
-let lang = 'ko';
-let currentScreen = 1;
-let poseDetector = null;
-let cameraStream = null;
-let mpCamera = null;
-let isRunning = false;
-let lastPose = null;
-let animFrame = null;
-let facingMode = 'environment'; // 기본: 후면 카메라
-let currentZoom = 1.0;
+const T={
+  ko:{go:'계속하기',back:'← 뒤로',chooseCat:'카테고리 선택',selectEx:'운동 선택',statusWait:'대기 중',statusLive:'분석 중',statusRec:'녹화 중',startCam:'카메라 시작',scoreLabels:['대기','개선 필요','보통','좋음','우수','완벽'],fbWait:'카메라를 시작하면 분석이 시작됩니다.',tqLabels:['전신','머리','발','카메라','조명'],tqMsg:['카메라를 시작하세요','뒤로 물러서서 전신이 보이도록 하세요','머리가 보이지 않습니다','발이 보이지 않습니다','준비 완료 — Record를 누르세요'],ready:'준비 완료'},
+  en:{go:'Continue',back:'← Back',chooseCat:'Choose Category',selectEx:'Select Exercise',statusWait:'Standby',statusLive:'Analyzing',statusRec:'Recording',startCam:'Start Camera',scoreLabels:['Waiting','Needs Work','Fair','Good','Excellent','Perfect'],fbWait:'Start camera to begin analysis.',tqLabels:['Full Body','Head','Feet','Camera','Lighting'],tqMsg:['Start the camera','Move back — show full body','Head not visible','Feet not visible','Ready — press Record'],ready:'Ready'},
+  zh:{go:'继续',back:'← 返回',chooseCat:'选择类别',selectEx:'选择练习',statusWait:'待机',statusLive:'分析中',statusRec:'录制中',startCam:'开始',scoreLabels:['等待','需改善','一般','良好','优秀','完美'],fbWait:'启动摄像头。',tqLabels:['全身','头部','双脚','摄像头','光线'],tqMsg:['启动摄像头','后退让全身可见','头部不可见','双脚不可见','准备好了'],ready:'准备好'},
+  ja:{go:'続ける',back:'← 戻る',chooseCat:'カテゴリ選択',selectEx:'種目選択',statusWait:'待機中',statusLive:'分析中',statusRec:'録画中',startCam:'カメラ起動',scoreLabels:['待機','要改善','普通','良い','優秀','完璧'],fbWait:'カメラを起動してください。',tqLabels:['全身','頭部','両足','カメラ','照明'],tqMsg:['カメラを起動','後退して全身を映してください','頭が見えません','足が見えません','準備完了'],ready:'準備完了'},
+  es:{go:'Continuar',back:'← Volver',chooseCat:'Elegir Categoría',selectEx:'Seleccionar',statusWait:'En espera',statusLive:'Analizando',statusRec:'Grabando',startCam:'Iniciar',scoreLabels:['Esperando','Mejorar','Regular','Bien','Excelente','Perfecto'],fbWait:'Inicia la cámara.',tqLabels:['Cuerpo','Cabeza','Pies','Cámara','Luz'],tqMsg:['Inicia la cámara','Retrocede para mostrar cuerpo completo','Cabeza no visible','Pies no visibles','Listo'],ready:'Listo'},
+  fr:{go:'Continuer',back:'← Retour',chooseCat:'Choisir',selectEx:'Sélectionner',statusWait:'Attente',statusLive:'Analyse',statusRec:'Enreg.',startCam:'Démarrer',scoreLabels:['Attente','À améliorer','Moyen','Bon','Excellent','Parfait'],fbWait:'Démarrez la caméra.',tqLabels:['Corps','Tête','Pieds','Caméra','Lumière'],tqMsg:['Démarrez la caméra','Reculez pour montrer le corps entier','Tête non visible','Pieds non visibles','Prêt'],ready:'Prêt'},
+  de:{go:'Weiter',back:'← Zurück',chooseCat:'Kategorie',selectEx:'Übung',statusWait:'Bereit',statusLive:'Analyse',statusRec:'Aufnahme',startCam:'Kamera',scoreLabels:['Warten','Verbesserung','Mittelmäßig','Gut','Ausgezeichnet','Perfekt'],fbWait:'Starten Sie die Kamera.',tqLabels:['Körper','Kopf','Füße','Kamera','Licht'],tqMsg:['Starten Sie die Kamera','Zurücktreten für Ganzkörperansicht','Kopf nicht sichtbar','Füße nicht sichtbar','Bereit'],ready:'Bereit'},
+  pt:{go:'Continuar',back:'← Voltar',chooseCat:'Categoria',selectEx:'Exercício',statusWait:'Aguardando',statusLive:'Analisando',statusRec:'Gravando',startCam:'Iniciar',scoreLabels:['Aguardando','Melhorar','Regular','Bom','Excelente','Perfeito'],fbWait:'Inicie a câmera.',tqLabels:['Corpo','Cabeça','Pés','Câmera','Luz'],tqMsg:['Inicie a câmera','Recue para mostrar corpo inteiro','Cabeça não visível','Pés não visíveis','Pronto'],ready:'Pronto'},
+  ar:{go:'متابعة',back:'← رجوع',chooseCat:'اختر فئة',selectEx:'اختر',statusWait:'انتظار',statusLive:'تحليل',statusRec:'تسجيل',startCam:'تشغيل',scoreLabels:['انتظار','تحسين','متوسط','جيد','ممتاز','مثالي'],fbWait:'ابدأ الكاميرا.',tqLabels:['الجسم','الرأس','القدمان','الكاميرا','الإضاءة'],tqMsg:['ابدأ الكاميرا','تراجع لعرض الجسم كاملاً','الرأس غير مرئي','القدمان غير مرئيتان','جاهز'],ready:'جاهز'},
+  hi:{go:'जारी रखें',back:'← वापस',chooseCat:'श्रेणी',selectEx:'व्यायाम',statusWait:'प्रतीक्षा',statusLive:'विश्लेषण',statusRec:'रिकॉर्डिंग',startCam:'कैमरा',scoreLabels:['प्रतीक्षा','सुधार','ठीक','अच्छा','उत्कृष्ट','परफेक्ट'],fbWait:'कैमरा शुरू करें।',tqLabels:['पूरा शरीर','सिर','पैर','कैमरा','रोशनी'],tqMsg:['कैमरा शुरू करें','पूरा शरीर दिखाने के लिए पीछे हटें','सिर दिखाई नहीं','पैर दिखाई नहीं','तैयार'],ready:'तैयार'},
+};
 
-function goTo(n) {
-  document.getElementById('s'+currentScreen).classList.remove('active');
-  currentScreen = n;
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let lang='ko', curScreen=1, curCat=null, curEx=null;
+let cameraStream=null, mpCamera=null, poseDetector=null;
+let isRunning=false, isRecording=false, canRecord=false;
+let facingMode='environment', curZoom=0.7, animFrame=null;
+
+// Smoothing buffers
+const SMOOTH_FRAMES=8;
+const FEEDBACK_FRAMES=20;
+let angleBuffer={lk:[],rk:[],le:[],re:[],sh:[],hp:[]};
+let hipYBuffer=[], feedbackBuffer=[], lastFeedback=[];
+let fbFrameCount=0;
+
+// Jump detection state (strict)
+let repCount=0, jumpState='grounded';
+let jumpCooldown=false, jumpCooldownTimer=null;
+let airTimeStart=0, lastAirTime=0;
+let hipYBaseline=null, baselineFrames=0;
+let recordedFrames=[], recordedBlob=null;
+let mediaRecorder=null;
+
+// Symmetry smoothing
+let symBuffer=[];
+
+// Height estimation
+let pixelPerCmEstimate=null;
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function goTo(n){
+  document.getElementById('s'+curScreen).classList.remove('active');
+  curScreen=n;
   document.getElementById('s'+n).classList.add('active');
-  if (n === 3) applyUI();
-  if (n !== 3 && isRunning) stopCamera();
+  applyLangUI();
+}
+function exitMeasurement(){stopCamera();goTo(4);}
+
+function openCategory(cat){
+  curCat=cat;
+  const data=EXERCISES[cat], t=T[lang]||T.en;
+  document.getElementById('exCatTag').textContent=data.tag;
+  document.getElementById('exTitle').textContent=data.name;
+  document.getElementById('exSubtitle').textContent=t.selectEx;
+  document.getElementById('s4Back').textContent=t.back;
+  document.getElementById('exGrid').innerHTML=data.items.map(ex=>`
+    <div class="ex-card" onclick="openExercise('${ex.id}')">
+      <div class="ex-icon">${ex.icon}</div>
+      <div class="ex-info">
+        <div class="ex-name">${ex.name}${lang==='ko'&&ex.nameKo?' <span style="font-size:9px;color:var(--muted)">/ '+ex.nameKo+'</span>':''}</div>
+        <div class="ex-desc">${ex.desc}</div>
+      </div>
+      <div class="ex-start">Start ›</div>
+    </div>`).join('');
+  goTo(4);
 }
 
-function pickLang(el, l) {
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('sel'));
-  el.classList.add('sel');
-  lang = l;
-  const t = T[l] || T.en;
-  document.getElementById('enterText').textContent = t.enter;
-  document.getElementById('langGoBtn').textContent = t.go;
+function openExercise(exId){
+  const data=EXERCISES[curCat];
+  curEx=data.items.find(e=>e.id===exId);
+  if(!curEx)return;
+  const t=T[lang]||T.en;
+  document.getElementById('measCat').textContent=data.tag;
+  document.getElementById('measEx').textContent=curEx.name+(lang==='ko'&&curEx.nameKo?' / '+curEx.nameKo:'');
+  document.getElementById('camHintTxt').innerHTML=(curEx.instr||'Position full body in frame').replace('\n','<br>');
+  document.getElementById('s5Back').textContent=t.back;
+  (curEx.joints||[]).forEach((j,i)=>{const el=document.getElementById('jn'+i);if(el)el.textContent=j;});
+  resetMeasUI();
+  goTo(5);
 }
 
-function applyUI() {
-  const t = T[lang] || T.en;
-  document.getElementById('backLangBtn').textContent = t.backLang;
-  document.getElementById('lblStatus').textContent = t.lblStatus;
-  document.getElementById('lblScore').textContent = t.lblScore;
-  document.getElementById('lblJoints').textContent = t.lblJoints;
-  document.getElementById('lblFeedback').textContent = t.lblFeedback;
-  document.getElementById('statusText').textContent = t.statusWait;
-  document.getElementById('startBtn').textContent = t.startBtn;
-  document.getElementById('stopBtn').textContent = t.stopBtn;
-  document.getElementById('camHint').innerHTML = t.camHint.replace('\n','<br>');
-  document.getElementById('fb0').textContent = t.fbWait;
-  for (let i = 0; i < 6; i++) {
-    const el = document.getElementById('jn'+i);
-    if (el) el.textContent = t.joints[i];
-  }
+// ═══════════════════════════════════════════════
+// LANGUAGE
+// ═══════════════════════════════════════════════
+function pickLang(el,l){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); lang=l;
+  const enterMap={ko:'Press Enter',en:'Press Enter',zh:'按回车键',ja:'Enter を押す',es:'Presiona Enter',fr:'Appuyez Entrée',de:'Enter drücken',pt:'Pressione Enter',ar:'اضغط Enter',hi:'Enter दबाएं'};
+  document.getElementById('enterText').textContent=enterMap[l]||'Press Enter';
+  document.getElementById('langGoBtn').textContent=(T[l]||T.en).go;
 }
 
-// ── Camera + MediaPipe ──
-async function startCamera() {
-  const t = T[lang] || T.en;
-  try {
-    const video = document.getElementById('videoEl');
+function applyLangUI(){
+  const t=T[lang]||T.en;
+  ['s3Back','s4Back','s5Back'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t.back;});
+  const sw=document.getElementById('sWord');if(sw)sw.textContent=t.statusWait;
+  const st=document.getElementById('scouterTitle');if(st)st.textContent=t.chooseCat;
+  const ss=document.getElementById('scouterSub');if(ss)ss.textContent='';
+  // TQ labels
+  if(t.tqLabels){t.tqLabels.forEach((l,i)=>{const el=document.getElementById('tq'+i+'L');if(el)el.textContent=l;});}
+  const tm=document.getElementById('tqMsg');if(tm)tm.textContent=t.tqMsg?t.tqMsg[0]:'';
+}
 
-    // 기존 스트림 정리
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(tr => tr.stop());
-      cameraStream = null;
-    }
+// ═══════════════════════════════════════════════
+// CAMERA
+// ═══════════════════════════════════════════════
+async function startCamera(){
+  const t=T[lang]||T.en;
+  try{
+    if(cameraStream){cameraStream.getTracks().forEach(tr=>tr.stop());cameraStream=null;}
+    const video=document.getElementById('videoEl');
+    // Flip only front camera
+    const flip=facingMode==='user';
+    video.style.transform=flip?'scaleX(-1)':'scaleX(1)';
+    document.getElementById('canvasEl').style.transform=flip?'scaleX(-1)':'scaleX(1)';
 
-    // 후면 카메라: 좌우 반전 없음 / 전면: 반전
-    video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
-    document.getElementById('canvasEl').style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
-
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: facingMode,
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode,width:{ideal:1920},height:{ideal:1080}}
     });
-    video.srcObject = cameraStream;
-    video.style.display = 'block';
-    document.getElementById('camPlaceholder').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'block';
-    document.getElementById('camControls').classList.add('visible');
-    document.getElementById('statusDot').classList.add('live');
-    document.getElementById('statusText').textContent = t.statusLive;
+    video.srcObject=cameraStream;
+    video.style.display='block';
+    document.getElementById('camPlaceholder').style.display='none';
+    document.getElementById('camCtrl').classList.add('show');
 
-    // 줌 초기화
-    document.getElementById('zoomSlider').value = currentZoom;
-    document.getElementById('zoomVal').textContent = currentZoom.toFixed(1) + '×';
-    applyZoom(currentZoom);
+    // Default zoom out to show full body
+    document.getElementById('zoomSlider').value=curZoom;
+    document.getElementById('zoomVal').textContent=curZoom.toFixed(2)+'×';
+    applyZoom(curZoom);
 
-    isRunning = true;
+    const sb=document.getElementById('statusBar');
+    sb.className='status-bar show'; sb.textContent='● '+t.tqMsg[0];
+    document.getElementById('sDot').className='status-dot';
+    document.getElementById('sWord').textContent=t.statusLive;
+    isRunning=true; canRecord=false;
+    resetDetection();
 
-    // MediaPipe Pose
-    if (typeof Pose !== 'undefined') {
-      if (poseDetector) {
-        poseDetector.close();
-        poseDetector = null;
-      }
-      poseDetector = new Pose({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}` });
-      poseDetector.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    if(typeof Pose!=='undefined'){
+      if(poseDetector){poseDetector.close();poseDetector=null;}
+      poseDetector=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+      poseDetector.setOptions({modelComplexity:1,smoothLandmarks:true,enableSegmentation:false,minDetectionConfidence:.6,minTrackingConfidence:.6});
       poseDetector.onResults(onPoseResults);
-
-      if (mpCamera) { mpCamera.stop(); mpCamera = null; }
-      mpCamera = new Camera(video, {
-        onFrame: async () => { if (isRunning) await poseDetector.send({ image: video }); },
-        width: 1280, height: 720
-      });
+      if(mpCamera){mpCamera.stop();mpCamera=null;}
+      mpCamera=new Camera(video,{onFrame:async()=>{if(isRunning)await poseDetector.send({image:video});},width:1280,height:720});
       mpCamera.start();
-    } else {
-      drawLoop();
     }
-  } catch (err) {
-    // 후면 카메라 없으면 전면으로 자동 전환
-    if (facingMode === 'environment') {
-      facingMode = 'user';
-      startCamera();
-    } else {
-      alert('카메라 접근 권한이 필요합니다.\nCamera access is required.');
-    }
+  }catch(err){
+    if(facingMode==='environment'){facingMode='user';startCamera();}
+    else alert('Camera access required.\n카메라 접근 권한이 필요합니다.');
   }
 }
 
-// 전/후면 카메라 전환
-async function flipCamera() {
-  facingMode = (facingMode === 'user') ? 'environment' : 'user';
-  const btn = document.querySelector('.flip-btn');
-  btn.style.transform = 'scale(0.85)';
-  setTimeout(() => { btn.style.transform = ''; }, 200);
+function stopCamera(){
+  isRunning=false; isRecording=false; canRecord=false;
+  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+  if(mpCamera){mpCamera.stop();mpCamera=null;}
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+  const video=document.getElementById('videoEl');
+  if(video){video.srcObject=null;video.style.display='none';}
+  const ctx=document.getElementById('canvasEl').getContext('2d');
+  ctx.clearRect(0,0,9999,9999);
+  document.getElementById('camPlaceholder').style.display='flex';
+  document.getElementById('camCtrl').classList.remove('show');
+  document.getElementById('recArea').classList.remove('show');
+  document.getElementById('repOverlay').classList.remove('show');
+  document.getElementById('statusBar').classList.remove('show','live','rec');
+  document.getElementById('sDot').className='status-dot';
+  document.getElementById('sWord').textContent=(T[lang]||T.en).statusWait;
+  setTQAll('');
+  document.getElementById('tqMsg').textContent=(T[lang]||T.en).tqMsg[0];
+  resetMeasUI();
+}
 
-  if (isRunning) {
-    if (mpCamera) { mpCamera.stop(); mpCamera = null; }
-    await startCamera();
+async function flipCamera(){
+  facingMode=facingMode==='user'?'environment':'user';
+  if(isRunning){if(mpCamera){mpCamera.stop();mpCamera=null;}await startCamera();}
+}
+
+function applyZoom(val){
+  curZoom=parseFloat(val);
+  document.getElementById('zoomVal').textContent=curZoom.toFixed(2)+'×';
+  const video=document.getElementById('videoEl');
+  const flip=facingMode==='user';
+  // scale < 1 = 줌 아웃 (멀리), scale > 1 = 줌 인 (가까이)
+  const scaleStr='scale('+curZoom+')';
+  video.style.transform=flip?'scaleX(-1) '+scaleStr:scaleStr;
+  // object-fit cover 유지하면서 실제로 영상을 축소
+  video.style.transformOrigin='center center';
+}
+
+// ═══════════════════════════════════════════════
+// RECORD STATES
+// ═══════════════════════════════════════════════
+function startRecording(){
+  if(!canRecord)return;
+  isRecording=true; repCount=0; recordedFrames=[];
+  resetDetection();
+  document.getElementById('btnRec').style.display='none';
+  document.getElementById('btnStop').style.display='block';
+  document.getElementById('recPostBtns').style.display='none';
+  document.getElementById('recStateLabel').textContent='● REC';
+  document.getElementById('recStateLabel').style.color='#F87171';
+  const sb=document.getElementById('statusBar');
+  sb.className='status-bar show rec'; sb.textContent='⏺ Recording';
+  document.getElementById('sDot').className='status-dot rec';
+  document.getElementById('sWord').textContent=(T[lang]||T.en).statusRec;
+  document.getElementById('repOverlay').classList.add('show');
+
+  // MediaRecorder for replay
+  if(cameraStream){
+    try{
+      recordedBlob=null;
+      const chunks=[];
+      mediaRecorder=new MediaRecorder(cameraStream,{mimeType:'video/webm;codecs=vp8'});
+      mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+      mediaRecorder.onstop=()=>{recordedBlob=new Blob(chunks,{type:'video/webm'});};
+      mediaRecorder.start(100);
+    }catch(e){mediaRecorder=null;}
   }
 }
 
-// 줌 적용
-function applyZoom(val) {
-  currentZoom = parseFloat(val);
-  document.getElementById('zoomVal').textContent = currentZoom.toFixed(1) + '×';
-  const video = document.getElementById('videoEl');
-  video.style.scale = currentZoom;
-  // MediaPipe 트랙 줌 (지원 기기에서)
-  if (cameraStream) {
-    const track = cameraStream.getVideoTracks()[0];
-    if (track && track.getCapabilities && track.getCapabilities().zoom) {
-      const cap = track.getCapabilities().zoom;
-      const zoomVal = cap.min + (cap.max - cap.min) * ((currentZoom - 1) / 2);
-      track.applyConstraints({ advanced: [{ zoom: zoomVal }] }).catch(() => {});
-    }
+function stopRecording(){
+  isRecording=false;
+  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+  document.getElementById('btnStop').style.display='none';
+  document.getElementById('btnRec').style.display='none';
+  document.getElementById('recPostBtns').style.display='flex';
+  document.getElementById('recStateLabel').textContent='DONE';
+  document.getElementById('recStateLabel').style.color='var(--green)';
+  const sb=document.getElementById('statusBar');
+  sb.className='status-bar show live'; sb.textContent='● Stopped';
+  document.getElementById('sDot').className='status-dot live';
+  document.getElementById('sWord').textContent=(T[lang]||T.en).statusLive;
+}
+
+function replayRecording(){
+  if(!recordedBlob){alert('No recording available.');return;}
+  const url=URL.createObjectURL(recordedBlob);
+  const w=window.open('','_blank');
+  w.document.write(`<body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh"><video src="${url}" controls autoplay style="max-width:100%;max-height:100%"></video></body>`);
+}
+
+function saveRecording(){
+  if(!recordedBlob){alert('No recording.');return;}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(recordedBlob);
+  a.download='spectrax-scouter-'+Date.now()+'.webm';
+  a.click();
+  document.getElementById('recStateLabel').textContent='SAVED ✓';
+}
+
+function deleteRecording(){
+  recordedBlob=null;
+  document.getElementById('recPostBtns').style.display='none';
+  document.getElementById('btnRec').style.display='block';
+  document.getElementById('recStateLabel').textContent='READY';
+  document.getElementById('recStateLabel').style.color='var(--muted)';
+  repCount=0; updateRepOverlay();
+}
+
+function updateRepOverlay(){
+  document.getElementById('repNum').textContent=repCount;
+  document.getElementById('sv0').textContent=repCount;
+}
+
+// ═══════════════════════════════════════════════
+// TRACKING QUALITY
+// ═══════════════════════════════════════════════
+function setTQ(i,state){
+  const d=document.getElementById('tq'+i);
+  if(d){d.className='tq-dot'+(state?' '+state:'');}
+}
+function setTQAll(state){for(let i=0;i<5;i++)setTQ(i,state);}
+
+function checkTrackingQuality(lm){
+  const t=T[lang]||T.en;
+  if(!lm||lm.length<33){setTQAll('bad');document.getElementById('tqMsg').textContent=t.tqMsg[1];canRecord=false;return false;}
+
+  const conf=v=>v&&v.visibility>0.55;
+  const headOk=conf(lm[0])&&conf(lm[1])&&conf(lm[4]);
+  const feetOk=conf(lm[27])&&conf(lm[28])&&conf(lm[29])&&conf(lm[30]);
+  const bodyOk=conf(lm[11])&&conf(lm[12])&&conf(lm[23])&&conf(lm[24]);
+  const fullBody=headOk&&feetOk&&bodyOk;
+
+  // Check if body fills reasonable portion of frame
+  const canvas=document.getElementById('canvasEl');
+  const headY=lm[0].y*canvas.height;
+  const feetY=Math.max(lm[27].y,lm[28].y)*canvas.height;
+  const bodyHeight=feetY-headY;
+  const frameH=canvas.height;
+  const bodyFillRatio=bodyHeight/frameH;
+  const toClose=bodyFillRatio>0.85;
+  const tooFar=bodyFillRatio<0.35;
+
+  // Estimate px/cm for height
+  if(bodyHeight>50&&!toClose&&!tooFar){
+    // Assume avg person 170cm; calibrate
+    pixelPerCmEstimate=bodyHeight/170;
   }
-}
 
-function stopCamera() {
-  isRunning = false;
-  if (mpCamera) { mpCamera.stop(); mpCamera = null; }
-  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-  const video = document.getElementById('videoEl');
-  video.srcObject = null; video.style.display = 'none';
-  const canvas = document.getElementById('canvasEl');
-  const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height);
-  document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('stopBtn').style.display = 'none';
-  document.getElementById('camControls').classList.remove('visible');
-  document.getElementById('statusDot').classList.remove('live');
-  document.getElementById('statusText').textContent = (T[lang]||T.en).statusWait;
-  resetUI();
-}
+  setTQ(0,fullBody?'ok':'bad');
+  setTQ(1,headOk?'ok':'bad');
+  setTQ(2,feetOk?'ok':'bad');
+  setTQ(3,'ok');
+  setTQ(4,'ok'); // lighting assume ok
 
-function resetUI() {
-  document.getElementById('scoreNum').textContent = '—';
-  document.getElementById('scoreArc').style.strokeDashoffset = '239';
-  document.getElementById('scoreLabelText').textContent = '—';
-  document.getElementById('headerScore').textContent = '— pts';
-  for (let i = 0; i < 6; i++) {
-    const v = document.getElementById('jv'+i); if(v) v.textContent = '—°';
-    const b = document.getElementById('jb'+i); if(b) b.style.width = '0%';
+  let msg='';
+  if(!bodyOk||tooFar){msg=t.tqMsg[1];canRecord=false;}
+  else if(!headOk){msg=t.tqMsg[2];canRecord=false;}
+  else if(!feetOk){msg=t.tqMsg[3];canRecord=false;}
+  else if(toClose){msg=t.tqMsg[1];canRecord=false;}
+  else{msg=t.tqMsg[4]||t.ready;canRecord=true;}
+
+  document.getElementById('tqMsg').textContent=msg;
+
+  if(canRecord&&!isRecording){
+    document.getElementById('recArea').classList.add('show');
+    const sb=document.getElementById('statusBar');
+    sb.className='status-bar show live'; sb.textContent='✓ '+msg;
+    document.getElementById('sDot').className='status-dot live';
   }
-  const fl = document.getElementById('feedbackList');
-  fl.innerHTML = `<div class="feedback-item" id="fb0">${(T[lang]||T.en).fbWait}</div>`;
+  return fullBody;
 }
 
-// ── Pose results ──
-function onPoseResults(results) {
-  const canvas = document.getElementById('canvasEl');
-  const video = document.getElementById('videoEl');
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 480;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// ═══════════════════════════════════════════════
+// SMOOTHING HELPERS
+// ═══════════════════════════════════════════════
+function pushSmooth(buf,val,maxLen){
+  buf.push(val); if(buf.length>maxLen)buf.shift();
+  return buf.reduce((a,b)=>a+b,0)/buf.length;
+}
+function smoothAngle(key,val){
+  return Math.round(pushSmooth(angleBuffer[key],val,SMOOTH_FRAMES));
+}
 
-  if (!results.poseLandmarks) {
-    document.getElementById('feedbackList').innerHTML =
-      `<div class="feedback-item">${(T[lang]||T.en).fbDetecting}</div>`;
+// ═══════════════════════════════════════════════
+// POSE RESULTS
+// ═══════════════════════════════════════════════
+function onPoseResults(results){
+  const canvas=document.getElementById('canvasEl');
+  const video=document.getElementById('videoEl');
+  canvas.width=video.videoWidth||640;
+  canvas.height=video.videoHeight||480;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const lm=results.poseLandmarks;
+  const ok=checkTrackingQuality(lm);
+
+  if(!lm||!ok){
+    document.getElementById('fbList').innerHTML=`<div class="fb-item warn">${(T[lang]||T.en).tqMsg[1]}</div>`;
     return;
   }
 
-  const lm = results.poseLandmarks;
-
   // Draw skeleton
-  drawConnectors(ctx, lm, POSE_CONNECTIONS, { color: 'rgba(201,168,76,0.6)', lineWidth: 2 });
-  drawLandmarks(ctx, lm, { color: '#C9A84C', lineWidth: 1, radius: 4 });
+  if(typeof drawConnectors!=='undefined'){
+    drawConnectors(ctx,lm,POSE_CONNECTIONS,{color:'rgba(201,168,76,.55)',lineWidth:2});
+    drawLandmarks(ctx,lm,{color:'#C9A84C',lineWidth:1,radius:lm=>lm.visibility>0.7?4:2});
+  }
 
-  // Calculate angles
-  const angles = {
-    leftElbow:  calcAngle(lm[11], lm[13], lm[15]),
-    rightElbow: calcAngle(lm[12], lm[14], lm[16]),
-    leftKnee:   calcAngle(lm[23], lm[25], lm[27]),
-    rightKnee:  calcAngle(lm[24], lm[26], lm[28]),
-    shoulder:   Math.abs((lm[11].y - lm[12].y) * 180),
-    hip:        Math.abs((lm[23].y - lm[24].y) * 180),
+  // Draw body labels
+  drawBodyLabels(ctx,lm,canvas);
+
+  // Compute smoothed angles
+  const angles={
+    lk:smoothAngle('lk',calcAngle(lm[23],lm[25],lm[27])),
+    rk:smoothAngle('rk',calcAngle(lm[24],lm[26],lm[28])),
+    le:smoothAngle('le',calcAngle(lm[11],lm[13],lm[15])),
+    re:smoothAngle('re',calcAngle(lm[12],lm[14],lm[16])),
+    sh:smoothAngle('sh',Math.abs((lm[11].y-lm[12].y)*180)),
+    hp:smoothAngle('hp',Math.abs((lm[23].y-lm[24].y)*180)),
   };
 
-  updateJoints(angles);
-  const score = calcScore(angles);
+  // Symmetry (smoothed)
+  const rawSym=100-Math.min(50,Math.abs(angles.lk-angles.rk)/2+Math.abs(angles.le-angles.re)/2+angles.sh+angles.hp);
+  const sym=Math.round(pushSmooth(symBuffer,rawSym,12));
+  document.getElementById('sv3').textContent=sym;
+  document.getElementById('su3').textContent='%';
+
+  // Height estimate (realistic)
+  if(pixelPerCmEstimate){
+    const bh=(lm[27].y-lm[0].y)*canvas.height/pixelPerCmEstimate;
+    const clampedH=Math.round(Math.max(140,Math.min(220,bh)));
+    document.getElementById('sv1').textContent=clampedH;
+    document.getElementById('su1').textContent='cm';
+  }
+
+  updateJointsUI(angles);
+  const score=calcScore(angles);
   updateScore(score);
-  updateFeedback(angles, score);
+
+  // Hip position for jump detection
+  const hipY=(lm[23].y+lm[24].y)/2;
+  const smoothHipY=pushSmooth(hipYBuffer,hipY,5);
+
+  if(isRecording){
+    detectJump(smoothHipY,angles,lm);
+  }
+
+  // Stable feedback
+  updateFeedbackStable(angles,score);
+  updateAirTimeDisplay();
 }
 
-function calcAngle(a, b, c) {
-  const radians = Math.atan2(c.y-b.y, c.x-b.x) - Math.atan2(a.y-b.y, a.x-b.x);
-  let angle = Math.abs(radians * 180 / Math.PI);
-  if (angle > 180) angle = 360 - angle;
-  return Math.round(angle);
-}
-
-function updateJoints(angles) {
-  const vals = [angles.leftElbow, angles.rightElbow, angles.leftKnee, angles.rightKnee, Math.round(angles.shoulder), Math.round(angles.hip)];
-  const maxes = [180, 180, 180, 180, 30, 30];
-  vals.forEach((v, i) => {
-    const el = document.getElementById('jv'+i); if(el) el.textContent = v+'°';
-    const b = document.getElementById('jb'+i); if(b) b.style.width = Math.min(100, (v/maxes[i]*100))+'%';
+// ═══════════════════════════════════════════════
+// BODY LABELS
+// ═══════════════════════════════════════════════
+function drawBodyLabels(ctx,lm,canvas){
+  ctx.font='bold 10px Montserrat,sans-serif';
+  ctx.fillStyle='rgba(201,168,76,0.85)';
+  const labels=[[0,'HEAD'],[11,'L.SHOULDER'],[12,'R.SHOULDER'],[23,'L.HIP'],[24,'R.HIP'],[25,'L.KNEE'],[26,'R.KNEE'],[27,'L.ANKLE'],[28,'R.ANKLE']];
+  labels.forEach(([i,label])=>{
+    const p=lm[i];
+    if(p&&p.visibility>0.6){
+      const x=p.x*canvas.width, y=p.y*canvas.height;
+      ctx.fillText(label,x+8,y-4);
+    }
   });
 }
 
-function calcScore(a) {
-  let s = 100;
-  const symE = Math.abs(a.leftElbow - a.rightElbow);
-  const symK = Math.abs(a.leftKnee - a.rightKnee);
-  if (symE > 30) s -= 15;
-  if (symK > 30) s -= 15;
-  if (a.shoulder > 10) s -= Math.min(20, a.shoulder * 2);
-  if (a.hip > 10) s -= Math.min(20, a.hip * 2);
-  return Math.max(0, Math.round(s));
+// ═══════════════════════════════════════════════
+// JUMP DETECTION (strict)
+// ═══════════════════════════════════════════════
+function resetDetection(){
+  repCount=0; jumpState='grounded'; jumpCooldown=false;
+  if(jumpCooldownTimer)clearTimeout(jumpCooldownTimer);
+  airTimeStart=0; lastAirTime=0; hipYBaseline=null; baselineFrames=0;
+  hipYBuffer=[]; symBuffer=[]; feedbackBuffer=[]; lastFeedback=[];
+  Object.keys(angleBuffer).forEach(k=>angleBuffer[k]=[]);
+  updateRepOverlay();
 }
 
-function updateScore(score) {
-  const t = T[lang] || T.en;
-  document.getElementById('scoreNum').textContent = score;
-  document.getElementById('headerScore').textContent = score + ' pts';
-  const offset = 239 - (239 * score / 100);
-  document.getElementById('scoreArc').style.strokeDashoffset = offset;
-  const idx = score >= 95 ? 5 : score >= 80 ? 4 : score >= 65 ? 3 : score >= 50 ? 2 : score > 0 ? 1 : 0;
-  document.getElementById('scoreLabelText').textContent = t.scoreLabels[idx];
-}
+let consecutiveAirFrames=0, consecutiveGroundFrames=0;
+const AIR_THRESHOLD=0.035;    // hip must rise this much (normalized)
+const AIR_FRAMES_MIN=4;        // must be in air this many frames
+const GROUND_FRAMES_MIN=4;     // must be grounded this many frames before next jump
+const COOLDOWN_MS=400;
 
-function updateFeedback(a, score) {
-  const t = T[lang] || T.en;
-  const items = [];
-  const symE = Math.abs(a.leftElbow - a.rightElbow);
-  const symK = Math.abs(a.leftKnee - a.rightKnee);
-
-  if (score >= 85) items.push({ cls:'good', text: lang==='ko'?'자세가 매우 좋습니다!': lang==='ja'?'姿勢が非常に良いです！': lang==='zh'?'姿势非常好！':'Excellent posture!' });
-  if (symE > 30) items.push({ cls:'warn', text: lang==='ko'?'양팔 균형을 맞춰주세요': lang==='ja'?'腕のバランスを整えてください': lang==='zh'?'请保持双臂平衡':'Balance both arms evenly' });
-  if (symK > 30) items.push({ cls:'warn', text: lang==='ko'?'양다리 균형을 확인하세요': lang==='ja'?'脚のバランスを確認してください': lang==='zh'?'请检查双腿平衡':'Check leg symmetry' });
-  if (a.shoulder > 12) items.push({ cls:'warn', text: lang==='ko'?'어깨가 기울어져 있습니다': lang==='ja'?'肩が傾いています': lang==='zh'?'肩膀倾斜':'Shoulders are uneven' });
-  if (a.hip > 12) items.push({ cls:'warn', text: lang==='ko'?'골반을 수평으로 유지하세요': lang==='ja'?'骨盤を水平に保ってください': lang==='zh'?'保持骨盆水平':'Keep hips level' });
-  if (items.length === 0) items.push({ cls:'good', text: lang==='ko'?'균형 잡힌 자세입니다': lang==='ja'?'バランスの取れた姿勢です': lang==='zh'?'姿势平衡':'Balanced posture' });
-
-  const fl = document.getElementById('feedbackList');
-  fl.innerHTML = items.map(i => `<div class="feedback-item ${i.cls}">${i.text}</div>`).join('');
-}
-
-// Fallback loop (no MediaPipe)
-function drawLoop() {
-  const video = document.getElementById('videoEl');
-  const canvas = document.getElementById('canvasEl');
-  const ctx = canvas.getContext('2d');
-  function loop() {
-    if (!isRunning) return;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    animFrame = requestAnimationFrame(loop);
+function detectJump(hipY,angles,lm){
+  // Establish baseline (first 30 frames)
+  if(hipYBaseline===null){
+    baselineFrames++;
+    hipYBaseline=hipY;
+    return;
   }
-  loop();
+  hipYBaseline=hipYBaseline*0.98+hipY*0.02; // slow drift
+
+  const hipRise=hipYBaseline-hipY; // positive = hip went UP (smaller Y = higher)
+  const lKneeExt=angles.lk>150, rKneeExt=angles.rk>150;
+  const kneesExtended=lKneeExt&&rKneeExt;
+
+  // Check feet visibility (if feet disappear, likely in air)
+  const lm27=document.getElementById('canvasEl'); // just checking
+  const inAir=hipRise>AIR_THRESHOLD&&kneesExtended;
+  const onGround=hipRise<AIR_THRESHOLD*0.4;
+
+  if(inAir){
+    consecutiveAirFrames++;
+    consecutiveGroundFrames=0;
+    if(jumpState==='grounded'&&consecutiveAirFrames>=AIR_FRAMES_MIN&&!jumpCooldown){
+      jumpState='airborne';
+      airTimeStart=performance.now();
+    }
+  }else if(onGround){
+    consecutiveGroundFrames++;
+    consecutiveAirFrames=0;
+    if(jumpState==='airborne'&&consecutiveGroundFrames>=GROUND_FRAMES_MIN){
+      jumpState='grounded';
+      const airTime=Math.round(performance.now()-airTimeStart);
+      // Validate: air time must be realistic (100ms-800ms)
+      if(airTime>100&&airTime<800){
+        lastAirTime=airTime;
+        // Height estimate from flight time: h = g*t^2/8
+        const flightSec=airTime/1000;
+        const heightCm=Math.round(9.81*flightSec*flightSec*100/8);
+        const clampedH=Math.max(5,Math.min(80,heightCm));
+        document.getElementById('sv2').textContent=airTime;
+        document.getElementById('su2').textContent='ms';
+        document.getElementById('sv1').textContent=clampedH;
+        document.getElementById('su1').textContent='cm';
+        repCount++;
+        updateRepOverlay();
+        // Cooldown
+        jumpCooldown=true;
+        if(jumpCooldownTimer)clearTimeout(jumpCooldownTimer);
+        jumpCooldownTimer=setTimeout(()=>{jumpCooldown=false;},COOLDOWN_MS);
+      }
+    }
+  }else{
+    consecutiveAirFrames=0;
+    consecutiveGroundFrames=0;
+  }
 }
 
-// Keyboard
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && currentScreen === 1) goTo(2);
-});
+function updateAirTimeDisplay(){
+  if(lastAirTime>0){document.getElementById('sv2').textContent=lastAirTime;document.getElementById('su2').textContent='ms';}
+}
 
-// Init
-applyUI();
+// ═══════════════════════════════════════════════
+// SCORE + JOINTS
+// ═══════════════════════════════════════════════
+function calcAngle(a,b,c){
+  let r=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x);
+  let d=Math.abs(r*180/Math.PI); if(d>180)d=360-d; return Math.round(d);
+}
+function calcScore(a){
+  let s=100;
+  if(Math.abs(a.lk-a.rk)>25)s-=15;
+  if(Math.abs(a.le-a.re)>25)s-=15;
+  if(a.sh>8)s-=Math.min(18,a.sh*1.8);
+  if(a.hp>8)s-=Math.min(18,a.hp*1.8);
+  return Math.max(0,Math.round(s));
+}
+function updateJointsUI(a){
+  const vals=[a.lk,a.rk,a.le,a.re,Math.round(a.sh),Math.round(a.hp)];
+  const maxes=[180,180,180,180,25,25];
+  vals.forEach((v,i)=>{
+    const ve=document.getElementById('jv'+i);if(ve)ve.textContent=v+'°';
+    const be=document.getElementById('jb'+i);if(be)be.style.width=Math.min(100,(v/maxes[i]*100))+'%';
+  });
+}
+function updateScore(score){
+  const t=T[lang]||T.en;
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('headerScore').textContent=score+' pts';
+  document.getElementById('scoreArc').style.strokeDashoffset=207-(207*score/100);
+  const idx=score>=95?5:score>=80?4:score>=65?3:score>=50?2:score>0?1:0;
+  document.getElementById('scoreLbl').textContent=t.scoreLabels[idx];
+}
+
+// ═══════════════════════════════════════════════
+// STABLE FEEDBACK (updates every N frames)
+// ═══════════════════════════════════════════════
+function updateFeedbackStable(a,score){
+  fbFrameCount++;
+  if(fbFrameCount<FEEDBACK_FRAMES)return;
+  fbFrameCount=0;
+
+  const items=[];
+  if(score>=85)items.push({c:'good',t:'✓ 자세가 매우 좋습니다'});
+  const symDiff=Math.abs(a.lk-a.rk);
+  if(symDiff>25)items.push({c:'warn',t:'⚠ 양 무릎 균형을 맞춰주세요 ('+symDiff+'° 차이)'});
+  const elbowDiff=Math.abs(a.le-a.re);
+  if(elbowDiff>25)items.push({c:'warn',t:'⚠ 양팔 균형 확인 ('+elbowDiff+'° 차이)'});
+  if(a.sh>10)items.push({c:'warn',t:'⚠ 어깨가 기울어져 있습니다 ('+Math.round(a.sh)+'°)'});
+  if(a.hp>10)items.push({c:'warn',t:'⚠ 골반을 수평으로 유지하세요 ('+Math.round(a.hp)+'°)'});
+  if(a.lk<90||a.rk<90)items.push({c:'good',t:'✓ 깊은 스쿼트 감지'});
+  if(items.length===0)items.push({c:'good',t:'✓ 균형 잡힌 자세입니다'});
+
+  // Only update if feedback changed significantly
+  const newStr=items.map(i=>i.t).join('|');
+  const oldStr=lastFeedback.map(i=>i.t).join('|');
+  if(newStr!==oldStr){
+    lastFeedback=items;
+    document.getElementById('fbList').innerHTML=items.map(i=>`<div class="fb-item ${i.c}">${i.t}</div>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RESET UI
+// ═══════════════════════════════════════════════
+function resetMeasUI(){
+  document.getElementById('scoreNum').textContent='—';
+  document.getElementById('scoreArc').style.strokeDashoffset='207';
+  document.getElementById('scoreLbl').textContent='—';
+  document.getElementById('headerScore').textContent='— pts';
+  document.getElementById('repNum').textContent='0';
+  for(let i=0;i<4;i++){
+    document.getElementById('sv'+i).textContent='—';
+    document.getElementById('su'+i).textContent=['','cm','ms','%'][i];
+  }
+  for(let i=0;i<6;i++){
+    const v=document.getElementById('jv'+i);if(v)v.textContent='—°';
+    const b=document.getElementById('jb'+i);if(b)b.style.width='0%';
+  }
+  document.getElementById('fbList').innerHTML=`<div class="fb-item">${(T[lang]||T.en).fbWait}</div>`;
+  document.getElementById('btnRec').style.display='block';
+  document.getElementById('btnStop').style.display='none';
+  document.getElementById('recPostBtns').style.display='none';
+  document.getElementById('recStateLabel').textContent='READY';
+  document.getElementById('recStateLabel').style.color='var(--muted)';
+  document.getElementById('recArea').classList.remove('show');
+  document.getElementById('repOverlay').classList.remove('show');
+  isRecording=false; canRecord=false;
+  resetDetection();
+}
+
+// ═══════════════════════════════════════════════
+// KEYBOARD + INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&curScreen===1)goTo(2);});
+applyLangUI();
 </script>
 </body>
 </html>
