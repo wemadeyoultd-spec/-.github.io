@@ -5,1074 +5,515 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SPECTRAX SCOUTER BETA</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500;600;700&display=swap');
-:root{
-  --black:#050505;--dark:#0a0a0a;--card:#0f0f0f;
-  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:rgba(201,168,76,.15);
-  --white:#F8F4EE;--muted:rgba(248,244,238,.45);--muted2:rgba(248,244,238,.22);
-  --border:rgba(201,168,76,.18);--border2:rgba(248,244,238,.07);
-  --green:#22C55E;--red:#EF4444;--orange:#F97316;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  height: 100%;
+  background: #050505;
+  color: #F8F4EE;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  overflow: hidden;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;background:var(--black);color:var(--white);font-family:'Montserrat',sans-serif;overflow:hidden;}
-.screen{position:fixed;inset:0;opacity:0;pointer-events:none;transition:opacity .5s ease;z-index:1;display:flex;flex-direction:column;overflow:hidden;}
-.screen.active{opacity:1;pointer-events:all;z-index:2;}
-.scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 
-/* SPLASH */
-#s1{align-items:center;justify-content:center;cursor:pointer;background:var(--black);}
-.s1-bg{position:absolute;inset:0;background:radial-gradient(ellipse 65% 55% at 50% 45%,rgba(201,168,76,.07) 0%,transparent 70%);}
-.s1-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:80px 80px;}
-.s1-content{position:relative;z-index:2;text-align:center;}
-.s1-eyebrow{font-size:9px;font-weight:500;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;opacity:0;animation:fadeUp 1s .3s forwards;}
-.s1-logo{font-family:'Cormorant Garamond',serif;font-size:clamp(60px,13vw,148px);font-weight:300;letter-spacing:.15em;line-height:1;opacity:0;animation:fadeUp 1s .5s forwards;}
-.s1-badge{display:inline-flex;gap:12px;align-items:center;margin-top:20px;opacity:0;animation:fadeUp 1s .7s forwards;}
-.beta-tag{font-size:8px;font-weight:700;letter-spacing:.35em;color:var(--black);background:var(--gold);padding:4px 12px;text-transform:uppercase;}
-.scouter-tag{font-size:10px;font-weight:500;letter-spacing:.45em;color:var(--muted);text-transform:uppercase;}
-.s1-enter{position:absolute;bottom:44px;left:50%;transform:translateX(-50%);text-align:center;opacity:0;animation:fadeIn 1.5s 1.8s forwards;}
-.enter-text{font-size:13px;font-weight:500;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;}
-.enter-line{width:1px;height:36px;background:linear-gradient(to bottom,var(--gold),transparent);margin:10px auto 0;animation:pulse 2s infinite;}
-.corner{position:absolute;width:26px;height:26px;border-color:rgba(201,168,76,.22);border-style:solid;}
-.corner.tl{top:18px;left:18px;border-width:1px 0 0 1px;}.corner.tr{top:18px;right:18px;border-width:1px 1px 0 0;}
-.corner.bl{bottom:18px;left:18px;border-width:0 0 1px 1px;}.corner.br{bottom:18px;right:18px;border-width:0 1px 1px 0;}
-
-/* LANGUAGE */
-#s2{align-items:center;justify-content:center;background:var(--black);}
-.lang-wrap{z-index:2;display:flex;flex-direction:column;align-items:center;gap:24px;width:90%;max-width:680px;}
-.lang-eyebrow{font-size:9px;font-weight:500;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;text-align:center;}
-.lang-title{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,42px);font-weight:300;letter-spacing:.06em;text-align:center;}
-.lang-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;}
-.lang-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:transparent;transition:all .3s;}
-.lang-btn:hover,.lang-btn.sel{border-color:var(--gold);background:var(--gold-dim);}
-.lang-flag{font-size:22px;}.lang-native{font-size:10px;color:var(--white);}
-.lang-code{font-size:8px;font-weight:600;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
-.lang-btn.sel .lang-code{color:var(--gold);}
-.lang-go{padding:12px 44px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;transition:all .3s;}
-.lang-go:hover{background:var(--gold);color:var(--black);}
-
-/* SCOUTER MAIN */
-#s3{background:var(--dark);}
-.s-header{height:52px;flex-shrink:0;background:rgba(5,5,5,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
-.s-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;letter-spacing:.2em;}
-.s-brand span{color:var(--gold);font-size:8px;letter-spacing:.3em;font-family:'Montserrat',sans-serif;font-weight:700;vertical-align:super;margin-left:5px;}
-.back-btn{font-size:9px;font-weight:500;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;cursor:pointer;background:none;border:none;transition:color .3s;}
-.back-btn:hover{color:var(--gold);}
-.scouter-hero{padding:32px 20px 20px;text-align:center;flex-shrink:0;}
-.scouter-eyebrow{font-size:8px;font-weight:600;letter-spacing:.5em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
-.scouter-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,46px);font-weight:300;letter-spacing:.06em;}
-.gold-line{width:44px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto 0;}
-.cat-grid{padding:18px 14px 32px;display:grid;grid-template-columns:1fr;gap:12px;}
-.cat-card{border:1px solid var(--border);border-radius:2px;background:var(--card);cursor:pointer;transition:all .35s;position:relative;overflow:hidden;padding:24px 20px;display:flex;align-items:center;gap:18px;}
-.cat-card:hover{border-color:var(--gold);transform:translateY(-2px);}
-.cat-icon{font-size:38px;flex-shrink:0;width:54px;text-align:center;}
-.cat-info{flex:1;}
-.cat-tag{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
-.cat-name{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;letter-spacing:.05em;margin-bottom:4px;}
-.cat-desc{font-size:9px;font-weight:300;color:var(--muted);letter-spacing:.03em;line-height:1.7;}
-.cat-arrow{font-size:18px;color:var(--gold);opacity:.4;flex-shrink:0;}
-.cat-card:hover .cat-arrow{opacity:1;}
-.cat-badge{position:absolute;top:14px;right:14px;font-size:7px;font-weight:700;letter-spacing:.3em;padding:3px 8px;text-transform:uppercase;}
-.badge-power{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.25);}
-.badge-athletic{background:rgba(59,130,246,.1);color:#60A5FA;border:1px solid rgba(59,130,246,.22);}
-.badge-hyrox{background:rgba(239,68,68,.1);color:#F87171;border:1px solid rgba(239,68,68,.22);}
-
-/* EXERCISE LIST */
-#s4{background:var(--dark);}
-.ex-hero{padding:24px 18px 16px;flex-shrink:0;}
-.ex-cat-tag{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
-.ex-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,38px);font-weight:300;letter-spacing:.05em;margin-bottom:3px;}
-.ex-subtitle{font-size:9px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
-.ex-divider{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:14px 0 0;opacity:.25;}
-.ex-grid{padding:14px 14px 32px;display:grid;grid-template-columns:1fr;gap:8px;}
-.ex-card{border:1px solid var(--border2);border-radius:2px;background:rgba(15,15,15,.8);cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:14px;padding:16px 14px;}
-.ex-card:hover{border-color:var(--border);transform:translateX(3px);}
-.ex-icon{width:44px;height:44px;border-radius:2px;background:rgba(201,168,76,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-.ex-info{flex:1;}
-.ex-name{font-size:12px;font-weight:500;color:var(--white);letter-spacing:.04em;margin-bottom:3px;}
-.ex-desc{font-size:9px;font-weight:300;color:var(--muted);letter-spacing:.02em;line-height:1.6;}
-.ex-start{font-size:8px;font-weight:700;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;padding:5px 10px;border:1px solid rgba(201,168,76,.28);border-radius:2px;white-space:nowrap;flex-shrink:0;}
-
-/* ═══ MEASUREMENT ═══ */
-#s5{background:#060608;}
-.meas-header{height:50px;flex-shrink:0;background:rgba(6,6,8,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
-.meas-ex{font-size:13px;font-weight:600;letter-spacing:.07em;}
-.meas-cat{font-size:7px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
-.h-score{font-size:10px;font-weight:700;color:var(--gold);border:1px solid var(--border);padding:4px 10px;border-radius:2px;}
-
-/* Track bar */
-.track-bar{flex-shrink:0;background:rgba(6,6,8,.95);border-bottom:1px solid rgba(255,255,255,.05);padding:5px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.tq{display:flex;align-items:center;gap:4px;font-size:8px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
-.tq-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);flex-shrink:0;transition:all .3s;}
-.tq-dot.ok{background:var(--green);box-shadow:0 0 4px var(--green);}
-.tq-dot.warn{background:var(--orange);}
-.tq-dot.bad{background:var(--red);}
-.tq-msg{margin-left:auto;font-size:8px;letter-spacing:.1em;color:var(--orange);text-transform:uppercase;}
-.tq-msg.ok{color:var(--green);}
-
-/* Body */
-.meas-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 240px;overflow:hidden;}
-.cam-zone{position:relative;background:#020204;overflow:hidden;}
-
-/* Video + Canvas */
-#videoEl{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:cover;
-  transform-origin:center center;
+/* ── 화면 전환 ── */
+.screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 1;
 }
-#canvasEl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.screen.active { opacity: 1; pointer-events: all; z-index: 2; }
 
-/* 시작 버튼 화면 */
-.cam-start-screen{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:16px;z-index:5;background:rgba(2,2,4,.95);
+/* ── 언어 선택 화면 ── */
+#langScreen { background: #050505; }
+
+.logo {
+  font-size: 48px;
+  font-weight: 200;
+  letter-spacing: 12px;
+  color: #C9A84C;
+  margin-bottom: 8px;
 }
-.cam-start-screen.hidden{display:none;}
-.cam-start-icon{font-size:52px;opacity:.2;}
-.cam-start-hint{font-size:10px;letter-spacing:.2em;color:var(--muted);text-align:center;line-height:2;text-transform:uppercase;}
-.cam-start-btn{
-  padding:14px 36px;background:var(--gold);color:var(--black);
-  font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
-  letter-spacing:.3em;text-transform:uppercase;cursor:pointer;
-  border:none;border-radius:2px;transition:all .3s;
+.logo-sub {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: rgba(201,168,76,0.5);
+  text-transform: uppercase;
+  margin-bottom: 48px;
 }
-.cam-start-btn:hover{background:var(--gold-light);}
-
-/* 상태 오버레이 (반투명) */
-.status-overlay{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;z-index:10;
-  background:rgba(2,2,4,.82);
-  padding:24px;text-align:center;
+.lang-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: rgba(248,244,238,0.5);
+  text-transform: uppercase;
+  margin-bottom: 24px;
 }
-.status-overlay.hidden{display:none;}
-.spin{width:32px;height:32px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .9s linear infinite;}
-.ov-title{font-size:11px;letter-spacing:.2em;color:var(--white);text-transform:uppercase;}
-.ov-msg{font-size:10px;letter-spacing:.1em;color:var(--muted);line-height:1.8;}
-.ov-err{font-size:9px;color:var(--red);line-height:1.8;max-width:280px;font-family:monospace;}
-.ov-retry{padding:10px 24px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;transition:all .3s;display:none;}
-.ov-retry:hover{background:var(--gold);color:var(--black);}
-
-/* 줌 컨트롤 */
-.zoom-wrap{position:absolute;top:10px;right:10px;display:none;flex-direction:column;gap:4px;align-items:center;background:rgba(5,5,5,.88);border:1px solid var(--border);border-radius:18px;padding:8px 5px;backdrop-filter:blur(8px);z-index:6;}
-.zoom-wrap.show{display:flex;}
-.zoom-lbl{font-size:7px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
-input[type=range].z-sl{-webkit-appearance:none;writing-mode:vertical-lr;direction:rtl;width:4px;height:64px;background:rgba(201,168,76,.15);border-radius:2px;outline:none;cursor:pointer;}
-input[type=range].z-sl::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);}
-.zoom-val{font-size:9px;font-weight:600;color:var(--white);}
-
-/* 상태 바 */
-.st-bar{position:absolute;top:10px;left:10px;background:rgba(5,5,5,.9);border:1px solid var(--border);padding:5px 10px;border-radius:2px;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;display:none;z-index:6;}
-.st-bar.show{display:block;}
-.st-bar.live{color:var(--green);border-color:rgba(34,197,94,.3);}
-.st-bar.rec{color:#F87171;border-color:rgba(239,68,68,.3);}
-
-/* 스쿼트 상태 */
-.sq-state{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.92);border:1px solid var(--border);padding:5px 14px;border-radius:2px;font-size:8px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;display:none;z-index:6;white-space:nowrap;}
-.sq-state.show{display:block;}
-.rep-ov{position:absolute;bottom:84px;left:50%;transform:translateX(-50%);background:rgba(5,5,5,.92);border:1px solid var(--border);padding:8px 14px;border-radius:2px;text-align:center;display:none;z-index:6;}
-.rep-ov.show{display:block;}
-.rep-n{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--gold);line-height:1;}
-.rep-lb{font-size:7px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
-
-/* 녹화 */
-.rec-area{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:5px;z-index:6;}
-.rec-area.show{display:flex;}
-.rec-lbl{font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
-.rec-btns{display:flex;gap:7px;}
-.btn-rec,.btn-stop,.btn-replay,.btn-save,.btn-del{padding:8px 13px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;border:1px solid;}
-.btn-rec{background:rgba(239,68,68,.1);border-color:var(--red);color:#F87171;}
-.btn-rec.active{background:rgba(239,68,68,.3);animation:recPulse 1s infinite;}
-.btn-stop{background:rgba(255,255,255,.04);border-color:var(--border2);color:var(--muted);}
-.btn-replay{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#60A5FA;}
-.btn-save{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green);}
-.btn-del{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#F87171;}
-.post-btns{display:flex;gap:5px;}
-
-/* Side panel */
-.side-panel{background:rgba(7,7,9,.99);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:12px 10px;gap:12px;}
-.side-panel::-webkit-scrollbar{width:2px;}
-.side-panel::-webkit-scrollbar-thumb{background:var(--border);}
-.p-sec{border-bottom:1px solid rgba(201,168,76,.05);padding-bottom:10px;}
-.p-sec:last-child{border-bottom:none;padding-bottom:0;}
-.p-lbl{font-size:7px;font-weight:700;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;}
-.s-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.1);display:inline-block;margin-right:6px;transition:all .3s;}
-.s-dot.live{background:var(--green);box-shadow:0 0 5px var(--green);animation:blink 1.5s infinite;}
-.s-dot.rec{background:var(--red);box-shadow:0 0 5px var(--red);animation:blink .8s infinite;}
-.s-word{font-size:8px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;}
-.score-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
-.score-ring{position:relative;width:80px;height:80px;}
-.score-ring svg{transform:rotate(-90deg);}
-.score-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.score-num{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--white);line-height:1;}
-.score-pts{font-size:7px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;}
-.score-lbl{font-size:9px;letter-spacing:.1em;color:var(--gold);font-weight:500;}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-.stat-box{background:rgba(255,255,255,.02);border:1px solid var(--border2);border-radius:2px;padding:7px 5px;text-align:center;}
-.stat-val{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--white);line-height:1;}
-.stat-unit{font-size:7px;color:var(--muted);letter-spacing:.08em;}
-.stat-name{font-size:7px;letter-spacing:.1em;color:var(--muted2);text-transform:uppercase;margin-top:2px;}
-.joint-list{display:flex;flex-direction:column;gap:5px;}
-.j-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
-.j-name{font-size:8px;font-weight:300;color:var(--muted);letter-spacing:.02em;}
-.j-val{font-size:9px;font-weight:500;color:var(--white);font-variant-numeric:tabular-nums;}
-.j-bar-wrap{width:100%;height:2px;background:rgba(255,255,255,.05);border-radius:1px;}
-.j-bar{height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:1px;transition:width .4s;width:0%;}
-.fb-list{display:flex;flex-direction:column;gap:5px;}
-.fb-item{font-size:8px;font-weight:300;color:var(--muted);letter-spacing:.02em;line-height:1.7;padding:5px 7px;border-left:2px solid var(--border);background:rgba(255,255,255,.02);}
-.fb-item.good{border-color:var(--green);color:rgba(248,244,238,.7);}
-.fb-item.warn{border-color:var(--gold);}
-.dbg{background:rgba(0,0,0,.5);border:1px solid rgba(59,130,246,.2);border-radius:2px;padding:8px;font-size:8px;color:rgba(96,165,250,.85);letter-spacing:.04em;line-height:1.9;font-family:monospace;word-break:break-all;}
-
-@media(max-width:640px){
-  .meas-body{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;}
-  .side-panel{border-left:none;border-top:1px solid var(--border);flex-direction:row;flex-wrap:nowrap;gap:8px;padding:10px;max-height:185px;overflow-x:auto;overflow-y:hidden;}
-  .p-sec{border-bottom:none;padding-bottom:0;min-width:110px;flex-shrink:0;}
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 90%;
+  max-width: 500px;
+  margin-bottom: 32px;
 }
-@media(orientation:landscape) and (max-height:500px){
-  .meas-body{grid-template-columns:minmax(0,1fr) 200px;}
+.lang-btn {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  padding: 12px 8px;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 2px;
+  cursor: pointer;
+  background: transparent;
+  color: #F8F4EE;
+  transition: all 0.2s;
 }
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
+.lang-btn:hover, .lang-btn.sel {
+  border-color: #C9A84C;
+  background: rgba(201,168,76,0.1);
+}
+.lang-flag { font-size: 20px; }
+.lang-name { font-size: 9px; color: rgba(248,244,238,0.6); }
+
+.start-btn {
+  padding: 14px 48px;
+  background: transparent;
+  border: 1px solid #C9A84C;
+  color: #C9A84C;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.start-btn:hover {
+  background: #C9A84C;
+  color: #050505;
+}
+
+/* ── 카메라 화면 ── */
+#camScreen { background: #000; padding: 0; }
+
+.cam-header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  background: rgba(5,5,5,0.9);
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 10;
+}
+.cam-header-logo {
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: #C9A84C;
+  font-weight: 300;
+}
+.cam-header-status {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(248,244,238,0.5);
+  text-transform: uppercase;
+}
+.cam-header-status.active { color: #22C55E; }
+
+/* 비디오 + 캔버스 */
+#video {
+  position: absolute;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+#canvas {
+  position: absolute;
+  width: 100%; height: 100%;
+}
+
+/* 시작 버튼 (카메라 켜기 전) */
+.cam-start-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(5,5,5,0.85);
+  z-index: 5;
+}
+.cam-start-wrap.hidden { display: none; }
+
+.cam-btn {
+  padding: 16px 48px;
+  background: #C9A84C;
+  border: none;
+  color: #050505;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.cam-btn:hover { background: #E8C97A; }
+.cam-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cam-hint {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(248,244,238,0.4);
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.8;
+}
+
+/* 로딩 메시지 (모델 로딩 중) */
+.loading-wrap {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5,5,5,0.85);
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 10px 20px;
+  border-radius: 2px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #C9A84C;
+  text-transform: uppercase;
+  z-index: 10;
+  white-space: nowrap;
+  display: none;
+}
+.loading-wrap.show { display: block; }
+
+/* 에러 메시지 */
+.error-wrap {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.4);
+  padding: 10px 20px;
+  border-radius: 2px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #F87171;
+  text-transform: uppercase;
+  z-index: 10;
+  display: none;
+  text-align: center;
+  max-width: 320px;
+}
+.error-wrap.show { display: block; }
+
+.back-btn {
+  position: absolute;
+  top: 14px; left: 16px;
+  background: none;
+  border: none;
+  color: rgba(248,244,238,0.5);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+.back-btn:hover { color: #C9A84C; }
 </style>
 </head>
 <body>
 
-<!-- S1 SPLASH -->
-<div class="screen active" id="s1" onclick="goTo(2)">
-  <div class="s1-bg"></div><div class="s1-grid"></div>
-  <div class="corner tl"></div><div class="corner tr"></div>
-  <div class="corner bl"></div><div class="corner br"></div>
-  <div class="s1-content">
-    <div class="s1-eyebrow">Performance · Motion · Intelligence</div>
-    <div class="s1-logo">SPECTRAX</div>
-    <div class="s1-badge"><div class="beta-tag">BETA</div><div class="scouter-tag">SCOUTER</div></div>
+<!-- 화면 1: 언어 선택 -->
+<div class="screen active" id="langScreen">
+  <div class="logo">SPECTRAX</div>
+  <div class="logo-sub">Pose Analysis · Beta</div>
+  <div class="lang-title" id="langTitle">Select Language</div>
+  <div class="lang-grid">
+    <div class="lang-btn sel" onclick="pickLang(this,'ko')"><span class="lang-flag">🇰🇷</span><span class="lang-name">한국어</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'en')"><span class="lang-flag">🇺🇸</span><span class="lang-name">English</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'ja')"><span class="lang-flag">🇯🇵</span><span class="lang-name">日本語</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'zh')"><span class="lang-flag">🇨🇳</span><span class="lang-name">中文</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'es')"><span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'fr')"><span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'de')"><span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'pt')"><span class="lang-flag">🇧🇷</span><span class="lang-name">Português</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'ar')"><span class="lang-flag">🇸🇦</span><span class="lang-name">العربية</span></div>
+    <div class="lang-btn" onclick="pickLang(this,'hi')"><span class="lang-flag">🇮🇳</span><span class="lang-name">हिन्दी</span></div>
   </div>
-  <div class="s1-enter"><div class="enter-text">Press Enter</div><div class="enter-line"></div></div>
+  <button class="start-btn" id="goBtn" onclick="goCam()">시작하기</button>
 </div>
 
-<!-- S2 LANGUAGE -->
-<div class="screen" id="s2">
-  <div class="lang-wrap">
-    <div class="lang-eyebrow">Select Language</div>
-    <div class="lang-title">Choose Your Language</div>
-    <div class="lang-grid">
-      <div class="lang-btn" onclick="pickLang(this,'en')"><div class="lang-flag">🇺🇸</div><div class="lang-native">English</div><div class="lang-code">EN</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'zh')"><div class="lang-flag">🇨🇳</div><div class="lang-native">中文</div><div class="lang-code">ZH</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'es')"><div class="lang-flag">🇪🇸</div><div class="lang-native">Español</div><div class="lang-code">ES</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'fr')"><div class="lang-flag">🇫🇷</div><div class="lang-native">Français</div><div class="lang-code">FR</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'de')"><div class="lang-flag">🇩🇪</div><div class="lang-native">Deutsch</div><div class="lang-code">DE</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'ja')"><div class="lang-flag">🇯🇵</div><div class="lang-native">日本語</div><div class="lang-code">JA</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'pt')"><div class="lang-flag">🇧🇷</div><div class="lang-native">Português</div><div class="lang-code">PT</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'ar')"><div class="lang-flag">🇸🇦</div><div class="lang-native">العربية</div><div class="lang-code">AR</div></div>
-      <div class="lang-btn" onclick="pickLang(this,'hi')"><div class="lang-flag">🇮🇳</div><div class="lang-native">हिन्दी</div><div class="lang-code">HI</div></div>
-      <div class="lang-btn sel" onclick="pickLang(this,'ko')"><div class="lang-flag">🇰🇷</div><div class="lang-native">한국어</div><div class="lang-code">KO</div></div>
-    </div>
-    <button class="lang-go" id="langGoBtn" onclick="goTo(3)">계속하기</button>
+<!-- 화면 2: 카메라 + 포즈 -->
+<div class="screen" id="camScreen">
+  <!-- 헤더 -->
+  <div class="cam-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="cam-header-logo">SPECTRAX</div>
+    <div class="cam-header-status" id="statusText">대기 중</div>
   </div>
+
+  <!-- 비디오 + 캔버스 -->
+  <video id="video" autoplay playsinline muted webkit-playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <!-- 카메라 시작 전 화면 -->
+  <div class="cam-start-wrap" id="startWrap">
+    <div class="cam-hint" id="camHint">후면 카메라로 전신을 촬영합니다<br>카메라를 시작하세요</div>
+    <button class="cam-btn" id="camBtn" onclick="startCamera()">카메라 시작</button>
+  </div>
+
+  <!-- 로딩 메시지 -->
+  <div class="loading-wrap" id="loadingMsg">포즈 모델 로딩 중...</div>
+
+  <!-- 에러 메시지 -->
+  <div class="error-wrap" id="errorMsg"></div>
 </div>
 
-<!-- S3 SCOUTER MAIN -->
-<div class="screen" id="s3">
-  <div class="s-header"><div class="s-brand">SPECTRAX <span>SCOUTER</span></div><button class="back-btn" onclick="goTo(2)">← 언어</button></div>
-  <div class="scroll-body">
-    <div class="scouter-hero">
-      <div class="scouter-eyebrow">Movement Analysis System</div>
-      <div class="scouter-title">카테고리 선택</div>
-      <div class="gold-line"></div>
-    </div>
-    <div class="cat-grid">
-      <div class="cat-card" onclick="openCat('sbd')">
-        <div class="cat-badge badge-power">POWERLIFTING</div>
-        <div class="cat-icon">🏋️</div>
-        <div class="cat-info"><div class="cat-tag">SBD</div><div class="cat-name">SBD</div><div class="cat-desc">Squat · Bench Press · Deadlift</div></div>
-        <div class="cat-arrow">›</div>
-      </div>
-      <div class="cat-card" onclick="openCat('athletic')">
-        <div class="cat-badge badge-athletic">PERFORMANCE</div>
-        <div class="cat-icon">⚡</div>
-        <div class="cat-info"><div class="cat-tag">ATHLETIC</div><div class="cat-name">Athletic Performance</div><div class="cat-desc">Jump · Sprint · Agility · Balance · Reaction</div></div>
-        <div class="cat-arrow">›</div>
-      </div>
-      <div class="cat-card" onclick="openCat('hyrox')">
-        <div class="cat-badge badge-hyrox">FUNCTIONAL</div>
-        <div class="cat-icon">🔥</div>
-        <div class="cat-info"><div class="cat-tag">HYROX</div><div class="cat-name">HYROX</div><div class="cat-desc">Run · Ski Erg · Sled · Carry · Wall Balls</div></div>
-        <div class="cat-arrow">›</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- S4 EXERCISE LIST -->
-<div class="screen" id="s4">
-  <div class="s-header"><div class="s-brand">SPECTRAX <span>SCOUTER</span></div><button class="back-btn" onclick="goTo(3)">← Back</button></div>
-  <div class="ex-hero">
-    <div class="ex-cat-tag" id="exCatTag">SBD</div>
-    <div class="ex-title" id="exTitle">SBD</div>
-    <div class="ex-subtitle">운동 선택</div>
-    <div class="ex-divider"></div>
-  </div>
-  <div class="scroll-body"><div class="ex-grid" id="exGrid"></div></div>
-</div>
-
-<!-- S5 MEASUREMENT -->
-<div class="screen" id="s5">
-  <div class="meas-header">
-    <div><div class="meas-cat" id="measCat">SBD</div><div class="meas-ex" id="measEx">Squat</div></div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div class="h-score" id="hScore">— pts</div>
-      <button class="back-btn" onclick="exitMeas()">← Back</button>
-    </div>
-  </div>
-  <div class="track-bar">
-    <div class="tq"><div class="tq-dot" id="tq0"></div><span>전신</span></div>
-    <div class="tq"><div class="tq-dot" id="tq1"></div><span>머리</span></div>
-    <div class="tq"><div class="tq-dot" id="tq2"></div><span>발</span></div>
-    <div class="tq"><div class="tq-dot" id="tq3"></div><span>모델</span></div>
-    <div class="tq-msg" id="tqMsg">카메라 시작 버튼을 누르세요</div>
-  </div>
-  <div class="meas-body">
-    <div class="cam-zone" id="camZone">
-      <!-- 비디오: 항상 DOM에 존재, 처음엔 숨김 -->
-      <video id="videoEl" autoplay playsinline muted webkit-playsinline x5-playsinline style="display:none;"></video>
-      <canvas id="canvasEl"></canvas>
-
-      <!-- 시작 버튼 화면 -->
-      <div class="cam-start-screen" id="camStartScreen">
-        <div class="cam-start-icon">📷</div>
-        <div class="cam-start-hint">후면 카메라로 전신을<br>촬영하여 포즈를 분석합니다</div>
-        <button class="cam-start-btn" id="camStartBtn" onclick="startCamera()">▶ 카메라 시작</button>
-      </div>
-
-      <!-- 상태 오버레이 (카메라 켜진 후, 반투명) -->
-      <div class="status-overlay hidden" id="statusOverlay">
-        <div class="spin" id="ovSpin"></div>
-        <div class="ov-title" id="ovTitle">초기화 중...</div>
-        <div class="ov-msg" id="ovMsg"></div>
-        <div class="ov-err" id="ovErr"></div>
-        <button class="ov-retry" id="ovRetry" onclick="retryInit()">🔄 다시 시도</button>
-      </div>
-
-      <div class="st-bar" id="stBar"></div>
-      <div class="sq-state" id="sqState"></div>
-      <div class="rep-ov" id="repOv"><div class="rep-n" id="repN">0</div><div class="rep-lb">REPS</div></div>
-
-      <!-- 줌 -->
-      <div class="zoom-wrap" id="zoomWrap">
-        <div class="zoom-lbl">ZOOM</div>
-        <input type="range" class="z-sl" id="zoomSl" min="1" max="3" step="0.1" value="1" oninput="applyZoom(this.value)">
-        <div class="zoom-val" id="zoomVal">1×</div>
-      </div>
-
-      <!-- 녹화 -->
-      <div class="rec-area" id="recArea">
-        <div class="rec-lbl" id="recLbl">READY</div>
-        <div class="rec-btns">
-          <button class="btn-rec" id="btnRec" onclick="startRec()">⏺ Record</button>
-          <button class="btn-stop" id="btnStop" onclick="stopRec()" style="display:none">■ Stop</button>
-        </div>
-        <div class="post-btns" id="postBtns" style="display:none">
-          <button class="btn-replay" onclick="replayRec()">▶</button>
-          <button class="btn-save" onclick="saveRec()">✓ Save</button>
-          <button class="btn-del" onclick="delRec()">✕</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="side-panel">
-      <div class="p-sec">
-        <div class="p-lbl">상태</div>
-        <div style="display:flex;align-items:center"><span class="s-dot" id="sDot"></span><span class="s-word" id="sWord">대기</span></div>
-      </div>
-      <div class="p-sec">
-        <div class="p-lbl">자세 점수</div>
-        <div class="score-ring-wrap">
-          <div class="score-ring">
-            <svg width="80" height="80" viewBox="0 0 80 80">
-              <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(201,168,76,.1)" stroke-width="4"/>
-              <circle id="scoreArc" cx="40" cy="40" r="33" fill="none" stroke="url(#gG)" stroke-width="4" stroke-linecap="round" stroke-dasharray="207" stroke-dashoffset="207" style="transition:stroke-dashoffset .6s"/>
-              <defs><linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C9A84C"/><stop offset="100%" stop-color="#E8C97A"/></linearGradient></defs>
-            </svg>
-            <div class="score-ring-inner"><span class="score-num" id="scoreNum">—</span><span class="score-pts">pts</span></div>
-          </div>
-          <div class="score-lbl" id="scoreLbl">—</div>
-        </div>
-      </div>
-      <div class="p-sec">
-        <div class="p-lbl">측정값</div>
-        <div class="stats-grid">
-          <div class="stat-box"><div class="stat-val" id="sv0">0</div><div class="stat-unit"></div><div class="stat-name">Reps</div></div>
-          <div class="stat-box"><div class="stat-val" id="sv1">—</div><div class="stat-unit">cm</div><div class="stat-name">Height</div></div>
-          <div class="stat-box"><div class="stat-val" id="sv2">—</div><div class="stat-unit">ms</div><div class="stat-name">Air Time</div></div>
-          <div class="stat-box"><div class="stat-val" id="sv3">—</div><div class="stat-unit">%</div><div class="stat-name">Symmetry</div></div>
-        </div>
-      </div>
-      <div class="p-sec">
-        <div class="p-lbl">관절 각도</div>
-        <div class="joint-list">
-          <div><div class="j-row"><span class="j-name" id="jn0">무릎 L</span><span class="j-val" id="jv0">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb0"></div></div></div>
-          <div><div class="j-row"><span class="j-name" id="jn1">무릎 R</span><span class="j-val" id="jv1">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb1"></div></div></div>
-          <div><div class="j-row"><span class="j-name" id="jn2">엉덩이 L</span><span class="j-val" id="jv2">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb2"></div></div></div>
-          <div><div class="j-row"><span class="j-name" id="jn3">엉덩이 R</span><span class="j-val" id="jv3">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb3"></div></div></div>
-          <div><div class="j-row"><span class="j-name" id="jn4">어깨</span><span class="j-val" id="jv4">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb4"></div></div></div>
-          <div><div class="j-row"><span class="j-name" id="jn5">트렁크</span><span class="j-val" id="jv5">—°</span></div><div class="j-bar-wrap"><div class="j-bar" id="jb5"></div></div></div>
-        </div>
-      </div>
-      <div class="p-sec">
-        <div class="p-lbl">🔧 Debug</div>
-        <div class="dbg" id="dbgBox">-</div>
-      </div>
-      <div class="p-sec">
-        <div class="p-lbl">AI 피드백</div>
-        <div class="fb-list" id="fbList"><div class="fb-item">카메라를 시작하세요.</div></div>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- MediaPipe CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous"></script>
 
 <script>
-// ═══════════════════════════════════
-// DATA
-// ═══════════════════════════════════
-const EXERCISES={
-  sbd:{name:'SBD',tag:'SBD · POWERLIFTING',items:[
-    {id:'squat',icon:'🏋️',name:'Squat',nameKo:'스쿼트',desc:'무릎 각도, 엉덩이 깊이, 트렁크, 균형, 반복 횟수',joints:['무릎 L','무릎 R','엉덩이 L','엉덩이 R','어깨','트렁크']},
-    {id:'bench',icon:'💪',name:'Bench Press',nameKo:'벤치프레스',desc:'팔꿈치 각도, 좌우 균형, 프레스 속도',joints:['팔꿈치 L','팔꿈치 R','어깨 L','어깨 R','균형','경로']},
-    {id:'deadlift',icon:'⬆️',name:'Deadlift',nameKo:'데드리프트',desc:'엉덩이 높이, 트렁크 각도, 당기기 속도',joints:['엉덩이 높이','트렁크','무릎 L','무릎 R','어깨','속도']},
-  ]},
-  athletic:{name:'Athletic Performance',tag:'ATHLETIC · PERFORMANCE',items:[
-    {id:'vjump',icon:'🦘',name:'Vertical Jump',nameKo:'수직 점프',desc:'점프 높이, 비행 시간, 착지 안정성',joints:['무릎 L','무릎 R','엉덩이','발목','어깨','착지']},
-    {id:'rjump',icon:'🔁',name:'Repeated Jump',nameKo:'반복 점프',desc:'반복, 피로 지수, 일관성',joints:['무릎 L','무릎 R','엉덩이','발목','어깨','피로']},
-    {id:'sprint',icon:'🏃',name:'Sprint',nameKo:'스프린트',desc:'케이던스, 스트라이드, 무릎 구동',joints:['무릎 구동','트렁크','스트라이드','팔 스윙','발','케이던스']},
-    {id:'agility',icon:'🎯',name:'Agility',nameKo:'민첩성',desc:'방향 전환, 몸 제어',joints:['방향 전환','몸 제어','발 위치','균형','속도','반응']},
-    {id:'balance',icon:'⚖️',name:'Balance',nameKo:'균형',desc:'자세 제어, 안정성',joints:['좌 균형','우 균형','골반','트렁크','발목','무게 중심']},
-    {id:'reaction',icon:'⚡',name:'Reaction',nameKo:'반응 속도',desc:'반응 시간, 첫 동작',joints:['첫 동작','반응','이동','속도','정확도','품질']},
-  ]},
-  hyrox:{name:'HYROX',tag:'HYROX · FUNCTIONAL',items:[
-    {id:'run',icon:'🏃',name:'Run Analysis',nameKo:'런',desc:'케이던스, 트렁크, 무릎 구동',joints:['케이던스','트렁크','무릎','팔 스윙','엉덩이','피로']},
-    {id:'skierg',icon:'🎿',name:'Ski Erg',nameKo:'스키 에르그',desc:'당기기 리듬, 스트로크',joints:['리듬','스트로크','트렁크','팔','대칭','속도']},
-    {id:'sledpush',icon:'🛷',name:'Sled Push',nameKo:'슬레드 푸시',desc:'몸 기울기, 스텝',joints:['기울기','스텝','엉덩이','트렁크','발','일관성']},
-    {id:'sledpull',icon:'🔗',name:'Sled Pull',nameKo:'슬레드 풀',desc:'당기기 리듬, 어깨',joints:['리듬','트렁크','엉덩이','어깨','팔','대칭']},
-    {id:'burpee',icon:'🤸',name:'Burpee Broad Jump',nameKo:'버피',desc:'반복, 타이밍, 착지',joints:['횟수','타이밍','거리','착지','무릎','피로']},
-    {id:'rowerg',icon:'🚣',name:'Row Erg',nameKo:'로우 에르그',desc:'스트로크, 드라이브',joints:['스트로크','속도','캐치','드라이브','트렁크','리듬']},
-    {id:'farmers',icon:'🏋️',name:'Farmers Carry',nameKo:'파머스 캐리',desc:'스텝, 어깨 기울기',joints:['스텝','어깨','트렁크','골반','대칭','안정성']},
-    {id:'lunges',icon:'🦵',name:'Sandbag Lunges',nameKo:'샌드백 런지',desc:'런지 깊이, 무릎 제어',joints:['깊이','무릎 L','무릎 R','골반','균형','템포']},
-    {id:'wallball',icon:'🏀',name:'Wall Balls',nameKo:'월 볼',desc:'스쿼트 깊이, 팔 신장',joints:['스쿼트 깊이','무릎','엉덩이','트렁크','팔','리듬']},
-  ]}
+// ── 언어 ──
+const LABELS = {
+  ko: { start:'시작하기', camBtn:'카메라 시작', hint:'후면 카메라로 전신을 촬영합니다\n카메라를 시작하세요', loading:'포즈 모델 로딩 중...', ready:'포즈 감지 활성', noBody:'전신이 보이도록 뒤로 물러서세요', back:'← Back', langTitle:'언어 선택' },
+  en: { start:'Start', camBtn:'Start Camera', hint:'Film your full body\nwith the rear camera', loading:'Loading pose model...', ready:'Pose tracking active', noBody:'Move back — show full body', back:'← Back', langTitle:'Select Language' },
+  ja: { start:'開始', camBtn:'カメラ起動', hint:'後面カメラで全身を撮影します\nカメラを起動してください', loading:'ポーズモデル読込中...', ready:'ポーズ追跡 開始', noBody:'後退して全身を映してください', back:'← 戻る', langTitle:'言語選択' },
+  zh: { start:'开始', camBtn:'启动摄像头', hint:'用后置摄像头拍摄全身\n请启动摄像头', loading:'姿势模型加载中...', ready:'姿势追踪已激活', noBody:'后退让全身可见', back:'← 返回', langTitle:'选择语言' },
+  es: { start:'Iniciar', camBtn:'Iniciar Cámara', hint:'Filma tu cuerpo completo\ncon la cámara trasera', loading:'Cargando modelo...', ready:'Seguimiento activo', noBody:'Retrocede — muestra cuerpo completo', back:'← Volver', langTitle:'Seleccionar Idioma' },
+  fr: { start:'Démarrer', camBtn:'Démarrer Caméra', hint:'Filmez votre corps entier\navec la caméra arrière', loading:'Chargement du modèle...', ready:'Suivi de pose actif', noBody:'Reculez pour montrer le corps entier', back:'← Retour', langTitle:'Choisir la Langue' },
+  de: { start:'Starten', camBtn:'Kamera Starten', hint:'Filmen Sie Ihren ganzen Körper\nmit der Rückkamera', loading:'Modell wird geladen...', ready:'Pose-Tracking aktiv', back:'← Zurück', langTitle:'Sprache Wählen', noBody:'Zurücktreten — Ganzkörper zeigen' },
+  pt: { start:'Iniciar', camBtn:'Iniciar Câmera', hint:'Filme seu corpo inteiro\ncom a câmera traseira', loading:'Carregando modelo...', ready:'Rastreamento ativo', back:'← Voltar', langTitle:'Selecionar Idioma', noBody:'Recue — mostre o corpo inteiro' },
+  ar: { start:'ابدأ', camBtn:'تشغيل الكاميرا', hint:'صوّر جسمك بالكامل\nبالكاميرا الخلفية', loading:'جارٍ تحميل النموذج...', ready:'تتبع الوضعية نشط', back:'← رجوع', langTitle:'اختر اللغة', noBody:'تراجع لعرض الجسم كاملاً' },
+  hi: { start:'शुरू करें', camBtn:'कैमरा शुरू करें', hint:'रियर कैमरे से पूरा शरीर\nदिखाएं', loading:'मॉडल लोड हो रहा है...', ready:'पोज़ ट्रैकिंग सक्रिय', back:'← वापस', langTitle:'भाषा चुनें', noBody:'पीछे हटें — पूरा शरीर दिखाएं' },
 };
 
-// MoveNet keypoints
-const KP={NS:0,LS:5,RS:6,LE:7,RE:8,LH:11,RH:12,LK:13,RK:14,LA:15,RA:16};
-const CONN=[[0,1],[0,2],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
-const KP_LBL={0:'NOSE',5:'L.SH',6:'R.SH',11:'L.HIP',12:'R.HIP',13:'L.KNEE',14:'R.KNEE',15:'L.ANK',16:'R.ANK'};
-const MIN_C=0.3;
+let lang = 'ko';
+let videoStream = null;
+let mpPose = null;
+let mpCam = null;
 
-// ═══════════════════════════════════
-// STATE
-// ═══════════════════════════════════
-let lang='ko',curScreen=1,curCat=null,curEx=null;
-let videoStream=null,detector=null,rafId=null;
-let isRunning=false,isRecording=false,canRecord=false;
-let curZoom=1.0;
-let mediaRecorder=null,recordedBlob=null,recChunks=[];
-const SM=8,FBI=20;
-let aB={lk:[],rk:[],lh:[],rh:[],sh:[],tr:[]};
-let hYB=[],syB=[],fbC=0,lastFBS='';
-let reps=0,sqSt='standing',hBase=null,bF=0,lastSC=0;
-
-// ═══════════════════════════════════
-// NAV
-// ═══════════════════════════════════
-function goTo(n){
-  document.getElementById('s'+curScreen).classList.remove('active');
-  curScreen=n;
-  document.getElementById('s'+n).classList.add('active');
-}
-function exitMeas(){stopAll();goTo(4);}
-
-function openCat(cat){
-  curCat=cat;
-  const d=EXERCISES[cat];
-  document.getElementById('exCatTag').textContent=d.tag;
-  document.getElementById('exTitle').textContent=d.name;
-  document.getElementById('exGrid').innerHTML=d.items.map(ex=>`
-    <div class="ex-card" onclick="openEx('${ex.id}')">
-      <div class="ex-icon">${ex.icon}</div>
-      <div class="ex-info">
-        <div class="ex-name">${ex.name}${lang==='ko'&&ex.nameKo?' <span style="font-size:9px;color:var(--muted)">/ '+ex.nameKo+'</span>':''}</div>
-        <div class="ex-desc">${ex.desc}</div>
-      </div>
-      <div class="ex-start">시작 ›</div>
-    </div>`).join('');
-  goTo(4);
+// ── 언어 선택 ──
+function pickLang(el, l) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  lang = l;
+  const t = LABELS[l] || LABELS.en;
+  document.getElementById('langTitle').textContent = t.langTitle;
+  document.getElementById('goBtn').textContent = t.start;
 }
 
-function openEx(exId){
-  curEx=EXERCISES[curCat].items.find(e=>e.id===exId);
-  if(!curEx)return;
-  document.getElementById('measCat').textContent=EXERCISES[curCat].tag;
-  document.getElementById('measEx').textContent=curEx.name+(lang==='ko'&&curEx.nameKo?' / '+curEx.nameKo:'');
-  (curEx.joints||[]).forEach((j,i)=>{const el=document.getElementById('jn'+i);if(el)el.textContent=j;});
-  resetUI();
-  goTo(5);
+// ── 카메라 화면으로 이동 ──
+function goCam() {
+  const t = LABELS[lang] || LABELS.en;
+  document.getElementById('camBtn').textContent = t.camBtn;
+  document.getElementById('camHint').innerHTML = t.hint.replace('\n', '<br>');
+  document.getElementById('loadingMsg').textContent = t.loading;
+
+  // 화면 전환
+  document.getElementById('langScreen').classList.remove('active');
+  document.getElementById('camScreen').classList.add('active');
 }
 
-function pickLang(el,l){
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel'); lang=l;
-  const m={ko:'계속하기',en:'Continue',zh:'继续',ja:'続ける',es:'Continuar',fr:'Continuer',de:'Weiter',pt:'Continuar',ar:'متابعة',hi:'जारी रखें'};
-  document.getElementById('langGoBtn').textContent=m[l]||'Continue';
+// ── 뒤로 ──
+function goBack() {
+  stopCamera();
+  document.getElementById('camScreen').classList.remove('active');
+  document.getElementById('langScreen').classList.add('active');
 }
 
-// ═══════════════════════════════════
-// STEP 1: 카메라 시작 (즉시)
-// ═══════════════════════════════════
-async function startCamera(){
-  const btn=document.getElementById('camStartBtn');
-  btn.disabled=true;
-  btn.textContent='카메라 연결 중...';
-  setDbg('카메라 권한 요청 중...');
+// ── 카메라 시작 ──
+async function startCamera() {
+  const t = LABELS[lang] || LABELS.en;
+  const btn = document.getElementById('camBtn');
+  btn.disabled = true;
+  btn.textContent = '연결 중...';
 
-  try{
-    // 기존 스트림 정리
-    if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
-
+  try {
     // 후면 카메라 요청
-    videoStream=await navigator.mediaDevices.getUserMedia({
-      video:{
-        facingMode:{ideal:'environment'},
-        width:{ideal:1280},
-        height:{ideal:720}
+    videoStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
       },
-      audio:false
+      audio: false
     });
 
-    setDbg('카메라 연결됨. 비디오 초기화...');
+    const video = document.getElementById('video');
+    video.srcObject = videoStream;
+    await video.play().catch(() => {});
 
-    const video=document.getElementById('videoEl');
-    video.srcObject=videoStream;
+    // 카메라 시작 성공 → 시작 화면 숨기기
+    document.getElementById('startWrap').classList.add('hidden');
 
-    // 비디오 표시
-    video.style.display='block';
-    document.getElementById('camStartScreen').classList.add('hidden');
+    // 캔버스 크기 맞추기
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-    // 줌 컨트롤 표시
-    document.getElementById('zoomWrap').classList.add('show');
+    // 상태 표시
+    setStatus('카메라 활성 — 모델 로딩 중...');
+    document.getElementById('loadingMsg').classList.add('show');
 
-    // 비디오 재생 시작
-    await video.play().catch(e=>console.warn('play():', e.message));
+    // MediaPipe 초기화
+    initPose();
 
-    setDbg('카메라 ✅ 스트림 활성. 포즈 모델 로딩 시작...');
-    document.getElementById('tqMsg').textContent='카메라 활성 — 포즈 모델 로딩 중...';
-    setTQ(3,'warn');
-
-    document.getElementById('sDot').className='s-dot live';
-    document.getElementById('sWord').textContent='카메라 활성';
-
-    const sb=document.getElementById('stBar');
-    sb.className='status-bar show live';
-    sb.textContent='● 카메라 활성';
-
-    // STEP 2: 포즈 모델 로딩 (백그라운드)
-    loadPoseModel();
-
-  }catch(e){
-    btn.disabled=false;
-    btn.textContent='▶ 카메라 시작';
-    const msg=e.name==='NotAllowedError'?
-      '카메라 권한이 거부되었습니다.\n브라우저 설정에서 카메라를 허용해주세요.':
-      e.name==='NotFoundError'?
-      '후면 카메라를 찾을 수 없습니다.':
-      '카메라 오류: '+e.message;
-    setDbg('❌ '+msg);
-    document.getElementById('tqMsg').textContent='카메라 오류';
-    alert(msg);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = t.camBtn;
+    const msg = e.name === 'NotAllowedError'
+      ? '카메라 권한이 거부되었습니다.\n브라우저 설정에서 허용해주세요.'
+      : e.name === 'NotFoundError'
+      ? '후면 카메라를 찾을 수 없습니다.'
+      : '카메라 오류: ' + e.message;
+    showError(msg);
   }
 }
 
-// ═══════════════════════════════════
-// STEP 2: 포즈 모델 로딩 (카메라와 별도)
-// ═══════════════════════════════════
-async function loadPoseModel(){
-  // 반투명 오버레이로 진행 표시
-  const ov=document.getElementById('statusOverlay');
-  const ovTitle=document.getElementById('ovTitle');
-  const ovMsg=document.getElementById('ovMsg');
-  const ovErr=document.getElementById('ovErr');
-  const ovRetry=document.getElementById('ovRetry');
-  const ovSpin=document.getElementById('ovSpin');
-
-  ov.classList.remove('hidden');
-  ovSpin.style.display='block';
-  ovTitle.textContent='AI 모델 로딩 중...';
-  ovMsg.textContent='';
-  ovErr.textContent='';
-  ovRetry.style.display='none';
-
-  // TF.js 로드
-  ovMsg.textContent='TensorFlow.js 로딩...';
-  setDbg('TF.js 로딩...');
-
-  if(typeof tf==='undefined'){
-    const loaded=await loadSc('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js',20000)
-      || await loadSc('https://unpkg.com/@tensorflow/tfjs@4.22.0/dist/tf.min.js',20000);
-    if(!loaded||typeof tf==='undefined'){
-      ovSpin.style.display='none';
-      ovTitle.textContent='❌ 로드 실패';
-      ovErr.textContent='TensorFlow.js 로드 실패.\nWiFi 연결을 확인하고 다시 시도하세요.';
-      ovRetry.style.display='block';
-      setDbg('❌ TF.js 로드 실패');
-      return;
-    }
-  }
-
-  // WebGL 설정
-  ovMsg.textContent='GPU 설정 중...';
-  try{await tf.setBackend('webgl');await tf.ready();}
-  catch(e){try{await tf.setBackend('cpu');await tf.ready();}catch(e2){}}
-  const backend=tf.getBackend();
-  setDbg('TF.js ✅ backend='+backend);
-
-  // pose-detection 로드
-  ovMsg.textContent='pose-detection 라이브러리 로딩...';
-  if(typeof poseDetection==='undefined'){
-    const loaded=await loadSc('https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js',20000)
-      || await loadSc('https://unpkg.com/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js',20000);
-    if(!loaded||typeof poseDetection==='undefined'){
-      ovSpin.style.display='none';
-      ovTitle.textContent='❌ 로드 실패';
-      ovErr.textContent='pose-detection 라이브러리 로드 실패.\n다시 시도하세요.';
-      ovRetry.style.display='block';
-      setDbg('❌ pose-detection 로드 실패');
-      return;
-    }
-  }
-  setDbg('TF.js ✅  pose-detection ✅  MoveNet 모델 다운로드 중...');
-
-  // MoveNet 모델 로드
-  let secs=0;
-  const timer=setInterval(()=>{
-    secs++;
-    ovMsg.textContent='MoveNet 모델 다운로드 중... '+secs+'초 (약 9MB, 최초 1회)';
-    setDbg('TF ✅  PD ✅  model '+secs+'s...');
-  },1000);
-
-  try{
-    if(detector){try{detector.dispose();}catch(e){}detector=null;}
-    detector=await Promise.race([
-      poseDetection.createDetector(
-        poseDetection.SupportedModels.MoveNet,
-        {
-          modelType:poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-          enableSmoothing:true,
-          minPoseScore:0.2,
-          modelUrl:'https://storage.googleapis.com/tfjs-models/savedmodel/movenet/singlepose/lightning/4/model.json'
-        }
-      ),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('60초 타임아웃')),60000))
-    ]);
-    clearInterval(timer);
-  }catch(e1){
-    clearInterval(timer);
-    ovMsg.textContent='tfhub.dev로 재시도 중...';
-    setDbg('storage.googleapis 실패, tfhub 재시도...');
-    try{
-      detector=await Promise.race([
-        poseDetection.createDetector(
-          poseDetection.SupportedModels.MoveNet,
-          {modelType:poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,enableSmoothing:true,minPoseScore:0.2}
-        ),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('30초 타임아웃')),30000))
-      ]);
-    }catch(e2){
-      ovSpin.style.display='none';
-      ovTitle.textContent='❌ 모델 로드 실패';
-      ovErr.textContent=
-        'AI 포즈 모델을 불러올 수 없습니다.\n\n'+
-        '• WiFi/LTE 연결 확인\n'+
-        '• VPN 비활성화\n'+
-        '• 다시 시도\n\n'+
-        '오류: '+e2.message;
-      ovRetry.style.display='block';
-      setDbg('❌ 모델 실패: '+e2.message);
-      return;
-    }
-  }
-
-  // 성공!
-  ovTitle.textContent='✅ 준비 완료';
-  ovMsg.textContent='포즈 추적 시작';
-  setDbg('✅ 모델 준비. 포즈 루프 시작.');
-  setTQ(3,'ok');
-
-  await new Promise(r=>setTimeout(r,600));
-  ov.classList.add('hidden');
-
-  isRunning=true;canRecord=false;
-  resetDetection();
-  document.getElementById('tqMsg').textContent='전신이 보이도록 뒤로 물러서세요';
-  document.getElementById('sDot').className='s-dot live';
-  document.getElementById('sWord').textContent='분석 중';
-  document.getElementById('stBar').textContent='● Tracking Active';
-
-  poseLoop();
+// ── 캔버스 크기 ──
+function resizeCanvas() {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  canvas.width = video.clientWidth || window.innerWidth;
+  canvas.height = video.clientHeight || window.innerHeight;
 }
 
-function retryInit(){
-  const ov=document.getElementById('statusOverlay');
-  ov.classList.add('hidden');
-  loadPoseModel();
-}
+// ── MediaPipe Pose 초기화 ──
+function initPose() {
+  const t = LABELS[lang] || LABELS.en;
 
-// 스크립트 로더
-function loadSc(url,ms){
-  return new Promise(res=>{
-    if(document.querySelector('script[src="'+url+'"]')){res(true);return;}
-    const s=document.createElement('script');
-    s.src=url;s.async=true;
-    const t=setTimeout(()=>res(false),ms);
-    s.onload=()=>{clearTimeout(t);res(true);};
-    s.onerror=()=>{clearTimeout(t);res(false);};
-    document.head.appendChild(s);
-  });
-}
-
-// ═══════════════════════════════════
-// POSE LOOP
-// ═══════════════════════════════════
-async function poseLoop(){
-  if(!isRunning||!detector)return;
-  const video=document.getElementById('videoEl');
-  if(!video||video.readyState<2){rafId=requestAnimationFrame(poseLoop);return;}
-
-  const canvas=document.getElementById('canvasEl');
-  if(video.videoWidth>0){canvas.width=video.videoWidth;canvas.height=video.videoHeight;}
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  try{
-    const poses=await detector.estimatePoses(video,{flipHorizontal:false,maxPoses:1});
-    if(poses&&poses.length>0&&poses[0].keypoints){
-      procKP(poses[0],ctx,canvas);
-    }else{
-      noBody();
-    }
-  }catch(e){
-    console.warn('pose err:',e.message);
-  }
-  rafId=requestAnimationFrame(poseLoop);
-}
-
-function procKP(pose,ctx,W_canvas){
-  const kps=pose.keypoints;
-  const W=W_canvas.width,H=W_canvas.height;
-  const g=(i)=>kps[i]||{x:0,y:0,score:0};
-  const ok=(i)=>(g(i).score||0)>=MIN_C;
-
-  const headOk=ok(KP.NS)||ok(1)||ok(2);
-  const feetOk=ok(KP.LA)&&ok(KP.RA);
-  const bodyOk=ok(KP.LS)&&ok(KP.RS)&&ok(KP.LH)&&ok(KP.RH);
-  const full=headOk&&feetOk&&bodyOk;
-  const conf=Math.round((pose.score||0)*100);
-
-  setTQ(0,full?'ok':'bad');
-  setTQ(1,headOk?'ok':'warn');
-  setTQ(2,feetOk?'ok':'warn');
-
-  if(!full){
-    document.getElementById('tqMsg').textContent='몸 전체가 보이게 카메라를 맞춰주세요';
-    document.getElementById('tqMsg').className='tq-msg';
-    canRecord=false;
-    drawSkel(kps,ctx,W,H);
-    setDbg('Model✅  Body: H='+headOk+' B='+bodyOk+' F='+feetOk+' conf='+conf+'%\nState: '+sqSt);
+  // Pose 클래스가 로드됐는지 확인
+  if (typeof Pose === 'undefined') {
+    showError('MediaPipe 라이브러리 로드 실패.\n인터넷 연결을 확인하고 새로고침하세요.');
+    document.getElementById('loadingMsg').classList.remove('show');
     return;
   }
 
-  document.getElementById('tqMsg').textContent=isRecording?'⏺ 녹화 중':'✅ 분석 완료 — Record 버튼을 누르세요';
-  document.getElementById('tqMsg').className='tq-msg ok';
-  if(!canRecord&&!isRecording){
-    canRecord=true;
-    document.getElementById('recArea').classList.add('show');
+  try {
+    mpPose = new Pose({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}`;
+      }
+    });
+
+    mpPose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    mpPose.onResults(onResults);
+
+    // Camera 클래스로 루프 시작
+    const video = document.getElementById('video');
+    mpCam = new Camera(video, {
+      onFrame: async () => {
+        if (mpPose) {
+          await mpPose.send({ image: video });
+        }
+      },
+      width: 1280,
+      height: 720
+    });
+
+    mpCam.start();
+
+  } catch (e) {
+    showError('포즈 모델 초기화 실패: ' + e.message);
+    document.getElementById('loadingMsg').classList.remove('show');
   }
-
-  drawSkel(kps,ctx,W,H);
-
-  const a={
-    lk:sm('lk',ang(g(KP.LH),g(KP.LK),g(KP.LA))),
-    rk:sm('rk',ang(g(KP.RH),g(KP.RK),g(KP.RA))),
-    lh:sm('lh',ang(g(KP.LS),g(KP.LH),g(KP.LK))),
-    rh:sm('rh',ang(g(KP.RS),g(KP.RH),g(KP.RK))),
-    sh:sm('sh',Math.round(Math.abs((g(KP.LS).y-g(KP.RS).y)*H))),
-    tr:sm('tr',trunkA(g(KP.LS),g(KP.RS),g(KP.LH),g(KP.RH))),
-  };
-  const sym=Math.round(pb(syB,100-Math.min(50,(Math.abs(a.lk-a.rk)/2+Math.abs(a.lh-a.rh)/2+Math.min(a.sh/2,15))),12));
-  document.getElementById('sv3').textContent=sym;
-  updJoints(a);
-  const score=calcScore(a,sym);
-  updScore(score);
-
-  if(ok(KP.NS)&&ok(KP.LA)&&ok(KP.RA)){
-    const px=Math.max(g(KP.LA).y,g(KP.RA).y)*H - g(KP.NS).y*H;
-    if(px>60)document.getElementById('sv1').textContent=Math.max(140,Math.min(220,Math.round((px/H)*185*1.1)));
-  }
-
-  const hipY=(g(KP.LH).y+g(KP.RH).y)/2;
-  if(isRecording)squatFSM(pb(hYB,hipY,6),a);
-
-  fbC++;if(fbC>=FBI){fbC=0;updFB(a,score,sym);}
-  setDbg('✅ Tracking  conf='+conf+'%\nKnee L='+a.lk+'° R='+a.rk+'°\nTrunk='+a.tr+'° Sym='+sym+'%\nState: '+sqSt+(isRecording?' [REC]':''));
 }
 
-function noBody(){
-  setTQAll('bad');
-  document.getElementById('tqMsg').textContent='몸 전체가 보이게 카메라를 맞춰주세요';
-  document.getElementById('tqMsg').className='tq-msg';
-  canRecord=false;
-  setDbg('❌ Body not detected\n→ 카메라 앞에 전신이 보이도록 위치');
-}
+// ── 포즈 결과 처리 ──
+let firstResult = true;
 
-// ═══════════════════════════════════
-// DRAW
-// ═══════════════════════════════════
-function drawSkel(kps,ctx,W,H){
-  ctx.lineWidth=2.5;
-  CONN.forEach(([a,b])=>{
-    const pa=kps[a],pb_=kps[b];
-    if(!pa||!pb_||(pa.score||0)<MIN_C||(pb_.score||0)<MIN_C)return;
-    ctx.strokeStyle='rgba(201,168,76,0.75)';
-    ctx.beginPath();ctx.moveTo(pa.x*W,pa.y*H);ctx.lineTo(pb_.x*W,pb_.y*H);ctx.stroke();
+function onResults(results) {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const video = document.getElementById('video');
+
+  // 캔버스 크기를 비디오 실제 크기로
+  canvas.width = video.videoWidth || canvas.clientWidth;
+  canvas.height = video.videoHeight || canvas.clientHeight;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 첫 번째 결과 → 로딩 완료
+  if (firstResult) {
+    firstResult = false;
+    document.getElementById('loadingMsg').classList.remove('show');
+    const t = LABELS[lang] || LABELS.en;
+    setStatus(t.ready);
+    setStatusActive(true);
+  }
+
+  if (!results.poseLandmarks) {
+    const t = LABELS[lang] || LABELS.en;
+    setStatus(t.noBody);
+    setStatusActive(false);
+    return;
+  }
+
+  const t = LABELS[lang] || LABELS.en;
+  setStatus(t.ready);
+  setStatusActive(true);
+
+  // 스켈레톤 그리기
+  drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
+    color: 'rgba(201, 168, 76, 0.8)',
+    lineWidth: 3
   });
-  kps.forEach((kp)=>{
-    if(!kp||(kp.score||0)<MIN_C)return;
-    const r=(kp.score||0)>0.7?6:4;
-    ctx.fillStyle='#E8C97A';
-    ctx.beginPath();ctx.arc(kp.x*W,kp.y*H,r,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#9A6A20';
-    ctx.beginPath();ctx.arc(kp.x*W,kp.y*H,r-2,0,Math.PI*2);ctx.fill();
-  });
-  ctx.font='bold 9px sans-serif';
-  ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=4;
-  Object.entries(KP_LBL).forEach(([i,lbl])=>{
-    const kp=kps[i];
-    if(!kp||(kp.score||0)<0.5)return;
-    ctx.fillStyle='rgba(232,201,122,.95)';
-    ctx.fillText(lbl,kp.x*W+7,kp.y*H-5);
-  });
-  ctx.shadowBlur=0;
-}
 
-// ═══════════════════════════════════
-// MATH
-// ═══════════════════════════════════
-function ang(a,b,c){
-  if(!a||!b||!c)return 0;
-  let r=Math.atan2(c.y-b.y,c.x-b.x)-Math.atan2(a.y-b.y,a.x-b.x);
-  let d=Math.abs(r*180/Math.PI);if(d>180)d=360-d;return Math.round(d);
-}
-function trunkA(ls,rs,lh,rh){
-  const smx=(ls.x+rs.x)/2,smy=(ls.y+rs.y)/2;
-  const hmx=(lh.x+rh.x)/2,hmy=(lh.y+rh.y)/2;
-  return Math.round(Math.abs(Math.atan2(smx-hmx,smy-hmy)*180/Math.PI));
-}
-function sm(k,v){return Math.round(pb(aB[k],v,SM));}
-function pb(buf,v,max){buf.push(v);if(buf.length>max)buf.shift();return buf.reduce((a,b)=>a+b,0)/buf.length;}
-function calcScore(a,sym){
-  let s=100;
-  if(Math.abs(a.lk-a.rk)>25)s-=15;
-  if(Math.abs(a.lh-a.rh)>20)s-=10;
-  if(a.sh>10)s-=Math.min(12,a.sh);
-  if(a.tr>25)s-=Math.min(12,a.tr);
-  if(sym<80)s-=8;
-  return Math.max(0,Math.round(s));
-}
-
-// ═══════════════════════════════════
-// SQUAT FSM
-// ═══════════════════════════════════
-function squatFSM(hipY,a){
-  if(hBase===null){bF++;hBase=hipY;if(bF<20)return;}
-  if(sqSt==='standing')hBase=hBase*0.98+hipY*0.02;
-  const drop=hipY-hBase;
-  const avgK=(a.lk+a.rk)/2;
-  const now=performance.now();
-  const CD=400;
-  let ns=sqSt;
-  if(sqSt==='standing'&&drop>0.055&&avgK<130&&now-lastSC>CD)ns='descending';
-  else if(sqSt==='descending'){if(avgK<100)ns='bottom';else if(drop<0.02&&now-lastSC>CD)ns='standing';}
-  else if(sqSt==='bottom'&&avgK>130&&drop<0.03&&now-lastSC>CD)ns='ascending';
-  else if(sqSt==='ascending'){
-    if(drop<0.015&&avgK>155&&now-lastSC>CD){
-      ns='standing';reps++;
-      document.getElementById('sv0').textContent=reps;
-      document.getElementById('repN').textContent=reps;
-    }else if(avgK<100)ns='bottom';
-  }
-  if(ns!==sqSt){
-    sqSt=ns;lastSC=now;
-    const lb={standing:'STANDING',descending:'DESCENDING',bottom:'BOTTOM ▼',ascending:'ASCENDING'};
-    const es=document.getElementById('sqState');
-    es.textContent=lb[sqSt]||sqSt.toUpperCase();
-    es.classList.add('show');
-  }
-}
-
-// ═══════════════════════════════════
-// UI
-// ═══════════════════════════════════
-function setTQ(i,cls){const d=document.getElementById('tq'+i);if(d)d.className='tq-dot'+(cls?' '+cls:'');}
-function setTQAll(cls){for(let i=0;i<4;i++)setTQ(i,cls);}
-function setDbg(txt){const e=document.getElementById('dbgBox');if(e)e.textContent=txt;}
-function updJoints(a){
-  const vals=[a.lk,a.rk,a.lh,a.rh,a.sh,a.tr],mx=[180,180,180,180,30,45];
-  vals.forEach((v,i)=>{
-    const ve=document.getElementById('jv'+i);if(ve)ve.textContent=v+'°';
-    const be=document.getElementById('jb'+i);if(be)be.style.width=Math.min(100,(v/mx[i]*100))+'%';
+  drawLandmarks(ctx, results.poseLandmarks, {
+    color: '#E8C97A',
+    lineWidth: 1,
+    radius: 5
   });
 }
-function updScore(s){
-  document.getElementById('scoreNum').textContent=s;
-  document.getElementById('hScore').textContent=s+' pts';
-  document.getElementById('scoreArc').style.strokeDashoffset=207-(207*s/100);
-  const l=['—','개선 필요','보통','좋음','우수','완벽'];
-  document.getElementById('scoreLbl').textContent=l[s>=95?5:s>=80?4:s>=65?3:s>=50?2:s>0?1:0];
-}
-function updFB(a,score,sym){
-  const items=[];
-  if(score>=85)items.push({c:'good',t:'✓ 자세 우수'});
-  const kd=Math.abs(a.lk-a.rk);
-  if(kd>25)items.push({c:'warn',t:'⚠ 무릎 균형 ('+kd+'° 차이)'});
-  if(a.sh>10)items.push({c:'warn',t:'⚠ 어깨 기울기 ('+a.sh+'°)'});
-  if(a.tr>25)items.push({c:'warn',t:'⚠ 상체 앞 기울기 ('+a.tr+'°)'});
-  if(sym<80)items.push({c:'warn',t:'⚠ 좌우 대칭 ('+sym+'%)'});
-  if(a.lk<90)items.push({c:'good',t:'✓ 깊은 스쿼트'});
-  if(!items.length)items.push({c:'good',t:'✓ 균형 잡힌 자세'});
-  const s=items.map(i=>i.t).join('|');
-  if(s!==lastFBS){lastFBS=s;document.getElementById('fbList').innerHTML=items.map(i=>`<div class="fb-item ${i.c}">${i.t}</div>`).join('');}
-}
-function applyZoom(v){
-  curZoom=parseFloat(v);
-  document.getElementById('zoomVal').textContent=curZoom.toFixed(1)+'×';
-  document.getElementById('videoEl').style.transform='scale('+curZoom+')';
+
+// ── 카메라 정지 ──
+function stopCamera() {
+  if (mpCam) { mpCam.stop(); mpCam = null; }
+  if (mpPose) { try { mpPose.close(); } catch(e) {} mpPose = null; }
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+  const video = document.getElementById('video');
+  video.srcObject = null;
+  const ctx = document.getElementById('canvas').getContext('2d');
+  ctx.clearRect(0, 0, 9999, 9999);
+  document.getElementById('startWrap').classList.remove('hidden');
+  document.getElementById('camBtn').disabled = false;
+  const t = LABELS[lang] || LABELS.en;
+  document.getElementById('camBtn').textContent = t.camBtn;
+  document.getElementById('loadingMsg').classList.remove('show');
+  document.getElementById('errorMsg').classList.remove('show');
+  setStatus('대기 중');
+  setStatusActive(false);
+  firstResult = true;
 }
 
-// ═══════════════════════════════════
-// STOP
-// ═══════════════════════════════════
-function stopAll(){
-  isRunning=false;isRecording=false;canRecord=false;
-  if(rafId){cancelAnimationFrame(rafId);rafId=null;}
-  if(mediaRecorder&&mediaRecorder.state!=='inactive'){try{mediaRecorder.stop();}catch(e){}}
-  if(detector){try{detector.dispose();}catch(e){}detector=null;}
-  if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
-  const video=document.getElementById('videoEl');
-  if(video){video.srcObject=null;video.style.display='none';}
-  const ctx=document.getElementById('canvasEl').getContext('2d');
-  ctx.clearRect(0,0,9999,9999);
-  // 시작 화면으로 복귀
-  document.getElementById('camStartScreen').classList.remove('hidden');
-  document.getElementById('camStartBtn').disabled=false;
-  document.getElementById('camStartBtn').textContent='▶ 카메라 시작';
-  document.getElementById('zoomWrap').classList.remove('show');
-  document.getElementById('recArea').classList.remove('show');
-  document.getElementById('repOv').classList.remove('show');
-  document.getElementById('sqState').classList.remove('show');
-  document.getElementById('stBar').className='st-bar';
-  document.getElementById('statusOverlay').classList.add('hidden');
-  setTQAll('');
-  document.getElementById('tqMsg').textContent='카메라 시작 버튼을 누르세요';
-  document.getElementById('tqMsg').className='tq-msg';
-  document.getElementById('sDot').className='s-dot';
-  document.getElementById('sWord').textContent='대기';
-  resetUI();setDbg('-');
+// ── UI 헬퍼 ──
+function setStatus(msg) {
+  document.getElementById('statusText').textContent = msg;
 }
-
-// ═══════════════════════════════════
-// RECORD
-// ═══════════════════════════════════
-function startRec(){
-  if(!canRecord)return;
-  isRecording=true;reps=0;resetDetection();
-  document.getElementById('btnRec').classList.add('active');
-  document.getElementById('btnRec').style.display='none';
-  document.getElementById('btnStop').style.display='block';
-  document.getElementById('postBtns').style.display='none';
-  document.getElementById('recLbl').textContent='⏺ REC';
-  document.getElementById('recLbl').style.color='#F87171';
-  document.getElementById('repOv').classList.add('show');
-  document.getElementById('stBar').className='status-bar show rec';
-  document.getElementById('stBar').textContent='⏺ Recording';
-  document.getElementById('sDot').className='s-dot rec';
-  document.getElementById('sWord').textContent='녹화 중';
-  if(videoStream){
-    try{
-      recChunks=[];recordedBlob=null;
-      const m=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4',''].find(m=>!m||MediaRecorder.isTypeSupported(m))||'';
-      mediaRecorder=new MediaRecorder(videoStream,m?{mimeType:m}:{});
-      mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)recChunks.push(e.data);};
-      mediaRecorder.onstop=()=>{recordedBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||'video/webm'});};
-      mediaRecorder.start(200);
-    }catch(e){mediaRecorder=null;}
-  }
+function setStatusActive(on) {
+  const el = document.getElementById('statusText');
+  el.className = 'cam-header-status' + (on ? ' active' : '');
 }
-function stopRec(){
-  isRecording=false;
-  if(mediaRecorder&&mediaRecorder.state!=='inactive'){try{mediaRecorder.stop();}catch(e){}}
-  document.getElementById('btnRec').classList.remove('active');
-  document.getElementById('btnRec').style.display='none';
-  document.getElementById('btnStop').style.display='none';
-  document.getElementById('postBtns').style.display='flex';
-  document.getElementById('recLbl').textContent='DONE ✓';
-  document.getElementById('recLbl').style.color='var(--green)';
-  document.getElementById('stBar').className='status-bar show live';
-  document.getElementById('stBar').textContent='● Stopped';
-  document.getElementById('sDot').className='s-dot live';
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 6000);
 }
-function replayRec(){if(!recordedBlob)return;const u=URL.createObjectURL(recordedBlob);const w=window.open();w.document.write('<body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh"><video src="'+u+'" controls autoplay style="max-width:100%;max-height:100%"></video></body>');}
-function saveRec(){if(!recordedBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(recordedBlob);a.download='spectrax-'+Date.now()+'.webm';a.click();document.getElementById('recLbl').textContent='SAVED ✓';}
-function delRec(){recordedBlob=null;recChunks=[];document.getElementById('postBtns').style.display='none';document.getElementById('btnRec').style.display='block';document.getElementById('recLbl').textContent='READY';document.getElementById('recLbl').style.color='var(--muted)';}
-
-// ═══════════════════════════════════
-// RESET
-// ═══════════════════════════════════
-function resetDetection(){
-  reps=0;sqSt='standing';hBase=null;bF=0;lastSC=0;
-  Object.keys(aB).forEach(k=>aB[k]=[]);
-  hYB=[];syB=[];fbC=0;lastFBS='';
-  document.getElementById('repN').textContent='0';
-  document.getElementById('sv0').textContent='0';
-}
-function resetUI(){
-  resetDetection();
-  document.getElementById('scoreNum').textContent='—';
-  document.getElementById('scoreArc').style.strokeDashoffset='207';
-  document.getElementById('scoreLbl').textContent='—';
-  document.getElementById('hScore').textContent='— pts';
-  ['0','—','—','—'].forEach((v,i)=>{const e=document.getElementById('sv'+i);if(e)e.textContent=v;});
-  for(let i=0;i<6;i++){
-    const v=document.getElementById('jv'+i);if(v)v.textContent='—°';
-    const b=document.getElementById('jb'+i);if(b)b.style.width='0%';
-  }
-  document.getElementById('fbList').innerHTML='<div class="fb-item">카메라를 시작하세요.</div>';
-  document.getElementById('btnRec').style.display='block';
-  document.getElementById('btnRec').classList.remove('active');
-  document.getElementById('btnStop').style.display='none';
-  document.getElementById('postBtns').style.display='none';
-  document.getElementById('recLbl').textContent='READY';
-  document.getElementById('recLbl').style.color='var(--muted)';
-  document.getElementById('recArea').classList.remove('show');
-  document.getElementById('repOv').classList.remove('show');
-  document.getElementById('sqState').classList.remove('show');
-  isRecording=false;canRecord=false;
-}
-
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&curScreen===1)goTo(2);});
 </script>
 </body>
 </html>
