@@ -8,50 +8,108 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; background: #050505; color: #F8F4EE; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
 
-/* 화면 전환 */
-.screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; z-index: 1; }
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; opacity: 0; pointer-events: none; transition: opacity 0.35s; z-index: 1; background: #080808; overflow: hidden; }
 .screen.active { opacity: 1; pointer-events: all; z-index: 2; }
 
-/* 언어 선택 */
-#s1 { background: #050505; gap: 0; }
+/* ── 공통 헤더 ── */
+.hdr { width: 100%; height: 52px; background: rgba(5,5,5,0.97); border-bottom: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; flex-shrink: 0; }
+.hdr-logo { font-size: 15px; letter-spacing: 5px; color: #C9A84C; font-weight: 300; }
+.hdr-title { font-size: 11px; letter-spacing: 2px; color: rgba(248,244,238,0.5); text-transform: uppercase; }
+.hdr-right { min-width: 60px; display: flex; justify-content: flex-end; }
+.back-btn { background: none; border: none; color: rgba(248,244,238,0.45); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 6px 10px; transition: color 0.2s; }
+.back-btn:hover { color: #C9A84C; }
+
+/* ── 스크롤 바디 ── */
+.body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; width: 100%; padding: 24px 18px 32px; display: flex; flex-direction: column; align-items: center; }
+.section-label { font-size: 10px; letter-spacing: 3px; color: rgba(201,168,76,0.5); text-transform: uppercase; margin-bottom: 20px; align-self: flex-start; }
+
+/* ── 카드 리스트 ── */
+.card-list { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 10px; }
+.card { border: 1px solid rgba(201,168,76,0.18); border-radius: 3px; background: #0f0f0f; cursor: pointer; padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s; }
+.card:hover, .card:active { border-color: #C9A84C; background: rgba(201,168,76,0.06); }
+.card-icon { font-size: 28px; flex-shrink: 0; width: 40px; text-align: center; }
+.card-info { flex: 1; }
+.card-name { font-size: 15px; font-weight: 400; color: #F8F4EE; margin-bottom: 3px; }
+.card-desc { font-size: 10px; color: rgba(248,244,238,0.38); letter-spacing: 0.5px; }
+.card-arrow { font-size: 18px; color: rgba(201,168,76,0.35); flex-shrink: 0; transition: color 0.2s; }
+.card:hover .card-arrow { color: #C9A84C; }
+
+/* 메트릭 카드 (작은 버전) */
+.metric-card { border: 1px solid rgba(201,168,76,0.15); border-radius: 3px; background: #0f0f0f; cursor: pointer; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+.metric-card:hover, .metric-card:active { border-color: #C9A84C; background: rgba(201,168,76,0.06); }
+.metric-name { font-size: 13px; font-weight: 400; color: #F8F4EE; }
+.metric-tags { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.tag { font-size: 8px; letter-spacing: 1px; color: rgba(201,168,76,0.6); background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; padding: 2px 6px; text-transform: uppercase; }
+
+/* ── S1: 언어 선택 ── */
+#s1 { align-items: center; justify-content: center; background: #050505; }
 .logo { font-size: 52px; font-weight: 200; letter-spacing: 14px; color: #C9A84C; margin-bottom: 6px; }
-.logo-sub { font-size: 10px; letter-spacing: 4px; color: rgba(201,168,76,0.4); text-transform: uppercase; margin-bottom: 48px; }
-.lang-label { font-size: 10px; letter-spacing: 3px; color: rgba(248,244,238,0.4); text-transform: uppercase; margin-bottom: 20px; }
-.lang-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; width: 90%; max-width: 500px; margin-bottom: 32px; }
-.lang-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 14px 8px; border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; cursor: pointer; background: transparent; color: #F8F4EE; transition: all 0.2s; }
-.lang-btn:hover, .lang-btn.sel { border-color: #C9A84C; background: rgba(201,168,76,0.1); }
-.lang-flag { font-size: 22px; }
-.lang-name { font-size: 9px; color: rgba(248,244,238,0.55); }
-.go-btn { padding: 14px 52px; background: transparent; border: 1px solid #C9A84C; color: #C9A84C; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+.logo-sub { font-size: 10px; letter-spacing: 4px; color: rgba(201,168,76,0.38); text-transform: uppercase; margin-bottom: 44px; }
+.lang-label { font-size: 10px; letter-spacing: 3px; color: rgba(248,244,238,0.35); text-transform: uppercase; margin-bottom: 18px; }
+.lang-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; width: 90%; max-width: 500px; margin-bottom: 28px; }
+.lang-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px; border: 1px solid rgba(201,168,76,0.18); border-radius: 2px; cursor: pointer; background: transparent; color: #F8F4EE; transition: all 0.2s; }
+.lang-btn:hover, .lang-btn.sel { border-color: #C9A84C; background: rgba(201,168,76,0.09); }
+.lang-flag { font-size: 20px; }
+.lang-name { font-size: 9px; color: rgba(248,244,238,0.5); }
+.go-btn { padding: 13px 52px; background: transparent; border: 1px solid #C9A84C; color: #C9A84C; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
 .go-btn:hover { background: #C9A84C; color: #050505; }
 
-/* 카테고리 선택 */
-#s2 { background: #080808; gap: 0; justify-content: flex-start; }
-.s2-header { width: 100%; height: 52px; background: rgba(5,5,5,0.97); border-bottom: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
-.s2-logo { font-size: 16px; letter-spacing: 5px; color: #C9A84C; font-weight: 300; }
-.back-btn { background: none; border: none; color: rgba(248,244,238,0.4); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 4px 8px; }
-.back-btn:hover { color: #C9A84C; }
-.cat-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; width: 100%; padding: 32px 24px; overflow-y: auto; }
-.cat-title { font-size: 12px; letter-spacing: 4px; color: rgba(201,168,76,0.5); text-transform: uppercase; margin-bottom: 32px; }
-.cat-grid { display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%; max-width: 480px; }
-.cat-card { border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; background: #0f0f0f; cursor: pointer; padding: 22px 24px; display: flex; align-items: center; gap: 18px; transition: all 0.25s; }
-.cat-card:hover { border-color: #C9A84C; background: rgba(201,168,76,0.05); transform: translateY(-1px); }
-.cat-icon { font-size: 32px; flex-shrink: 0; }
-.cat-info { flex: 1; }
-.cat-name { font-size: 16px; font-weight: 400; letter-spacing: 1px; color: #F8F4EE; margin-bottom: 4px; }
-.cat-desc { font-size: 10px; letter-spacing: 1px; color: rgba(248,244,238,0.4); }
-.cat-arrow { font-size: 20px; color: rgba(201,168,76,0.4); }
-.cat-card:hover .cat-arrow { color: #C9A84C; }
+/* ── S5: 카메라 ── */
+#s5 { background: #000; align-items: stretch; }
+.cam-hdr { height: 52px; background: rgba(5,5,5,0.95); border-bottom: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; flex-shrink: 0; z-index: 10; gap: 8px; }
+.cam-logo { font-size: 13px; letter-spacing: 4px; color: #C9A84C; font-weight: 300; flex-shrink: 0; }
+.cam-info { flex: 1; text-align: center; }
+.cam-ex { font-size: 9px; letter-spacing: 2px; color: rgba(248,244,238,0.5); text-transform: uppercase; }
+.cam-metric { font-size: 8px; letter-spacing: 1px; color: rgba(201,168,76,0.6); text-transform: uppercase; }
+.cam-track { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.cam-track.good { color: #22C55E; }
+.cam-track.low { color: #F97316; }
+.cam-track.lost { color: #EF4444; }
 
-/* 카메라 화면 */
-#s3 { background: #000; padding: 0; justify-content: flex-start; align-items: stretch; }
-.cam-header { height: 52px; background: rgba(5,5,5,0.95); border-bottom: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; z-index: 10; }
-.cam-logo { font-size: 14px; letter-spacing: 4px; color: #C9A84C; font-weight: 300; }
-.cam-status { font-size: 9px; letter-spacing: 2px; color: rgba(248,244,238,0.4); text-transform: uppercase; }
-.cam-status.on { color: #22C55E; }
 .cam-body { flex: 1; position: relative; overflow: hidden; }
 #video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 #canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* REC 표시 */
+.rec-badge { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.55); border: 1px solid rgba(239,68,68,0.5); border-radius: 3px; padding: 4px 10px; font-size: 9px; letter-spacing: 2px; color: #F87171; text-transform: uppercase; z-index: 10; display: none; }
+.rec-badge.show { display: flex; }
+.rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #EF4444; animation: blink 1s infinite; }
+.rec-timer { font-variant-numeric: tabular-nums; }
+
+/* 오버레이 패널 */
+.overlay-panel {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-width: 110px;
+  z-index: 10;
+}
+.ov-title { font-size: 8px; letter-spacing: 2px; color: rgba(201,168,76,0.7); text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 5px; }
+.ov-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 10px; }
+.ov-row:last-child { margin-bottom: 0; }
+.ov-label { font-size: 9px; color: rgba(248,244,238,0.5); }
+.ov-val { font-size: 11px; font-weight: 600; color: #F8F4EE; font-variant-numeric: tabular-nums; }
+
+/* 하단 버튼 */
+.cam-footer { height: 72px; background: rgba(5,5,5,0.95); border-top: 1px solid rgba(201,168,76,0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; z-index: 10; }
+.foot-btn { background: none; border: 1px solid rgba(248,244,238,0.2); color: rgba(248,244,238,0.6); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 10px 16px; border-radius: 3px; transition: all 0.2s; }
+.foot-btn:hover { border-color: #C9A84C; color: #C9A84C; }
+.rec-btn { border: 2px solid #EF4444; color: #F87171; padding: 10px 20px; font-weight: 700; }
+.rec-btn.recording { background: rgba(239,68,68,0.2); color: #fff; animation: recPulse 1s infinite; }
+.save-btn { border-color: rgba(34,197,94,0.4); color: #22C55E; display: none; }
+.save-btn.show { display: block; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes recPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)} 50%{box-shadow:0 0 0 6px rgba(239,68,68,0)} }
+
+@media(max-width:400px) {
+  .lang-grid { grid-template-columns: repeat(5,1fr); }
+  .logo { font-size: 40px; letter-spacing: 10px; }
+}
 </style>
 </head>
 <body>
@@ -73,103 +131,305 @@ html, body { height: 100%; background: #050505; color: #F8F4EE; font-family: 'He
     <div class="lang-btn" onclick="pick(this,'ar')"><span class="lang-flag">🇸🇦</span><span class="lang-name">العربية</span></div>
     <div class="lang-btn" onclick="pick(this,'hi')"><span class="lang-flag">🇮🇳</span><span class="lang-name">हिन्दी</span></div>
   </div>
-  <button class="go-btn" id="goBtn" onclick="show('s2')">시작하기</button>
+  <button class="go-btn" onclick="show('s2')">시작하기</button>
 </div>
 
 <!-- S2: 카테고리 선택 -->
 <div class="screen" id="s2">
-  <div class="s2-header">
+  <div class="hdr">
     <button class="back-btn" onclick="show('s1')">← Back</button>
-    <div class="s2-logo">SPECTRAX</div>
-    <div style="width:60px"></div>
+    <div class="hdr-logo">SPECTRAX</div>
+    <div class="hdr-right"></div>
   </div>
-  <div class="cat-body">
-    <div class="cat-title">SCOUTER — Choose Category</div>
-    <div class="cat-grid">
-      <div class="cat-card" onclick="startScouter()">
-        <div class="cat-icon">🏋️</div>
-        <div class="cat-info">
-          <div class="cat-name">SBD</div>
-          <div class="cat-desc">Squat · Bench Press · Deadlift</div>
-        </div>
-        <div class="cat-arrow">›</div>
-      </div>
-      <div class="cat-card" onclick="startScouter()">
-        <div class="cat-icon">⚡</div>
-        <div class="cat-info">
-          <div class="cat-name">Athletic Performance</div>
-          <div class="cat-desc">Jump · Sprint · Agility · Balance</div>
-        </div>
-        <div class="cat-arrow">›</div>
-      </div>
-      <div class="cat-card" onclick="startScouter()">
-        <div class="cat-icon">🔥</div>
-        <div class="cat-info">
-          <div class="cat-name">HYROX</div>
-          <div class="cat-desc">Run · Sled · Carry · Wall Balls</div>
-        </div>
-        <div class="cat-arrow">›</div>
-      </div>
-    </div>
+  <div class="body">
+    <div class="section-label">Category</div>
+    <div class="card-list" id="catList"></div>
   </div>
 </div>
 
-<!-- S3: 카메라 + MediaPipe -->
+<!-- S3: 운동 선택 -->
 <div class="screen" id="s3">
-  <div class="cam-header">
-    <button class="back-btn" onclick="stopAll(); show('s2')">← Back</button>
-    <div class="cam-logo">SPECTRAX</div>
-    <div class="cam-status" id="camStatus">대기 중</div>
+  <div class="hdr">
+    <button class="back-btn" onclick="show('s2')">← Back</button>
+    <div class="hdr-title" id="s3Title">SBD</div>
+    <div class="hdr-right"></div>
+  </div>
+  <div class="body">
+    <div class="section-label">Exercise</div>
+    <div class="card-list" id="exList"></div>
+  </div>
+</div>
+
+<!-- S4: 메트릭 선택 -->
+<div class="screen" id="s4">
+  <div class="hdr">
+    <button class="back-btn" onclick="show('s3')">← Back</button>
+    <div class="hdr-title" id="s4Title">Squat</div>
+    <div class="hdr-right"></div>
+  </div>
+  <div class="body">
+    <div class="section-label">Metric</div>
+    <div class="card-list" id="metricList"></div>
+  </div>
+</div>
+
+<!-- S5: 카메라 -->
+<div class="screen" id="s5">
+  <div class="cam-hdr">
+    <button class="back-btn" onclick="stopAll(); show('s4')">← Back</button>
+    <div class="cam-info">
+      <div class="cam-ex" id="camEx">—</div>
+      <div class="cam-metric" id="camMetric">—</div>
+    </div>
+    <div class="cam-track lost" id="camTrack">Lost</div>
   </div>
   <div class="cam-body">
     <video id="video" autoplay playsinline muted webkit-playsinline></video>
     <canvas id="canvas"></canvas>
+    <!-- REC 뱃지 -->
+    <div class="rec-badge" id="recBadge">
+      <div class="rec-dot"></div>
+      <span>REC</span>
+      <span class="rec-timer" id="recTimer">0:00</span>
+    </div>
+    <!-- 오버레이 패널 -->
+    <div class="overlay-panel" id="overlayPanel">
+      <div class="ov-title" id="ovTitle">—</div>
+      <div id="ovRows"></div>
+    </div>
+  </div>
+  <div class="cam-footer">
+    <button class="foot-btn" onclick="stopAll(); show('s4')">← Back</button>
+    <button class="foot-btn rec-btn" id="recBtn" onclick="toggleRec()">⏺ Record</button>
+    <button class="foot-btn save-btn" id="saveBtn" onclick="saveVideo()">✓ Save</button>
   </div>
 </div>
 
-<!-- MediaPipe (CDN) -->
+<!-- MediaPipe -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 
 <script>
-let lang = 'ko';
-let pose = null;
-let camera = null;
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const CONFIG = {
+  SBD: {
+    icon: '🏋️',
+    desc: 'Squat · Bench Press · Deadlift',
+    exercises: {
+      Squat: {
+        icon: '🏋️',
+        metrics: {
+          'Full Squat Recording': ['Reps','Depth','Knee','Tempo'],
+          'Depth Check':          ['Depth','Hip','Knee'],
+          'Knee Check':           ['Left','Right','Diff'],
+          'Torso Check':          ['Torso','Hip','Knee'],
+          'Tempo Check':          ['Rep','Down','Up']
+        }
+      },
+      'Bench Press': {
+        icon: '💪',
+        metrics: {
+          'Full Bench Recording': ['Reps','Elbow','Tempo','L/R'],
+          'Elbow Check':          ['Left','Right','Diff'],
+          'Wrist Check':          ['Left','Right','Diff'],
+          'Tempo Check':          ['Rep','Down','Press']
+        }
+      },
+      Deadlift: {
+        icon: '⬆️',
+        metrics: {
+          'Full Deadlift Recording': ['Reps','Hip','Back','Tempo'],
+          'Hip Check':               ['Hip','Knee','Back'],
+          'Back Check':              ['Back','Hip','Knee'],
+          'Knee Check':              ['Left','Right','Diff'],
+          'Tempo Check':             ['Rep','Pull','Lower']
+        }
+      }
+    }
+  },
+  'Athletic Performance': {
+    icon: '⚡',
+    desc: 'Jump · Sprint · Agility · Balance',
+    exercises: {
+      Jump: {
+        icon: '🦘',
+        metrics: {
+          'Full Jump Recording': ['Reps','Level','Landing','Tempo'],
+          'Takeoff Check':       ['Hip','Knee','Ankle'],
+          'Landing Check':       ['Left','Right','Diff']
+        }
+      },
+      Sprint: {
+        icon: '🏃',
+        metrics: {
+          'Sprint Recording': ['Cadence','Lean','Steps'],
+          'Lean Check':       ['Body','Hip','Knee']
+        }
+      },
+      Agility: {
+        icon: '🎯',
+        metrics: {
+          'Agility Recording': ['Steps','Change','Lean'],
+          'Turn Check':        ['Time','Hip','Knee']
+        }
+      },
+      Balance: {
+        icon: '⚖️',
+        metrics: {
+          'Balance Check':       ['L/R','Center','Sway'],
+          'Single Leg Balance':  ['Time','Sway','Knee']
+        }
+      }
+    }
+  },
+  HYROX: {
+    icon: '🔥',
+    desc: 'Run · Sled · Carry · Wall Balls · Burpee',
+    exercises: {
+      Run:              { icon:'🏃', metrics:{ 'Run Recording':['Cadence','Lean','Steps'] } },
+      'Sled Push':      { icon:'🛷', metrics:{ 'Sled Push Recording':['Torso','Hip','Knee'] } },
+      'Sled Pull':      { icon:'🔗', metrics:{ 'Sled Pull Recording':['Lean','Hip','Knee'] } },
+      'Farmers Carry':  { icon:'🏋️', metrics:{ 'Farmers Carry Recording':['Shoulder','Tilt','Steps'] } },
+      'Wall Balls':     { icon:'🏀', metrics:{ 'Wall Ball Recording':['Reps','Depth','Tempo'], 'Depth Check':['Depth','Hip','Knee'] } },
+      'Burpee Broad Jump': { icon:'🤸', metrics:{ 'Burpee Broad Jump Recording':['Reps','Phase','Landing','Tempo'], 'Landing Check':['Left','Right','Diff'] } }
+    }
+  },
+  'Posture Assessment': {
+    icon: '📐',
+    desc: 'Front · Back · Left · Right',
+    exercises: {
+      Front:      { icon:'👤', metrics:{ 'Front Assessment':['Shoulder','Hip','Knee','Foot'] } },
+      Back:       { icon:'🔙', metrics:{ 'Back Assessment':['Shoulder','Hip','Heel','Leg'] } },
+      'Left Side':  { icon:'◀️', metrics:{ 'Left Side Assessment':['Head','Shoulder','Hip','Knee'] } },
+      'Right Side': { icon:'▶️', metrics:{ 'Right Side Assessment':['Head','Shoulder','Hip','Knee'] } }
+    }
+  }
+};
 
-// 화면 전환
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let lang = 'ko';
+let selCat = '', selEx = '', selMetric = '', selFields = [];
+let pose = null, mpCam = null;
+let landmarks = null;
+let mediaRecorder = null, recChunks = [], recBlob = null;
+let recStartTime = 0, recTimerInterval = null;
+let isRecording = false;
+let frameCount = 0;
+
+// smoothing buffers
+const BUF = {};
+function smoothVal(key, val, n=6) {
+  if (!BUF[key]) BUF[key] = [];
+  BUF[key].push(val);
+  if (BUF[key].length > n) BUF[key].shift();
+  return BUF[key].reduce((a,b)=>a+b,0) / BUF[key].length;
+}
+function clearBufs() { Object.keys(BUF).forEach(k => delete BUF[k]); }
+
+// rep counting state
+let repState = { count:0, phase:'up', lastAngle:180, lastHipY:0, baseHipY:null, baseFrames:0 };
+function resetReps() { repState = { count:0, phase:'up', lastAngle:180, lastHipY:0, baseHipY:null, baseFrames:0 }; clearBufs(); }
+
+// tempo state
+let tempoState = { phaseStart:0, repStart:0, downTime:0, upTime:0, repTime:0 };
+
+// step count
+let stepState = { count:0, lastAnkleY:0, phase:'up', lastTime:0 };
+
+// balance sway
+let swayState = { basX:null, range:0, vals:[] };
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// 언어 선택
 function pick(el, l) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('sel'));
   el.classList.add('sel');
   lang = l;
 }
 
-// 카테고리 클릭 → 바로 MediaPipe 시작
-function startScouter() {
-  show('s3');
-  initMediaPipe();
+// ═══════════════════════════════════════
+// BUILD UI
+// ═══════════════════════════════════════
+function buildCats() {
+  const el = document.getElementById('catList');
+  el.innerHTML = Object.keys(CONFIG).map(cat => `
+    <div class="card" onclick="selectCat('${cat}')">
+      <div class="card-icon">${CONFIG[cat].icon}</div>
+      <div class="card-info">
+        <div class="card-name">${cat}</div>
+        <div class="card-desc">${CONFIG[cat].desc}</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </div>`).join('');
 }
 
-// MediaPipe 초기화
-function initMediaPipe() {
+function selectCat(cat) {
+  selCat = cat;
+  document.getElementById('s3Title').textContent = cat;
+  const exs = CONFIG[cat].exercises;
+  document.getElementById('exList').innerHTML = Object.keys(exs).map(ex => `
+    <div class="card" onclick="selectEx('${ex}')">
+      <div class="card-icon">${exs[ex].icon}</div>
+      <div class="card-info">
+        <div class="card-name">${ex}</div>
+        <div class="card-desc">${Object.keys(exs[ex].metrics).join(' · ')}</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </div>`).join('');
+  show('s3');
+}
+
+function selectEx(ex) {
+  selEx = ex;
+  document.getElementById('s4Title').textContent = ex;
+  const metrics = CONFIG[selCat].exercises[ex].metrics;
+  document.getElementById('metricList').innerHTML = Object.keys(metrics).map(m => `
+    <div class="metric-card" onclick="selectMetric('${m}')">
+      <div class="metric-name">${m}</div>
+      <div class="metric-tags">${metrics[m].map(f=>`<span class="tag">${f}</span>`).join('')}</div>
+    </div>`).join('');
+  show('s4');
+}
+
+function selectMetric(metric) {
+  selMetric = metric;
+  selFields = CONFIG[selCat].exercises[selEx].metrics[metric];
+
+  // 오버레이 제목
+  document.getElementById('camEx').textContent = selEx.toUpperCase();
+  document.getElementById('camMetric').textContent = metric.toUpperCase();
+  document.getElementById('ovTitle').textContent = metric.replace(' Recording','').replace(' Check','').toUpperCase();
+
+  // 오버레이 행 생성
+  document.getElementById('ovRows').innerHTML = selFields.map(f =>
+    `<div class="ov-row"><span class="ov-label">${f}</span><span class="ov-val" id="ov_${f}">--</span></div>`
+  ).join('');
+
+  resetReps();
+  show('s5');
+  initPose();
+}
+
+// ═══════════════════════════════════════
+// MEDIAPIPE
+// ═══════════════════════════════════════
+function initPose() {
   const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const status = document.getElementById('camStatus');
 
-  status.textContent = '로딩 중...';
-  status.className = 'cam-status';
-
-  // Pose 설정
   pose = new Pose({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`
   });
-
   pose.setOptions({
     modelComplexity: 1,
     smoothLandmarks: true,
@@ -177,65 +437,551 @@ function initMediaPipe() {
     minDetectionConfidence: 0.5,
     minTrackingConfidence: 0.5
   });
+  pose.onResults(onResults);
 
-  pose.onResults((results) => {
-    const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (results.poseLandmarks) {
-      status.textContent = '감지 중';
-      status.className = 'cam-status on';
-
-      drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
-        color: 'rgba(201,168,76,0.8)',
-        lineWidth: 3
-      });
-      drawLandmarks(ctx, results.poseLandmarks, {
-        color: '#E8C97A',
-        lineWidth: 1,
-        radius: 5
-      });
-    } else {
-      status.textContent = '전신을 보여주세요';
-      status.className = 'cam-status';
-    }
-  });
-
-  // 후면 카메라로 Camera 시작
-  camera = new Camera(video, {
-    onFrame: async () => {
-      await pose.send({ image: video });
-    },
-    facingMode: 'environment',   // 후면 카메라
+  mpCam = new Camera(video, {
+    onFrame: async () => { if (pose) await pose.send({ image: video }); },
+    facingMode: 'environment',
     width: 1280,
     height: 720
   });
-
-  camera.start().then(() => {
-    status.textContent = '분석 중';
-    status.className = 'cam-status on';
-  }).catch((e) => {
-    status.textContent = '카메라 오류';
-    console.error(e);
-  });
+  mpCam.start();
 }
 
-// 정지
 function stopAll() {
-  if (camera) { camera.stop(); camera = null; }
-  if (pose) { try { pose.close(); } catch(e) {} pose = null; }
+  if (mpCam) { mpCam.stop(); mpCam = null; }
+  if (pose)  { try { pose.close(); } catch(e){} pose = null; }
+  if (isRecording) stopRec();
   const video = document.getElementById('video');
-  if (video.srcObject) {
-    video.srcObject.getTracks().forEach(t => t.stop());
-    video.srcObject = null;
-  }
-  const ctx = document.getElementById('canvas').getContext('2d');
-  ctx.clearRect(0, 0, 9999, 9999);
-  document.getElementById('camStatus').textContent = '대기 중';
-  document.getElementById('camStatus').className = 'cam-status';
+  if (video.srcObject) { video.srcObject.getTracks().forEach(t=>t.stop()); video.srcObject = null; }
+  document.getElementById('canvas').getContext('2d').clearRect(0,0,9999,9999);
+  document.getElementById('camTrack').textContent = 'Lost';
+  document.getElementById('camTrack').className = 'cam-track lost';
+  landmarks = null;
+  frameCount = 0;
 }
+
+// ═══════════════════════════════════════
+// POSE RESULTS
+// ═══════════════════════════════════════
+function onResults(results) {
+  const video  = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  canvas.width  = video.videoWidth  || video.clientWidth;
+  canvas.height = video.videoHeight || video.clientHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  landmarks = results.poseLandmarks || null;
+
+  // 트래킹 상태
+  const trackEl = document.getElementById('camTrack');
+  if (!landmarks) {
+    trackEl.textContent = 'Lost';
+    trackEl.className = 'cam-track lost';
+    clearFields();
+    return;
+  }
+
+  // 가시성 체크
+  const lm = landmarks;
+  const keyVis = [lm[11], lm[12], lm[23], lm[24], lm[25], lm[26]].map(p => p?.visibility || 0);
+  const avgVis = keyVis.reduce((a,b)=>a+b,0) / keyVis.length;
+
+  if (avgVis > 0.7) {
+    trackEl.textContent = 'Good';
+    trackEl.className = 'cam-track good';
+  } else if (avgVis > 0.4) {
+    trackEl.textContent = 'Low';
+    trackEl.className = 'cam-track low';
+  } else {
+    trackEl.textContent = 'Lost';
+    trackEl.className = 'cam-track lost';
+  }
+
+  // 스켈레톤 그리기
+  drawConnectors(ctx, lm, POSE_CONNECTIONS, { color:'rgba(201,168,76,0.8)', lineWidth:3 });
+  drawLandmarks(ctx, lm, { color:'#E8C97A', lineWidth:1, radius:5 });
+
+  frameCount++;
+
+  // 측정값 업데이트 (3프레임마다)
+  if (frameCount % 3 === 0 && avgVis > 0.4) {
+    updateMetrics(lm, canvas);
+  }
+}
+
+function clearFields() {
+  selFields.forEach(f => { const el = document.getElementById('ov_'+f); if(el) el.textContent = '--'; });
+}
+
+// ═══════════════════════════════════════
+// 계산 함수들
+// ═══════════════════════════════════════
+function calcAngle(A, B, C) {
+  if (!A||!B||!C) return null;
+  const radians = Math.atan2(C.y-B.y, C.x-B.x) - Math.atan2(A.y-B.y, A.x-B.x);
+  let angle = Math.abs(radians * 180 / Math.PI);
+  if (angle > 180) angle = 360 - angle;
+  return Math.round(angle);
+}
+
+function vis(lm, i) { return (lm[i]?.visibility || 0) > 0.4; }
+
+function getAngle(lm, a, b, c) {
+  if (!vis(lm,a)||!vis(lm,b)||!vis(lm,c)) return null;
+  return calcAngle(lm[a], lm[b], lm[c]);
+}
+
+function fmtAngle(v) { return v != null ? v+'°' : '--'; }
+function fmtVal(v, unit='')  { return v != null ? v+unit : '--'; }
+
+function midpoint(p1, p2) {
+  if (!p1||!p2) return null;
+  return { x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2 };
+}
+
+function torsoAngle(lm) {
+  const sh = midpoint(lm[11], lm[12]);
+  const hip = midpoint(lm[23], lm[24]);
+  if (!sh||!hip) return null;
+  const angle = Math.abs(Math.atan2(sh.x-hip.x, hip.y-sh.y) * 180 / Math.PI);
+  return Math.round(angle);
+}
+
+function levelDiff(lm, a, b, canvas) {
+  if (!vis(lm,a)||!vis(lm,b)) return null;
+  return Math.round(Math.abs(lm[a].y - lm[b].y) * (canvas?.height||500));
+}
+
+// ═══════════════════════════════════════
+// 메트릭 업데이트
+// ═══════════════════════════════════════
+function setOv(field, val) {
+  const el = document.getElementById('ov_'+field);
+  if (el) el.textContent = val != null ? val : '--';
+}
+
+function updateMetrics(lm, canvas) {
+  const metric = selMetric;
+  const cat = selCat;
+  const ex = selEx;
+
+  // ── SBD > Squat ──
+  if (cat==='SBD' && ex==='Squat') {
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    const avgKnee = lKnee!=null&&rKnee!=null ? Math.round((lKnee+rKnee)/2) : (lKnee||rKnee);
+    const lHip = getAngle(lm,11,23,25);
+    const rHip = getAngle(lm,12,24,26);
+    const avgHip = lHip!=null&&rHip!=null ? Math.round((lHip+rHip)/2) : null;
+    const torso = torsoAngle(lm);
+    const hipMid = midpoint(lm[23],lm[24]);
+    const kneeMid = midpoint(lm[25],lm[26]);
+    const depth = hipMid&&kneeMid ? (hipMid.y < kneeMid.y ? 'Above' : hipMid.y < kneeMid.y+0.02 ? 'Parallel' : 'Below') : null;
+    const hipLvl = levelDiff(lm,23,24,canvas);
+
+    if (metric==='Full Squat Recording'||metric==='Depth Check'||metric==='Knee Check'||metric==='Torso Check') {
+      setOv('Depth', depth);
+      setOv('Hip', hipLvl!=null ? hipLvl+'px' : null);
+      setOv('Knee', fmtAngle(avgKnee));
+      setOv('Left', fmtAngle(lKnee));
+      setOv('Right', fmtAngle(rKnee));
+      setOv('Diff', lKnee!=null&&rKnee!=null ? Math.abs(lKnee-rKnee)+'°' : '--');
+      setOv('Torso', fmtAngle(torso));
+
+      // Reps (knee angle cycle)
+      if (metric==='Full Squat Recording') {
+        if (avgKnee!=null) {
+          const sm = Math.round(smoothVal('sqKnee', avgKnee));
+          if (repState.phase==='up' && sm < 130) { repState.phase='down'; }
+          else if (repState.phase==='down' && sm > 155) { repState.phase='up'; repState.count++; }
+          setOv('Reps', repState.count);
+        }
+        // Tempo
+        setOv('Tempo', tempoState.repTime > 0 ? (tempoState.repTime/1000).toFixed(1)+'s' : '--');
+      }
+    }
+    if (metric==='Torso Check') {
+      setOv('Hip', fmtAngle(avgHip));
+    }
+    if (metric==='Tempo Check') {
+      setOv('Rep',  tempoState.repTime  > 0 ? (tempoState.repTime/1000).toFixed(1)+'s' : '--');
+      setOv('Down', tempoState.downTime > 0 ? (tempoState.downTime/1000).toFixed(1)+'s' : '--');
+      setOv('Up',   tempoState.upTime   > 0 ? (tempoState.upTime/1000).toFixed(1)+'s' : '--');
+      // track tempo via knee angle
+      if (avgKnee!=null) {
+        const now = performance.now();
+        if (repState.phase==='up' && avgKnee < 130) {
+          repState.phase='down'; tempoState.phaseStart=now;
+          if (repState.repStart>0) { tempoState.upTime = now-tempoState.phaseStart; }
+        } else if (repState.phase==='down' && avgKnee > 155) {
+          repState.phase='up';
+          tempoState.downTime = now - tempoState.phaseStart;
+          tempoState.repTime = now - (repState.repStart||now);
+          repState.repStart = now;
+          tempoState.phaseStart = now;
+        }
+        if (!repState.repStart) repState.repStart = performance.now();
+      }
+    }
+  }
+
+  // ── SBD > Bench Press ──
+  else if (cat==='SBD' && ex==='Bench Press') {
+    const lEl = getAngle(lm,11,13,15);
+    const rEl = getAngle(lm,12,14,16);
+    const avgEl = lEl!=null&&rEl!=null ? Math.round((lEl+rEl)/2) : null;
+    const diff = lEl!=null&&rEl!=null ? Math.abs(lEl-rEl) : null;
+    const lWr = getAngle(lm,13,15,19);
+    const rWr = getAngle(lm,14,16,20);
+
+    setOv('Elbow', fmtAngle(avgEl));
+    setOv('Left',  fmtAngle(lEl||lWr));
+    setOv('Right', fmtAngle(rEl||rWr));
+    setOv('Diff',  diff!=null ? diff+'°' : '--');
+    setOv('L/R',   diff!=null ? diff+'°' : '--');
+
+    if (metric==='Full Bench Recording') {
+      if (avgEl!=null) {
+        if (repState.phase==='up' && avgEl < 90) { repState.phase='down'; }
+        else if (repState.phase==='down' && avgEl > 150) { repState.phase='up'; repState.count++; }
+        setOv('Reps', repState.count);
+      }
+      setOv('Tempo', tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+    }
+    if (metric==='Tempo Check') {
+      setOv('Rep',   tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+      setOv('Down',  tempoState.downTime>0?(tempoState.downTime/1000).toFixed(1)+'s':'--');
+      setOv('Press', tempoState.upTime>0?(tempoState.upTime/1000).toFixed(1)+'s':'--');
+    }
+  }
+
+  // ── SBD > Deadlift ──
+  else if (cat==='SBD' && ex==='Deadlift') {
+    const lHip = getAngle(lm,11,23,25);
+    const rHip = getAngle(lm,12,24,26);
+    const avgHip = lHip!=null&&rHip!=null ? Math.round((lHip+rHip)/2) : null;
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    const avgKnee = lKnee!=null&&rKnee!=null ? Math.round((lKnee+rKnee)/2) : null;
+    const torso = torsoAngle(lm);
+    const hipMid = midpoint(lm[23],lm[24]);
+
+    setOv('Hip',   fmtAngle(avgHip));
+    setOv('Back',  fmtAngle(torso));
+    setOv('Knee',  fmtAngle(avgKnee));
+    setOv('Torso', fmtAngle(torso));
+    setOv('Left',  fmtAngle(lKnee));
+    setOv('Right', fmtAngle(rKnee));
+    setOv('Diff',  lKnee!=null&&rKnee!=null ? Math.abs(lKnee-rKnee)+'°':'--');
+
+    if (metric==='Full Deadlift Recording') {
+      if (hipMid) {
+        if (!repState.baseHipY) repState.baseHipY = hipMid.y;
+        const drop = hipMid.y - repState.baseHipY;
+        if (repState.phase==='up' && drop > 0.05) { repState.phase='down'; }
+        else if (repState.phase==='down' && drop < -0.02) { repState.phase='up'; repState.count++; }
+        setOv('Reps', repState.count);
+      }
+      setOv('Tempo', tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+    }
+    if (metric==='Tempo Check') {
+      setOv('Rep',   tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+      setOv('Pull',  tempoState.upTime>0?(tempoState.upTime/1000).toFixed(1)+'s':'--');
+      setOv('Lower', tempoState.downTime>0?(tempoState.downTime/1000).toFixed(1)+'s':'--');
+    }
+  }
+
+  // ── Athletic > Jump ──
+  else if (cat==='Athletic Performance' && ex==='Jump') {
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    const lHip  = getAngle(lm,11,23,25);
+    const rHip  = getAngle(lm,12,24,26);
+    const lAnk  = getAngle(lm,25,27,31);
+    const rAnk  = getAngle(lm,26,28,32);
+    const hipMid = midpoint(lm[23],lm[24]);
+
+    setOv('Left',    fmtAngle(lKnee));
+    setOv('Right',   fmtAngle(rKnee));
+    setOv('Diff',    lKnee!=null&&rKnee!=null ? Math.abs(lKnee-rKnee)+'°':'--');
+    setOv('Landing', lKnee!=null&&rKnee!=null ? Math.abs(lKnee-rKnee)+'°':'--');
+    setOv('Hip',     fmtAngle(lHip!=null&&rHip!=null?Math.round((lHip+rHip)/2):null));
+    setOv('Knee',    fmtAngle(lKnee!=null&&rKnee!=null?Math.round((lKnee+rKnee)/2):null));
+    setOv('Ankle',   fmtAngle(lAnk!=null&&rAnk!=null?Math.round((lAnk+rAnk)/2):null));
+
+    if (metric==='Full Jump Recording') {
+      if (hipMid) {
+        const sm = smoothVal('jHipY', hipMid.y);
+        if (!repState.baseHipY) repState.baseHipY = sm;
+        const rise = repState.baseHipY - sm;
+        const level = rise > 0.1 ? 'High' : rise > 0.04 ? 'Mid' : 'Low';
+        setOv('Level', level);
+        if (repState.phase==='down' && rise > 0.08) { repState.phase='up'; }
+        else if (repState.phase==='up' && rise < 0.01) { repState.phase='down'; repState.count++; }
+        setOv('Reps', repState.count);
+      }
+      setOv('Tempo', tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+    }
+  }
+
+  // ── Athletic > Sprint / Agility / Run ──
+  else if ((cat==='Athletic Performance' && (ex==='Sprint'||ex==='Agility')) || (cat==='HYROX' && ex==='Run')) {
+    const torso = torsoAngle(lm);
+    const lHip  = getAngle(lm,11,23,25);
+    const rHip  = getAngle(lm,12,24,26);
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    const lAnk  = lm[27], rAnk = lm[28];
+
+    // step count via ankle Y
+    if (lAnk && vis(lm,27)) {
+      const ay = lAnk.y;
+      const now = performance.now();
+      if (stepState.phase==='down' && ay < stepState.lastAnkleY - 0.03 && now-stepState.lastTime>300) {
+        stepState.phase='up'; stepState.count++; stepState.lastTime=now;
+      } else if (stepState.phase==='up' && ay > stepState.lastAnkleY + 0.02) {
+        stepState.phase='down';
+      }
+      stepState.lastAnkleY = ay;
+    }
+
+    // cadence (steps per second × 60)
+    const elapsed = isRecording ? (performance.now()-recStartTime)/1000 : 1;
+    const cadence = elapsed > 0 ? Math.round((stepState.count/elapsed)*60) : 0;
+
+    setOv('Lean',    fmtAngle(torso));
+    setOv('Body',    fmtAngle(torso));
+    setOv('Hip',     fmtAngle(lHip!=null&&rHip!=null?Math.round((lHip+rHip)/2):null));
+    setOv('Knee',    fmtAngle(lKnee!=null&&rKnee!=null?Math.round((lKnee+rKnee)/2):null));
+    setOv('Steps',   stepState.count);
+    setOv('Cadence', elapsed>2 ? cadence : '--');
+    setOv('Change',  '--');
+    setOv('Time',    elapsed>0 ? elapsed.toFixed(1)+'s':'--');
+  }
+
+  // ── Athletic > Balance ──
+  else if (cat==='Athletic Performance' && ex==='Balance') {
+    const hipMid = midpoint(lm[23],lm[24]);
+    const lKnee  = getAngle(lm,23,25,27);
+    const rKnee  = getAngle(lm,24,26,28);
+    const lHipX  = vis(lm,23) ? lm[23].x : null;
+    const rHipX  = vis(lm,24) ? lm[24].x : null;
+    const lr = lHipX!=null&&rHipX!=null ? (lHipX>rHipX?'Left':'Right') : null;
+
+    if (hipMid) {
+      if (!swayState.basX) swayState.basX = hipMid.x;
+      swayState.vals.push(hipMid.x);
+      if (swayState.vals.length>30) swayState.vals.shift();
+      const mn = Math.min(...swayState.vals), mx = Math.max(...swayState.vals);
+      swayState.range = Math.round(Math.abs(mx-mn)*100);
+    }
+
+    setOv('L/R',    lr||'--');
+    setOv('Center', hipMid ? Math.round(Math.abs(hipMid.x-0.5)*100)+'%' : '--');
+    setOv('Sway',   swayState.range>0 ? swayState.range+'%':'--');
+    setOv('Knee',   fmtAngle(lKnee!=null&&rKnee!=null?Math.round((lKnee+rKnee)/2):null));
+    const elapsed2 = isRecording ? ((performance.now()-recStartTime)/1000).toFixed(1)+'s' : '--';
+    setOv('Time', elapsed2);
+  }
+
+  // ── HYROX: Sled Push / Sled Pull ──
+  else if (cat==='HYROX' && (ex==='Sled Push'||ex==='Sled Pull')) {
+    const torso = torsoAngle(lm);
+    const lHip  = getAngle(lm,11,23,25);
+    const rHip  = getAngle(lm,12,24,26);
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    setOv('Torso', fmtAngle(torso));
+    setOv('Lean',  fmtAngle(torso));
+    setOv('Hip',   fmtAngle(lHip!=null&&rHip!=null?Math.round((lHip+rHip)/2):null));
+    setOv('Knee',  fmtAngle(lKnee!=null&&rKnee!=null?Math.round((lKnee+rKnee)/2):null));
+  }
+
+  // ── HYROX: Farmers Carry ──
+  else if (cat==='HYROX' && ex==='Farmers Carry') {
+    const torso = torsoAngle(lm);
+    const shLvl = levelDiff(lm,11,12,canvas);
+    if (lm[27]&&vis(lm,27)) {
+      const ay = lm[27].y;
+      const now = performance.now();
+      if (stepState.phase==='down' && ay < stepState.lastAnkleY-0.03 && now-stepState.lastTime>300) {
+        stepState.phase='up'; stepState.count++; stepState.lastTime=now;
+      } else if (stepState.phase==='up' && ay > stepState.lastAnkleY+0.02) {
+        stepState.phase='down';
+      }
+      stepState.lastAnkleY = ay;
+    }
+    setOv('Shoulder', shLvl!=null ? shLvl+'px':'--');
+    setOv('Tilt',     fmtAngle(torso));
+    setOv('Steps',    stepState.count);
+  }
+
+  // ── HYROX: Wall Balls ──
+  else if (cat==='HYROX' && ex==='Wall Balls') {
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    const avgKnee = lKnee!=null&&rKnee!=null?Math.round((lKnee+rKnee)/2):null;
+    const hipMid  = midpoint(lm[23],lm[24]);
+    const kneeMid = midpoint(lm[25],lm[26]);
+    const depth   = hipMid&&kneeMid?(hipMid.y<kneeMid.y?'Above':hipMid.y<kneeMid.y+0.02?'Parallel':'Below'):null;
+    const hipLvl  = levelDiff(lm,23,24,canvas);
+    setOv('Depth', depth);
+    setOv('Hip',   hipLvl!=null?hipLvl+'px':'--');
+    setOv('Knee',  fmtAngle(avgKnee));
+    if (metric==='Wall Ball Recording') {
+      if (avgKnee!=null) {
+        if (repState.phase==='up'&&avgKnee<110){repState.phase='down';}
+        else if(repState.phase==='down'&&avgKnee>150){repState.phase='up';repState.count++;}
+        setOv('Reps', repState.count);
+      }
+      setOv('Tempo', tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+    }
+  }
+
+  // ── HYROX: Burpee Broad Jump ──
+  else if (cat==='HYROX' && ex==='Burpee Broad Jump') {
+    const lKnee = getAngle(lm,23,25,27);
+    const rKnee = getAngle(lm,24,26,28);
+    const hipMid = midpoint(lm[23],lm[24]);
+    const torso  = torsoAngle(lm);
+    let phase = '--';
+    if (hipMid) {
+      if (!repState.baseHipY) repState.baseHipY = hipMid.y;
+      const drop = hipMid.y - repState.baseHipY;
+      if (torso!=null&&torso>60) phase='Down';
+      else if (drop < -0.05) phase='Jump';
+      else if (drop > 0.02) phase='Land';
+      else phase='Up';
+      if (repState.lastPhase==='Jump'&&phase==='Land'){repState.count++;repState.lastPhase=phase;}
+      else repState.lastPhase=phase;
+    }
+    setOv('Phase',   phase);
+    setOv('Landing', lKnee!=null&&rKnee!=null?Math.abs(lKnee-rKnee)+'°':'--');
+    setOv('Left',    fmtAngle(lKnee));
+    setOv('Right',   fmtAngle(rKnee));
+    setOv('Diff',    lKnee!=null&&rKnee!=null?Math.abs(lKnee-rKnee)+'°':'--');
+    setOv('Reps',    repState.count);
+    setOv('Tempo',   tempoState.repTime>0?(tempoState.repTime/1000).toFixed(1)+'s':'--');
+  }
+
+  // ── Posture Assessment ──
+  else if (cat==='Posture Assessment') {
+    const shLvl  = levelDiff(lm,11,12,canvas);
+    const hipLvl = levelDiff(lm,23,24,canvas);
+    const heelLvl= levelDiff(lm,29,30,canvas);
+    const lKnee  = getAngle(lm,23,25,27);
+    const rKnee  = getAngle(lm,24,26,28);
+    const torso  = torsoAngle(lm);
+    const lFoot  = getAngle(lm,25,27,31);
+    const rFoot  = getAngle(lm,26,28,32);
+    // head forward: nose to shoulder
+    const headFwd = vis(lm,0)&&vis(lm,11) ? Math.round(Math.abs(lm[0].x-lm[11].x)*100) : null;
+
+    setOv('Shoulder', shLvl!=null?shLvl+'px':'--');
+    setOv('Hip',      hipLvl!=null?hipLvl+'px':'--');
+    setOv('Heel',     heelLvl!=null?heelLvl+'px':'--');
+    setOv('Knee',     fmtAngle(lKnee!=null&&rKnee!=null?Math.round((lKnee+rKnee)/2):null));
+    setOv('Foot',     lFoot!=null&&rFoot!=null?Math.abs(lFoot-rFoot)+'°':'--');
+    setOv('Leg',      lKnee!=null&&rKnee!=null?Math.abs(lKnee-rKnee)+'°':'--');
+    setOv('Head',     headFwd!=null?headFwd+'px':'--');
+  }
+}
+
+// ═══════════════════════════════════════
+// 녹화
+// ═══════════════════════════════════════
+function toggleRec() {
+  if (!isRecording) startRec(); else stopRec();
+}
+
+function startRec() {
+  const canvas = document.getElementById('canvas');
+  const video  = document.getElementById('video');
+
+  // 캔버스에 비디오 + 스켈레톤을 합성해서 녹화
+  const recCanvas = document.createElement('canvas');
+  recCanvas.width  = canvas.width  || 1280;
+  recCanvas.height = canvas.height || 720;
+  const rCtx = recCanvas.getContext('2d');
+
+  const stream = recCanvas.captureStream(30);
+  const mimeType = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4']
+    .find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+
+  recChunks = []; recBlob = null;
+  mediaRecorder = new MediaRecorder(stream, { mimeType });
+  mediaRecorder.ondataavailable = e => { if(e.data?.size>0) recChunks.push(e.data); };
+  mediaRecorder.onstop = () => { recBlob = new Blob(recChunks, { type: mimeType }); };
+  mediaRecorder.start(200);
+
+  recStartTime = performance.now();
+  isRecording = true;
+  stepState.count = 0;
+  resetReps();
+
+  // 합성 루프
+  const skCanvas = document.getElementById('canvas');
+  function drawFrame() {
+    if (!isRecording) return;
+    rCtx.drawImage(video, 0, 0, recCanvas.width, recCanvas.height);
+    rCtx.drawImage(skCanvas, 0, 0, recCanvas.width, recCanvas.height);
+
+    // 타이머 오버레이
+    const elapsed = performance.now() - recStartTime;
+    const mm = Math.floor(elapsed/60000), ss = Math.floor((elapsed%60000)/1000);
+    rCtx.fillStyle = 'rgba(0,0,0,0.5)';
+    rCtx.fillRect(10, 10, 90, 28);
+    rCtx.fillStyle = '#F87171';
+    rCtx.font = 'bold 14px monospace';
+    rCtx.fillText(`⏺ ${mm}:${String(ss).padStart(2,'0')}`, 16, 29);
+
+    // 측정값 오버레이
+    const panel = document.getElementById('overlayPanel');
+    if (panel) rCtx.drawImage(panel, recCanvas.width-140, 10);
+
+    requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+
+  // UI
+  document.getElementById('recBtn').textContent = '■ Stop';
+  document.getElementById('recBtn').classList.add('recording');
+  document.getElementById('recBadge').classList.add('show');
+  document.getElementById('saveBtn').classList.remove('show');
+
+  recTimerInterval = setInterval(() => {
+    const el = performance.now() - recStartTime;
+    const mm = Math.floor(el/60000), ss = Math.floor((el%60000)/1000);
+    document.getElementById('recTimer').textContent = `${mm}:${String(ss).padStart(2,'0')}`;
+  }, 500);
+}
+
+function stopRec() {
+  isRecording = false;
+  if (mediaRecorder?.state !== 'inactive') mediaRecorder?.stop();
+  clearInterval(recTimerInterval);
+  document.getElementById('recBtn').textContent = '⏺ Record';
+  document.getElementById('recBtn').classList.remove('recording');
+  document.getElementById('recBadge').classList.remove('show');
+  document.getElementById('saveBtn').classList.add('show');
+}
+
+function saveVideo() {
+  if (!recBlob) return;
+  const url = URL.createObjectURL(recBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `spectrax_${selEx}_${Date.now()}.webm`;
+  a.click();
+  document.getElementById('saveBtn').classList.remove('show');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+buildCats();
 </script>
 </body>
 </html>
