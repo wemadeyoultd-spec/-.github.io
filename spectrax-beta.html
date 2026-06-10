@@ -595,25 +595,33 @@ async function startCamera(){
   const t=T[lang]||T.en;
   try{
     if(cameraStream){cameraStream.getTracks().forEach(tr=>tr.stop());cameraStream=null;}
-    const video=document.getElementById('videoEl');
 
+    // 카메라 목록 초기화 (처음 한 번만)
+    if(cameraDevices.length===0) await getCameraDevices();
+
+    const video=document.getElementById('videoEl');
     cameraStream=await navigator.mediaDevices.getUserMedia({
       video:{facingMode,width:{ideal:1920},height:{ideal:1080}}
     });
+
+    // 현재 사용 중인 deviceId 기준으로 index 맞추기
+    const activeId=cameraStream.getVideoTracks()[0]?.getSettings()?.deviceId;
+    if(activeId){
+      const idx=cameraDevices.findIndex(d=>d.deviceId===activeId);
+      if(idx>=0)currentDeviceIdx=idx;
+    }
+
     video.srcObject=cameraStream;
     video.style.display='block';
     document.getElementById('camPlaceholder').style.display='none';
     document.getElementById('camCtrl').classList.add('show');
-
-    // canvas flip
     document.getElementById('canvasEl').style.transform=facingMode==='user'?'scaleX(-1)':'none';
 
-    // 줌 적용 (applyZoom이 transform, width, height 모두 처리)
     document.getElementById('zoomSlider').value=curZoom;
     applyZoom(curZoom);
 
     const sb=document.getElementById('statusBar');
-    sb.className='status-bar show'; sb.textContent='● '+t.tqMsg[0];
+    sb.className='status-bar show'; sb.textContent='● '+(t.tqMsg[0]||'Camera Ready');
     document.getElementById('sDot').className='status-dot';
     document.getElementById('sWord').textContent=t.statusLive;
     isRunning=true; canRecord=false;
@@ -656,18 +664,95 @@ function stopCamera(){
   resetMeasUI();
 }
 
+// ─ 카메라 목록 캐시
+let cameraDevices=[], currentDeviceIdx=0;
+
+async function getCameraDevices(){
+  try{
+    // 먼저 권한 획득
+    const s=await navigator.mediaDevices.getUserMedia({video:true});
+    s.getTracks().forEach(t=>t.stop());
+    const devices=await navigator.mediaDevices.enumerateDevices();
+    cameraDevices=devices.filter(d=>d.kind==='videoinput');
+  }catch(e){cameraDevices=[];}
+}
+
 async function flipCamera(){
-  facingMode=facingMode==='user'?'environment':'user';
-  if(isRunning){if(mpCamera){mpCamera.stop();mpCamera=null;}await startCamera();}
+  const btn=document.querySelector('.ctrl-btn');
+  if(btn){btn.style.opacity='0.4';btn.disabled=true;}
+
+  // iPhone/iPad 포함 모든 기기: deviceId 방식
+  if(cameraDevices.length>=2){
+    currentDeviceIdx=(currentDeviceIdx+1)%cameraDevices.length;
+    const deviceId=cameraDevices[currentDeviceIdx].deviceId;
+    const label=cameraDevices[currentDeviceIdx].label.toLowerCase();
+    // 레이블로 전/후면 판별
+    facingMode=label.includes('front')||label.includes('facetime')||label.includes('user')?'user':'environment';
+    if(isRunning){
+      if(mpCamera){mpCamera.stop();mpCamera=null;}
+      await startCameraWithDevice(deviceId);
+    }
+  } else {
+    // 카메라 1개이거나 목록 없으면 facingMode 토글
+    facingMode=facingMode==='user'?'environment':'user';
+    if(isRunning){
+      if(mpCamera){mpCamera.stop();mpCamera=null;}
+      await startCamera();
+    }
+  }
+  if(btn){btn.style.opacity='1';btn.disabled=false;}
+}
+
+async function startCameraWithDevice(deviceId){
+  const t=T[lang]||T.en;
+  try{
+    if(cameraStream){cameraStream.getTracks().forEach(tr=>tr.stop());cameraStream=null;}
+    const video=document.getElementById('videoEl');
+    cameraStream=await navigator.mediaDevices.getUserMedia({
+      video:{deviceId:{exact:deviceId},width:{ideal:1920},height:{ideal:1080}}
+    });
+    video.srcObject=cameraStream;
+    video.style.display='block';
+    document.getElementById('camPlaceholder').style.display='none';
+    document.getElementById('camCtrl').classList.add('show');
+    // canvas flip (전면=반전, 후면=정방향)
+    document.getElementById('canvasEl').style.transform=facingMode==='user'?'scaleX(-1)':'none';
+    applyZoom(curZoom);
+
+    isRunning=true; canRecord=false;
+    resetDetection();
+
+    if(typeof Pose!=='undefined'){
+      if(poseDetector){poseDetector.close();poseDetector=null;}
+      poseDetector=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+      poseDetector.setOptions({modelComplexity:1,smoothLandmarks:true,enableSegmentation:false,minDetectionConfidence:.6,minTrackingConfidence:.6});
+      poseDetector.onResults(onPoseResults);
+      if(mpCamera){mpCamera.stop();mpCamera=null;}
+      mpCamera=new Camera(video,{onFrame:async()=>{if(isRunning)await poseDetector.send({image:video});},width:1280,height:720});
+      mpCamera.start();
+    }
+
+    const sb=document.getElementById('statusBar');
+    sb.className='status-bar show'; sb.textContent='● Camera Ready';
+    document.getElementById('sDot').className='status-dot live';
+    document.getElementById('sWord').textContent=t.statusLive;
+  }catch(err){
+    console.error('Camera switch error:',err);
+    // 실패시 일반 방식으로 재시도
+    await startCamera();
+  }
 }
 
 function applyZoom(val){
   curZoom=parseFloat(val);
   document.getElementById('zoomVal').textContent=curZoom.toFixed(1)+'×';
   const video=document.getElementById('videoEl');
+  const canvas=document.getElementById('canvasEl');
   const flip=facingMode==='user';
-  // 화면은 그대로, scale > 1 이면 줌인
-  video.style.transform=(flip?'scaleX(-1) ':'')+'scale('+curZoom+')';
+  // cam-zone에 overflow:hidden 있으므로 scale해도 프레임 절대 안 변함
+  const t=flip?'scaleX(-1) scale('+curZoom+')':'scale('+curZoom+')';
+  video.style.transform=t;
+  canvas.style.transform=flip?'scaleX(-1)':'none';
   video.style.transformOrigin='center center';
 }
 
