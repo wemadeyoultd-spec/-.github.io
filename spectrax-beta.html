@@ -3,516 +3,238 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SPECTRAX SCOUTER BETA</title>
+<title>SPECTRAX SCOUTER</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  height: 100%;
-  background: #050505;
-  color: #F8F4EE;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  overflow: hidden;
-}
+html, body { height: 100%; background: #050505; color: #F8F4EE; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
 
-/* ── 화면 전환 ── */
-.screen {
-  position: fixed; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.4s ease;
-  z-index: 1;
-}
+/* 화면 전환 */
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; z-index: 1; }
 .screen.active { opacity: 1; pointer-events: all; z-index: 2; }
 
-/* ── 언어 선택 화면 ── */
-#langScreen { background: #050505; }
+/* 언어 선택 */
+#s1 { background: #050505; gap: 0; }
+.logo { font-size: 52px; font-weight: 200; letter-spacing: 14px; color: #C9A84C; margin-bottom: 6px; }
+.logo-sub { font-size: 10px; letter-spacing: 4px; color: rgba(201,168,76,0.4); text-transform: uppercase; margin-bottom: 48px; }
+.lang-label { font-size: 10px; letter-spacing: 3px; color: rgba(248,244,238,0.4); text-transform: uppercase; margin-bottom: 20px; }
+.lang-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; width: 90%; max-width: 500px; margin-bottom: 32px; }
+.lang-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 14px 8px; border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; cursor: pointer; background: transparent; color: #F8F4EE; transition: all 0.2s; }
+.lang-btn:hover, .lang-btn.sel { border-color: #C9A84C; background: rgba(201,168,76,0.1); }
+.lang-flag { font-size: 22px; }
+.lang-name { font-size: 9px; color: rgba(248,244,238,0.55); }
+.go-btn { padding: 14px 52px; background: transparent; border: 1px solid #C9A84C; color: #C9A84C; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+.go-btn:hover { background: #C9A84C; color: #050505; }
 
-.logo {
-  font-size: 48px;
-  font-weight: 200;
-  letter-spacing: 12px;
-  color: #C9A84C;
-  margin-bottom: 8px;
-}
-.logo-sub {
-  font-size: 10px;
-  letter-spacing: 4px;
-  color: rgba(201,168,76,0.5);
-  text-transform: uppercase;
-  margin-bottom: 48px;
-}
-.lang-title {
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: rgba(248,244,238,0.5);
-  text-transform: uppercase;
-  margin-bottom: 24px;
-}
-.lang-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  width: 90%;
-  max-width: 500px;
-  margin-bottom: 32px;
-}
-.lang-btn {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 4px;
-  padding: 12px 8px;
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: 2px;
-  cursor: pointer;
-  background: transparent;
-  color: #F8F4EE;
-  transition: all 0.2s;
-}
-.lang-btn:hover, .lang-btn.sel {
-  border-color: #C9A84C;
-  background: rgba(201,168,76,0.1);
-}
-.lang-flag { font-size: 20px; }
-.lang-name { font-size: 9px; color: rgba(248,244,238,0.6); }
-
-.start-btn {
-  padding: 14px 48px;
-  background: transparent;
-  border: 1px solid #C9A84C;
-  color: #C9A84C;
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.start-btn:hover {
-  background: #C9A84C;
-  color: #050505;
-}
-
-/* ── 카메라 화면 ── */
-#camScreen { background: #000; padding: 0; }
-
-.cam-header {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 48px;
-  background: rgba(5,5,5,0.9);
-  border-bottom: 1px solid rgba(201,168,76,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  z-index: 10;
-}
-.cam-header-logo {
-  font-size: 14px;
-  letter-spacing: 4px;
-  color: #C9A84C;
-  font-weight: 300;
-}
-.cam-header-status {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: rgba(248,244,238,0.5);
-  text-transform: uppercase;
-}
-.cam-header-status.active { color: #22C55E; }
-
-/* 비디오 + 캔버스 */
-#video {
-  position: absolute;
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-#canvas {
-  position: absolute;
-  width: 100%; height: 100%;
-}
-
-/* 시작 버튼 (카메라 켜기 전) */
-.cam-start-wrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background: rgba(5,5,5,0.85);
-  z-index: 5;
-}
-.cam-start-wrap.hidden { display: none; }
-
-.cam-btn {
-  padding: 16px 48px;
-  background: #C9A84C;
-  border: none;
-  color: #050505;
-  font-size: 12px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 2px;
-  transition: all 0.2s;
-}
-.cam-btn:hover { background: #E8C97A; }
-.cam-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.cam-hint {
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: rgba(248,244,238,0.4);
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.8;
-}
-
-/* 로딩 메시지 (모델 로딩 중) */
-.loading-wrap {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(5,5,5,0.85);
-  border: 1px solid rgba(201,168,76,0.3);
-  padding: 10px 20px;
-  border-radius: 2px;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: #C9A84C;
-  text-transform: uppercase;
-  z-index: 10;
-  white-space: nowrap;
-  display: none;
-}
-.loading-wrap.show { display: block; }
-
-/* 에러 메시지 */
-.error-wrap {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(239,68,68,0.15);
-  border: 1px solid rgba(239,68,68,0.4);
-  padding: 10px 20px;
-  border-radius: 2px;
-  font-size: 10px;
-  letter-spacing: 1px;
-  color: #F87171;
-  text-transform: uppercase;
-  z-index: 10;
-  display: none;
-  text-align: center;
-  max-width: 320px;
-}
-.error-wrap.show { display: block; }
-
-.back-btn {
-  position: absolute;
-  top: 14px; left: 16px;
-  background: none;
-  border: none;
-  color: rgba(248,244,238,0.5);
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.2s;
-}
+/* 카테고리 선택 */
+#s2 { background: #080808; gap: 0; justify-content: flex-start; }
+.s2-header { width: 100%; height: 52px; background: rgba(5,5,5,0.97); border-bottom: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+.s2-logo { font-size: 16px; letter-spacing: 5px; color: #C9A84C; font-weight: 300; }
+.back-btn { background: none; border: none; color: rgba(248,244,238,0.4); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 4px 8px; }
 .back-btn:hover { color: #C9A84C; }
+.cat-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; width: 100%; padding: 32px 24px; overflow-y: auto; }
+.cat-title { font-size: 12px; letter-spacing: 4px; color: rgba(201,168,76,0.5); text-transform: uppercase; margin-bottom: 32px; }
+.cat-grid { display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%; max-width: 480px; }
+.cat-card { border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; background: #0f0f0f; cursor: pointer; padding: 22px 24px; display: flex; align-items: center; gap: 18px; transition: all 0.25s; }
+.cat-card:hover { border-color: #C9A84C; background: rgba(201,168,76,0.05); transform: translateY(-1px); }
+.cat-icon { font-size: 32px; flex-shrink: 0; }
+.cat-info { flex: 1; }
+.cat-name { font-size: 16px; font-weight: 400; letter-spacing: 1px; color: #F8F4EE; margin-bottom: 4px; }
+.cat-desc { font-size: 10px; letter-spacing: 1px; color: rgba(248,244,238,0.4); }
+.cat-arrow { font-size: 20px; color: rgba(201,168,76,0.4); }
+.cat-card:hover .cat-arrow { color: #C9A84C; }
+
+/* 카메라 화면 */
+#s3 { background: #000; padding: 0; justify-content: flex-start; align-items: stretch; }
+.cam-header { height: 52px; background: rgba(5,5,5,0.95); border-bottom: 1px solid rgba(201,168,76,0.2); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; z-index: 10; }
+.cam-logo { font-size: 14px; letter-spacing: 4px; color: #C9A84C; font-weight: 300; }
+.cam-status { font-size: 9px; letter-spacing: 2px; color: rgba(248,244,238,0.4); text-transform: uppercase; }
+.cam-status.on { color: #22C55E; }
+.cam-body { flex: 1; position: relative; overflow: hidden; }
+#video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 </style>
 </head>
 <body>
 
-<!-- 화면 1: 언어 선택 -->
-<div class="screen active" id="langScreen">
+<!-- S1: 언어 선택 -->
+<div class="screen active" id="s1">
   <div class="logo">SPECTRAX</div>
-  <div class="logo-sub">Pose Analysis · Beta</div>
-  <div class="lang-title" id="langTitle">Select Language</div>
+  <div class="logo-sub">AI Pose Analysis · Beta</div>
+  <div class="lang-label">언어 선택 / Select Language</div>
   <div class="lang-grid">
-    <div class="lang-btn sel" onclick="pickLang(this,'ko')"><span class="lang-flag">🇰🇷</span><span class="lang-name">한국어</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'en')"><span class="lang-flag">🇺🇸</span><span class="lang-name">English</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'ja')"><span class="lang-flag">🇯🇵</span><span class="lang-name">日本語</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'zh')"><span class="lang-flag">🇨🇳</span><span class="lang-name">中文</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'es')"><span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'fr')"><span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'de')"><span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'pt')"><span class="lang-flag">🇧🇷</span><span class="lang-name">Português</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'ar')"><span class="lang-flag">🇸🇦</span><span class="lang-name">العربية</span></div>
-    <div class="lang-btn" onclick="pickLang(this,'hi')"><span class="lang-flag">🇮🇳</span><span class="lang-name">हिन्दी</span></div>
+    <div class="lang-btn sel" onclick="pick(this,'ko')"><span class="lang-flag">🇰🇷</span><span class="lang-name">한국어</span></div>
+    <div class="lang-btn" onclick="pick(this,'en')"><span class="lang-flag">🇺🇸</span><span class="lang-name">English</span></div>
+    <div class="lang-btn" onclick="pick(this,'ja')"><span class="lang-flag">🇯🇵</span><span class="lang-name">日本語</span></div>
+    <div class="lang-btn" onclick="pick(this,'zh')"><span class="lang-flag">🇨🇳</span><span class="lang-name">中文</span></div>
+    <div class="lang-btn" onclick="pick(this,'es')"><span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span></div>
+    <div class="lang-btn" onclick="pick(this,'fr')"><span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span></div>
+    <div class="lang-btn" onclick="pick(this,'de')"><span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span></div>
+    <div class="lang-btn" onclick="pick(this,'pt')"><span class="lang-flag">🇧🇷</span><span class="lang-name">Português</span></div>
+    <div class="lang-btn" onclick="pick(this,'ar')"><span class="lang-flag">🇸🇦</span><span class="lang-name">العربية</span></div>
+    <div class="lang-btn" onclick="pick(this,'hi')"><span class="lang-flag">🇮🇳</span><span class="lang-name">हिन्दी</span></div>
   </div>
-  <button class="start-btn" id="goBtn" onclick="goCam()">시작하기</button>
+  <button class="go-btn" id="goBtn" onclick="show('s2')">시작하기</button>
 </div>
 
-<!-- 화면 2: 카메라 + 포즈 -->
-<div class="screen" id="camScreen">
-  <!-- 헤더 -->
+<!-- S2: 카테고리 선택 -->
+<div class="screen" id="s2">
+  <div class="s2-header">
+    <button class="back-btn" onclick="show('s1')">← Back</button>
+    <div class="s2-logo">SPECTRAX</div>
+    <div style="width:60px"></div>
+  </div>
+  <div class="cat-body">
+    <div class="cat-title">SCOUTER — Choose Category</div>
+    <div class="cat-grid">
+      <div class="cat-card" onclick="startScouter()">
+        <div class="cat-icon">🏋️</div>
+        <div class="cat-info">
+          <div class="cat-name">SBD</div>
+          <div class="cat-desc">Squat · Bench Press · Deadlift</div>
+        </div>
+        <div class="cat-arrow">›</div>
+      </div>
+      <div class="cat-card" onclick="startScouter()">
+        <div class="cat-icon">⚡</div>
+        <div class="cat-info">
+          <div class="cat-name">Athletic Performance</div>
+          <div class="cat-desc">Jump · Sprint · Agility · Balance</div>
+        </div>
+        <div class="cat-arrow">›</div>
+      </div>
+      <div class="cat-card" onclick="startScouter()">
+        <div class="cat-icon">🔥</div>
+        <div class="cat-info">
+          <div class="cat-name">HYROX</div>
+          <div class="cat-desc">Run · Sled · Carry · Wall Balls</div>
+        </div>
+        <div class="cat-arrow">›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S3: 카메라 + MediaPipe -->
+<div class="screen" id="s3">
   <div class="cam-header">
-    <button class="back-btn" onclick="goBack()">← Back</button>
-    <div class="cam-header-logo">SPECTRAX</div>
-    <div class="cam-header-status" id="statusText">대기 중</div>
+    <button class="back-btn" onclick="stopAll(); show('s2')">← Back</button>
+    <div class="cam-logo">SPECTRAX</div>
+    <div class="cam-status" id="camStatus">대기 중</div>
   </div>
-
-  <!-- 비디오 + 캔버스 -->
-  <video id="video" autoplay playsinline muted webkit-playsinline></video>
-  <canvas id="canvas"></canvas>
-
-  <!-- 카메라 시작 전 화면 -->
-  <div class="cam-start-wrap" id="startWrap">
-    <div class="cam-hint" id="camHint">후면 카메라로 전신을 촬영합니다<br>카메라를 시작하세요</div>
-    <button class="cam-btn" id="camBtn" onclick="startCamera()">카메라 시작</button>
+  <div class="cam-body">
+    <video id="video" autoplay playsinline muted webkit-playsinline></video>
+    <canvas id="canvas"></canvas>
   </div>
-
-  <!-- 로딩 메시지 -->
-  <div class="loading-wrap" id="loadingMsg">포즈 모델 로딩 중...</div>
-
-  <!-- 에러 메시지 -->
-  <div class="error-wrap" id="errorMsg"></div>
 </div>
 
-<!-- MediaPipe CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous"></script>
+<!-- MediaPipe (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 
 <script>
-// ── 언어 ──
-const LABELS = {
-  ko: { start:'시작하기', camBtn:'카메라 시작', hint:'후면 카메라로 전신을 촬영합니다\n카메라를 시작하세요', loading:'포즈 모델 로딩 중...', ready:'포즈 감지 활성', noBody:'전신이 보이도록 뒤로 물러서세요', back:'← Back', langTitle:'언어 선택' },
-  en: { start:'Start', camBtn:'Start Camera', hint:'Film your full body\nwith the rear camera', loading:'Loading pose model...', ready:'Pose tracking active', noBody:'Move back — show full body', back:'← Back', langTitle:'Select Language' },
-  ja: { start:'開始', camBtn:'カメラ起動', hint:'後面カメラで全身を撮影します\nカメラを起動してください', loading:'ポーズモデル読込中...', ready:'ポーズ追跡 開始', noBody:'後退して全身を映してください', back:'← 戻る', langTitle:'言語選択' },
-  zh: { start:'开始', camBtn:'启动摄像头', hint:'用后置摄像头拍摄全身\n请启动摄像头', loading:'姿势模型加载中...', ready:'姿势追踪已激活', noBody:'后退让全身可见', back:'← 返回', langTitle:'选择语言' },
-  es: { start:'Iniciar', camBtn:'Iniciar Cámara', hint:'Filma tu cuerpo completo\ncon la cámara trasera', loading:'Cargando modelo...', ready:'Seguimiento activo', noBody:'Retrocede — muestra cuerpo completo', back:'← Volver', langTitle:'Seleccionar Idioma' },
-  fr: { start:'Démarrer', camBtn:'Démarrer Caméra', hint:'Filmez votre corps entier\navec la caméra arrière', loading:'Chargement du modèle...', ready:'Suivi de pose actif', noBody:'Reculez pour montrer le corps entier', back:'← Retour', langTitle:'Choisir la Langue' },
-  de: { start:'Starten', camBtn:'Kamera Starten', hint:'Filmen Sie Ihren ganzen Körper\nmit der Rückkamera', loading:'Modell wird geladen...', ready:'Pose-Tracking aktiv', back:'← Zurück', langTitle:'Sprache Wählen', noBody:'Zurücktreten — Ganzkörper zeigen' },
-  pt: { start:'Iniciar', camBtn:'Iniciar Câmera', hint:'Filme seu corpo inteiro\ncom a câmera traseira', loading:'Carregando modelo...', ready:'Rastreamento ativo', back:'← Voltar', langTitle:'Selecionar Idioma', noBody:'Recue — mostre o corpo inteiro' },
-  ar: { start:'ابدأ', camBtn:'تشغيل الكاميرا', hint:'صوّر جسمك بالكامل\nبالكاميرا الخلفية', loading:'جارٍ تحميل النموذج...', ready:'تتبع الوضعية نشط', back:'← رجوع', langTitle:'اختر اللغة', noBody:'تراجع لعرض الجسم كاملاً' },
-  hi: { start:'शुरू करें', camBtn:'कैमरा शुरू करें', hint:'रियर कैमरे से पूरा शरीर\nदिखाएं', loading:'मॉडल लोड हो रहा है...', ready:'पोज़ ट्रैकिंग सक्रिय', back:'← वापस', langTitle:'भाषा चुनें', noBody:'पीछे हटें — पूरा शरीर दिखाएं' },
-};
-
 let lang = 'ko';
-let videoStream = null;
-let mpPose = null;
-let mpCam = null;
+let pose = null;
+let camera = null;
 
-// ── 언어 선택 ──
-function pickLang(el, l) {
+// 화면 전환
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// 언어 선택
+function pick(el, l) {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('sel'));
   el.classList.add('sel');
   lang = l;
-  const t = LABELS[l] || LABELS.en;
-  document.getElementById('langTitle').textContent = t.langTitle;
-  document.getElementById('goBtn').textContent = t.start;
 }
 
-// ── 카메라 화면으로 이동 ──
-function goCam() {
-  const t = LABELS[lang] || LABELS.en;
-  document.getElementById('camBtn').textContent = t.camBtn;
-  document.getElementById('camHint').innerHTML = t.hint.replace('\n', '<br>');
-  document.getElementById('loadingMsg').textContent = t.loading;
-
-  // 화면 전환
-  document.getElementById('langScreen').classList.remove('active');
-  document.getElementById('camScreen').classList.add('active');
+// 카테고리 클릭 → 바로 MediaPipe 시작
+function startScouter() {
+  show('s3');
+  initMediaPipe();
 }
 
-// ── 뒤로 ──
-function goBack() {
-  stopCamera();
-  document.getElementById('camScreen').classList.remove('active');
-  document.getElementById('langScreen').classList.add('active');
-}
-
-// ── 카메라 시작 ──
-async function startCamera() {
-  const t = LABELS[lang] || LABELS.en;
-  const btn = document.getElementById('camBtn');
-  btn.disabled = true;
-  btn.textContent = '연결 중...';
-
-  try {
-    // 후면 카메라 요청
-    videoStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
-      audio: false
-    });
-
-    const video = document.getElementById('video');
-    video.srcObject = videoStream;
-    await video.play().catch(() => {});
-
-    // 카메라 시작 성공 → 시작 화면 숨기기
-    document.getElementById('startWrap').classList.add('hidden');
-
-    // 캔버스 크기 맞추기
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    // 상태 표시
-    setStatus('카메라 활성 — 모델 로딩 중...');
-    document.getElementById('loadingMsg').classList.add('show');
-
-    // MediaPipe 초기화
-    initPose();
-
-  } catch (e) {
-    btn.disabled = false;
-    btn.textContent = t.camBtn;
-    const msg = e.name === 'NotAllowedError'
-      ? '카메라 권한이 거부되었습니다.\n브라우저 설정에서 허용해주세요.'
-      : e.name === 'NotFoundError'
-      ? '후면 카메라를 찾을 수 없습니다.'
-      : '카메라 오류: ' + e.message;
-    showError(msg);
-  }
-}
-
-// ── 캔버스 크기 ──
-function resizeCanvas() {
+// MediaPipe 초기화
+function initMediaPipe() {
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
-  canvas.width = video.clientWidth || window.innerWidth;
-  canvas.height = video.clientHeight || window.innerHeight;
-}
+  const status = document.getElementById('camStatus');
 
-// ── MediaPipe Pose 초기화 ──
-function initPose() {
-  const t = LABELS[lang] || LABELS.en;
+  status.textContent = '로딩 중...';
+  status.className = 'cam-status';
 
-  // Pose 클래스가 로드됐는지 확인
-  if (typeof Pose === 'undefined') {
-    showError('MediaPipe 라이브러리 로드 실패.\n인터넷 연결을 확인하고 새로고침하세요.');
-    document.getElementById('loadingMsg').classList.remove('show');
-    return;
-  }
-
-  try {
-    mpPose = new Pose({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}`;
-      }
-    });
-
-    mpPose.setOptions({
-      modelComplexity: 1,
-      smoothLandmarks: true,
-      enableSegmentation: false,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
-
-    mpPose.onResults(onResults);
-
-    // Camera 클래스로 루프 시작
-    const video = document.getElementById('video');
-    mpCam = new Camera(video, {
-      onFrame: async () => {
-        if (mpPose) {
-          await mpPose.send({ image: video });
-        }
-      },
-      width: 1280,
-      height: 720
-    });
-
-    mpCam.start();
-
-  } catch (e) {
-    showError('포즈 모델 초기화 실패: ' + e.message);
-    document.getElementById('loadingMsg').classList.remove('show');
-  }
-}
-
-// ── 포즈 결과 처리 ──
-let firstResult = true;
-
-function onResults(results) {
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const video = document.getElementById('video');
-
-  // 캔버스 크기를 비디오 실제 크기로
-  canvas.width = video.videoWidth || canvas.clientWidth;
-  canvas.height = video.videoHeight || canvas.clientHeight;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 첫 번째 결과 → 로딩 완료
-  if (firstResult) {
-    firstResult = false;
-    document.getElementById('loadingMsg').classList.remove('show');
-    const t = LABELS[lang] || LABELS.en;
-    setStatus(t.ready);
-    setStatusActive(true);
-  }
-
-  if (!results.poseLandmarks) {
-    const t = LABELS[lang] || LABELS.en;
-    setStatus(t.noBody);
-    setStatusActive(false);
-    return;
-  }
-
-  const t = LABELS[lang] || LABELS.en;
-  setStatus(t.ready);
-  setStatusActive(true);
-
-  // 스켈레톤 그리기
-  drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
-    color: 'rgba(201, 168, 76, 0.8)',
-    lineWidth: 3
+  // Pose 설정
+  pose = new Pose({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
   });
 
-  drawLandmarks(ctx, results.poseLandmarks, {
-    color: '#E8C97A',
-    lineWidth: 1,
-    radius: 5
+  pose.setOptions({
+    modelComplexity: 1,
+    smoothLandmarks: true,
+    enableSegmentation: false,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+
+  pose.onResults((results) => {
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (results.poseLandmarks) {
+      status.textContent = '감지 중';
+      status.className = 'cam-status on';
+
+      drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
+        color: 'rgba(201,168,76,0.8)',
+        lineWidth: 3
+      });
+      drawLandmarks(ctx, results.poseLandmarks, {
+        color: '#E8C97A',
+        lineWidth: 1,
+        radius: 5
+      });
+    } else {
+      status.textContent = '전신을 보여주세요';
+      status.className = 'cam-status';
+    }
+  });
+
+  // 후면 카메라로 Camera 시작
+  camera = new Camera(video, {
+    onFrame: async () => {
+      await pose.send({ image: video });
+    },
+    facingMode: 'environment',   // 후면 카메라
+    width: 1280,
+    height: 720
+  });
+
+  camera.start().then(() => {
+    status.textContent = '분석 중';
+    status.className = 'cam-status on';
+  }).catch((e) => {
+    status.textContent = '카메라 오류';
+    console.error(e);
   });
 }
 
-// ── 카메라 정지 ──
-function stopCamera() {
-  if (mpCam) { mpCam.stop(); mpCam = null; }
-  if (mpPose) { try { mpPose.close(); } catch(e) {} mpPose = null; }
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+// 정지
+function stopAll() {
+  if (camera) { camera.stop(); camera = null; }
+  if (pose) { try { pose.close(); } catch(e) {} pose = null; }
   const video = document.getElementById('video');
-  video.srcObject = null;
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
   const ctx = document.getElementById('canvas').getContext('2d');
   ctx.clearRect(0, 0, 9999, 9999);
-  document.getElementById('startWrap').classList.remove('hidden');
-  document.getElementById('camBtn').disabled = false;
-  const t = LABELS[lang] || LABELS.en;
-  document.getElementById('camBtn').textContent = t.camBtn;
-  document.getElementById('loadingMsg').classList.remove('show');
-  document.getElementById('errorMsg').classList.remove('show');
-  setStatus('대기 중');
-  setStatusActive(false);
-  firstResult = true;
-}
-
-// ── UI 헬퍼 ──
-function setStatus(msg) {
-  document.getElementById('statusText').textContent = msg;
-}
-function setStatusActive(on) {
-  const el = document.getElementById('statusText');
-  el.className = 'cam-header-status' + (on ? ' active' : '');
-}
-function showError(msg) {
-  const el = document.getElementById('errorMsg');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 6000);
+  document.getElementById('camStatus').textContent = '대기 중';
+  document.getElementById('camStatus').className = 'cam-status';
 }
 </script>
 </body>
