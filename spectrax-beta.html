@@ -134,7 +134,7 @@ html,body{height:100%;background:var(--black);color:var(--white);font-family:'Mo
 /* Camera + panels layout */
 .meas-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 240px;overflow:hidden;}
 .cam-zone{position:relative;background:#030305;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-#videoEl{position:absolute;display:none;object-fit:cover;transform-origin:center center;}
+#videoEl{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;transform-origin:center center;}
 #canvasEl{position:absolute;inset:0;width:100%;height:100%;}
 
 /* Placeholder */
@@ -375,7 +375,7 @@ input[type=range].z-slider::-webkit-slider-thumb{-webkit-appearance:none;width:1
         <button class="ctrl-btn" onclick="flipCamera()" title="Switch Camera">🔄</button>
         <div class="zoom-ctrl">
           <div class="zoom-lbl">ZOOM</div>
-          <input type="range" class="z-slider" id="zoomSlider" min="0.4" max="1.5" step="0.05" value="0.7" oninput="applyZoom(this.value)">
+          <input type="range" class="z-slider" id="zoomSlider" min="1" max="3" step="0.1" value="1" oninput="applyZoom(this.value)">
           <div class="zoom-num" id="zoomVal">0.8×</div>
         </div>
       </div>
@@ -499,7 +499,7 @@ const T={
 let lang='ko', curScreen=1, curCat=null, curEx=null;
 let cameraStream=null, mpCamera=null, poseDetector=null;
 let isRunning=false, isRecording=false, canRecord=false;
-let facingMode='environment', curZoom=0.7, animFrame=null;
+let facingMode='environment', curZoom=1.0, animFrame=null;
 
 // Smoothing buffers
 const SMOOTH_FRAMES=8;
@@ -663,19 +663,12 @@ async function flipCamera(){
 
 function applyZoom(val){
   curZoom=parseFloat(val);
-  document.getElementById('zoomVal').textContent=curZoom.toFixed(2)+'×';
+  document.getElementById('zoomVal').textContent=curZoom.toFixed(1)+'×';
   const video=document.getElementById('videoEl');
   const flip=facingMode==='user';
-
-  // scale 1보다 작으면 → 영상 축소 + 검은 여백 (진짜 줌 아웃 효과)
-  // video를 cam-zone 안에서 더 작게 보여줌
-  video.style.position='absolute';
-  video.style.width=(100/curZoom)+'%';
-  video.style.height=(100/curZoom)+'%';
-  video.style.left=((1-1/curZoom)/2*100)+'%';
-  video.style.top=((1-1/curZoom)/2*100)+'%';
-  video.style.transform=flip?'scaleX(-1)':'none';
-  video.style.objectFit='cover';
+  // 화면은 그대로, scale > 1 이면 줌인
+  video.style.transform=(flip?'scaleX(-1) ':'')+'scale('+curZoom+')';
+  video.style.transformOrigin='center center';
 }
 
 // ═══════════════════════════════════════════════
