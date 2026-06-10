@@ -214,6 +214,44 @@
   }
   .stop-btn:hover { background: rgba(229,57,53,0.25); }
 
+  /* 카메라 컨트롤 패널 */
+  .cam-controls {
+    position: absolute; top: 14px; right: 14px;
+    display: none; flex-direction: column; gap: 8px; z-index: 10;
+  }
+  .cam-controls.visible { display: flex; }
+  .flip-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(5,5,5,0.75); border: 1px solid var(--border);
+    color: var(--gold); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s; backdrop-filter: blur(8px);
+  }
+  .flip-btn:hover { border-color: var(--gold); background: rgba(201,168,76,0.15); transform: scale(1.08); }
+  .zoom-panel {
+    background: rgba(5,5,5,0.75); border: 1px solid var(--border);
+    border-radius: 20px; padding: 10px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    backdrop-filter: blur(8px);
+  }
+  .zoom-label { font-size: 8px; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; }
+  .zoom-val { font-size: 11px; font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
+  input[type=range].zoom-slider {
+    -webkit-appearance: none; appearance: none;
+    writing-mode: vertical-lr; direction: rtl;
+    width: 6px; height: 80px;
+    background: rgba(201,168,76,0.15); border-radius: 3px; outline: none; cursor: pointer;
+  }
+  input[type=range].zoom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--gold); cursor: pointer;
+    box-shadow: 0 0 6px rgba(201,168,76,0.5);
+  }
+  input[type=range].zoom-slider::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--gold); cursor: pointer; border: none;
+  }
+
   /* Side panel */
   .side-panel {
     background: rgba(8,8,8,0.98);
@@ -351,6 +389,18 @@
         <button class="start-btn" id="startBtn" onclick="startCamera()">분석 시작</button>
       </div>
       <button class="stop-btn" id="stopBtn" onclick="stopCamera()">■ 정지</button>
+
+      <!-- 카메라 컨트롤 -->
+      <div class="cam-controls" id="camControls">
+        <button class="flip-btn" onclick="flipCamera()" title="카메라 전환">🔄</button>
+        <div class="zoom-panel">
+          <div class="zoom-label">ZOOM</div>
+          <input type="range" class="zoom-slider" id="zoomSlider"
+            min="1" max="3" step="0.1" value="1"
+            oninput="applyZoom(this.value)">
+          <div class="zoom-val" id="zoomVal">1.0×</div>
+        </div>
+      </div>
     </div>
 
     <!-- Side Panel -->
@@ -511,6 +561,8 @@ let mpCamera = null;
 let isRunning = false;
 let lastPose = null;
 let animFrame = null;
+let facingMode = 'environment'; // 기본: 후면 카메라
+let currentZoom = 1.0;
 
 function goTo(n) {
   document.getElementById('s'+currentScreen).classList.remove('active');
@@ -552,33 +604,96 @@ async function startCamera() {
   const t = T[lang] || T.en;
   try {
     const video = document.getElementById('videoEl');
-    const canvas = document.getElementById('canvasEl');
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } });
+
+    // 기존 스트림 정리
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(tr => tr.stop());
+      cameraStream = null;
+    }
+
+    // 후면 카메라: 좌우 반전 없음 / 전면: 반전
+    video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+    document.getElementById('canvasEl').style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: facingMode,
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
     video.srcObject = cameraStream;
     video.style.display = 'block';
     document.getElementById('camPlaceholder').style.display = 'none';
     document.getElementById('stopBtn').style.display = 'block';
+    document.getElementById('camControls').classList.add('visible');
     document.getElementById('statusDot').classList.add('live');
     document.getElementById('statusText').textContent = t.statusLive;
+
+    // 줌 초기화
+    document.getElementById('zoomSlider').value = currentZoom;
+    document.getElementById('zoomVal').textContent = currentZoom.toFixed(1) + '×';
+    applyZoom(currentZoom);
+
     isRunning = true;
 
     // MediaPipe Pose
     if (typeof Pose !== 'undefined') {
+      if (poseDetector) {
+        poseDetector.close();
+        poseDetector = null;
+      }
       poseDetector = new Pose({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}` });
       poseDetector.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
       poseDetector.onResults(onPoseResults);
 
+      if (mpCamera) { mpCamera.stop(); mpCamera = null; }
       mpCamera = new Camera(video, {
         onFrame: async () => { if (isRunning) await poseDetector.send({ image: video }); },
         width: 1280, height: 720
       });
       mpCamera.start();
     } else {
-      // fallback: draw loop without MediaPipe
       drawLoop();
     }
   } catch (err) {
-    alert('카메라 접근 권한이 필요합니다.\nCamera access is required.');
+    // 후면 카메라 없으면 전면으로 자동 전환
+    if (facingMode === 'environment') {
+      facingMode = 'user';
+      startCamera();
+    } else {
+      alert('카메라 접근 권한이 필요합니다.\nCamera access is required.');
+    }
+  }
+}
+
+// 전/후면 카메라 전환
+async function flipCamera() {
+  facingMode = (facingMode === 'user') ? 'environment' : 'user';
+  const btn = document.querySelector('.flip-btn');
+  btn.style.transform = 'scale(0.85)';
+  setTimeout(() => { btn.style.transform = ''; }, 200);
+
+  if (isRunning) {
+    if (mpCamera) { mpCamera.stop(); mpCamera = null; }
+    await startCamera();
+  }
+}
+
+// 줌 적용
+function applyZoom(val) {
+  currentZoom = parseFloat(val);
+  document.getElementById('zoomVal').textContent = currentZoom.toFixed(1) + '×';
+  const video = document.getElementById('videoEl');
+  video.style.scale = currentZoom;
+  // MediaPipe 트랙 줌 (지원 기기에서)
+  if (cameraStream) {
+    const track = cameraStream.getVideoTracks()[0];
+    if (track && track.getCapabilities && track.getCapabilities().zoom) {
+      const cap = track.getCapabilities().zoom;
+      const zoomVal = cap.min + (cap.max - cap.min) * ((currentZoom - 1) / 2);
+      track.applyConstraints({ advanced: [{ zoom: zoomVal }] }).catch(() => {});
+    }
   }
 }
 
@@ -593,6 +708,7 @@ function stopCamera() {
   const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height);
   document.getElementById('camPlaceholder').style.display = 'flex';
   document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('camControls').classList.remove('visible');
   document.getElementById('statusDot').classList.remove('live');
   document.getElementById('statusText').textContent = (T[lang]||T.en).statusWait;
   resetUI();
