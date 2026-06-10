@@ -681,10 +681,19 @@ async function startCamera(){
   }
   stepOk(2,'비디오 연결 완료 '+video.videoWidth+'×'+video.videoHeight);
 
-  // ─── STEP 3: Load TF.js + pose-detection ───
-  stepActive(3,'TF.js 로딩...');
+  // ─── 카메라 화면 즉시 표시 ───
+  // 모델 로딩 전에 비디오를 화면에 먼저 보여줌
+  overlay.classList.add('hidden');
+  document.getElementById('camPh').style.display='none';
+  document.getElementById('camCtrl').classList.add('show');
+  applyZoom(curZoom);
+  // 오버레이를 반투명으로 바꿔서 뒤에 카메라가 보이게
+  overlay.style.background='rgba(4,4,6,0.88)';
+  overlay.classList.remove('hidden');
 
-  // Try to load TF.js with fallback URLs
+  // ─── STEP 3: Load TF.js + pose-detection ───
+  stepActive(3,'TF.js 라이브러리 로딩...');
+
   const tfUrls=[
     'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js',
     'https://unpkg.com/@tensorflow/tfjs@4.22.0/dist/tf.min.js'
@@ -697,12 +706,11 @@ async function startCamera(){
   let tfLoaded=false;
   if(typeof tf!=='undefined'){
     tfLoaded=true;
-    console.log('[SPECTRAX] TF.js already loaded');
   } else {
     for(const url of tfUrls){
       try{
-        document.getElementById('ir3t').textContent='TF.js 로딩: '+url.split('/')[2]+'...';
-        await loadScript(url,12000);
+        document.getElementById('ir3t').textContent='TF.js 로딩 중... ('+url.split('/')[2]+')';
+        await loadScript(url,20000);
         if(typeof tf!=='undefined'){tfLoaded=true;break;}
       }catch(e){console.warn('TF URL failed:',url,e.message);}
     }
@@ -710,33 +718,31 @@ async function startCamera(){
 
   if(!tfLoaded){
     stepErr(3,'TF.js 로드 실패');
-    showErr('TensorFlow.js를 로드할 수 없습니다.\n인터넷 연결을 확인하고 다시 시도하세요.\n\nCDN: cdn.jsdelivr.net / unpkg.com');
+    showErr('TensorFlow.js 로드 실패.\n\n네트워크 연결을 확인하고 다시 시도하세요.\n(WiFi 또는 LTE 필요)');
     return;
   }
 
-  // Set TF backend
-  document.getElementById('ir3t').textContent='TF backend 설정...';
+  // WebGL 설정
+  document.getElementById('ir3t').textContent='GPU 백엔드 설정...';
   try{
-    if(hasWGL){
-      await tf.setBackend('webgl');
-      await tf.ready();
-      console.log('[SPECTRAX] WebGL backend ready');
-    }
+    await tf.setBackend('webgl');
+    await tf.ready();
   }catch(e){
-    console.warn('[SPECTRAX] WebGL failed, trying CPU:', e.message);
+    console.warn('WebGL 실패, CPU 사용:', e.message);
     try{await tf.setBackend('cpu');await tf.ready();}catch(e2){}
   }
   const backend=tf.getBackend();
+  console.log('[SPECTRAX] TF backend:', backend);
 
-  // Load pose-detection
+  // pose-detection 로드
   let pdLoaded=false;
   if(typeof poseDetection!=='undefined'){
     pdLoaded=true;
   } else {
     for(const url of pdUrls){
       try{
-        document.getElementById('ir3t').textContent='pose-detection 로딩: '+url.split('/')[2]+'...';
-        await loadScript(url,12000);
+        document.getElementById('ir3t').textContent='pose-detection 로딩... ('+url.split('/')[2]+')';
+        await loadScript(url,20000);
         if(typeof poseDetection!=='undefined'){pdLoaded=true;break;}
       }catch(e){console.warn('PD URL failed:',url,e.message);}
     }
@@ -744,30 +750,67 @@ async function startCamera(){
 
   if(!pdLoaded){
     stepErr(3,'pose-detection 로드 실패');
-    showErr('pose-detection 라이브러리를 로드할 수 없습니다.\nCDN 접근 불가 또는 네트워크 오류.\n\n인터넷 연결 확인 후 다시 시도하세요.');
+    showErr('pose-detection 라이브러리 로드 실패.\n\n네트워크 연결 확인 후 다시 시도하세요.');
     return;
   }
 
-  // Create MoveNet detector
-  document.getElementById('ir3t').textContent='MoveNet 모델 초기화...';
+  // ─── MoveNet 모델 로드 (진행상황 표시) ───
+  // 모델 크기 약 9MB, 느린 네트워크에서 30-60초 소요 가능
+  stepActive(3,'AI 포즈 모델 다운로드 중...');
+  document.getElementById('ir3t').textContent='AI 모델 다운로드 중... (최초 1회, 약 9MB)';
+
+  // 진행상황 카운터 표시
+  let loadSecs=0;
+  const loadTimer=setInterval(()=>{
+    loadSecs++;
+    const el=document.getElementById('ir3t');
+    if(el)el.textContent=`AI 모델 다운로드 중... ${loadSecs}초 경과 (최초 1회, 약 9MB)`;
+  },1000);
+
   try{
     if(detector){try{detector.dispose();}catch(e){}detector=null;}
+
+    // modelUrl을 직접 지정해서 storage.googleapis.com 사용 (tfhub.dev보다 빠름)
+    const modelConfig={
+      modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+      enableSmoothing: true,
+      minPoseScore: 0.2,
+      modelUrl: 'https://storage.googleapis.com/tfjs-models/savedmodel/movenet/singlepose/lightning/4/model.json'
+    };
+
     detector=await Promise.race([
-      poseDetection.createDetector(
-        poseDetection.SupportedModels.MoveNet,
-        {
-          modelType:poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-          enableSmoothing:true,
-          minPoseScore:0.2
-        }
-      ),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error('모델 로드 5초 타임아웃')),12000))
+      poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, modelConfig),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('모델 로드 타임아웃 (60초)\n네트워크가 느리거나 모델 서버에 접근할 수 없습니다.')),60000))
     ]);
+    clearInterval(loadTimer);
   }catch(e){
-    stepErr(3,'모델 초기화 실패: '+e.message);
-    showErr('MoveNet 모델을 초기화할 수 없습니다.\n\n오류: '+e.message+'\nBackend: '+backend+'\n\n인터넷 연결을 확인하고 다시 시도하세요.');
-    dbg(['TF.js: ✅ '+tf.version.tfjs,'Backend: '+backend,'pose-detection: ✅','MoveNet: ❌ '+e.message]);
-    return;
+    clearInterval(loadTimer);
+
+    // tfhub.dev로 재시도
+    document.getElementById('ir3t').textContent='tfhub.dev로 재시도 중...';
+    try{
+      detector=await Promise.race([
+        poseDetection.createDetector(poseDetection.SupportedModels.MoveNet,{
+          modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+          enableSmoothing: true,
+          minPoseScore: 0.2
+        }),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('재시도 타임아웃 (30초)')),30000))
+      ]);
+    }catch(e2){
+      stepErr(3,'모델 로드 실패');
+      showErr(
+        'AI 포즈 모델을 불러올 수 없습니다.\n\n' +
+        '원인: 모델 서버(Google)에 접근 실패\n\n' +
+        '확인사항:\n' +
+        '• WiFi 또는 LTE 연결 상태 확인\n' +
+        '• VPN/방화벽 비활성화\n' +
+        '• 잠시 후 다시 시도\n\n' +
+        '오류: '+e2.message
+      );
+      dbg(['TF.js: ✅ v'+(tf?.version?.tfjs||'?'),'Backend: '+backend,'Model: ❌ '+e2.message,'→ 재시도 버튼을 누르세요']);
+      return;
+    }
   }
 
   stepOk(3,'모델 준비 완료 (backend: '+backend+')');
@@ -794,8 +837,8 @@ async function startCamera(){
   // All done!
   document.getElementById('initTitle').textContent='✅ 준비 완료';
   await new Promise(r=>setTimeout(r,400));
+  overlay.style.background=''; // 원래 배경으로
   overlay.classList.add('hidden');
-  document.getElementById('camCtrl').classList.add('show');
 
   applyZoom(curZoom);
   isRunning=true;canRecord=false;
