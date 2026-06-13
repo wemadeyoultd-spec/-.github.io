@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🦋 지승이의 곤충 대모험</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { 
+    font-family: 'Noto Sans KR', sans-serif; 
+    background: #1a0a2e; 
+    overflow: hidden; 
+    width: 100vw; height: 100vh;
+    user-select: none;
+  }
+
+  #gameCanvas { 
+    display: block; 
+    margin: 0 auto; 
+    image-rendering: pixelated;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .screen.active { display: flex; }
+
+  /* ─── TITLE SCREEN ─── */
+  #titleScreen {
+    background: linear-gradient(180deg, #0d4a1a 0%, #1a7a2a 40%, #5cb85c 80%, #8fd18f 100%);
+    overflow: hidden;
+  }
+  .title-sky {
+    position: absolute; top: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(180deg, #87ceeb 0%, #b8e4f9 100%);
+  }
+  .title-sun {
+    position: absolute; top: 20px; right: 80px;
+    width: 70px; height: 70px;
+    background: radial-gradient(circle, #fff176, #ffd600);
+    border-radius: 50%;
+    box-shadow: 0 0 30px #ffd600, 0 0 60px rgba(255,214,0,0.4);
+    animation: sunPulse 3s ease-in-out infinite;
+  }
+  @keyframes sunPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  .title-cloud {
+    position: absolute; background: white; border-radius: 50px;
+    opacity: 0.9;
+    animation: cloudDrift linear infinite;
+  }
+  @keyframes cloudDrift { from{transform:translateX(-200px)} to{transform:translateX(calc(100vw + 200px))} }
+
+  .title-ground {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+    background: linear-gradient(180deg, #3a9a3a 0%, #2d7a2d 50%, #1a5c1a 100%);
+  }
+  .title-grass {
+    position: absolute; bottom: 54%; left: 0; right: 0;
+    display: flex; align-items: flex-end;
+  }
+
+  .title-box {
+    position: relative; z-index: 10;
+    text-align: center;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 4px solid rgba(255,255,255,0.5);
+    border-radius: 30px;
+    padding: 30px 50px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    margin-top: -60px;
+  }
+  .title-emoji { font-size: 3rem; display: block; margin-bottom: 5px; animation: bounce 1s ease-in-out infinite alternate; }
+  @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-10px)} }
+  .title-main {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    color: white;
+    text-shadow: 3px 3px 0 #2d7a2d, 6px 6px 0 rgba(0,0,0,0.2);
+    line-height: 1.2;
+  }
+  .title-sub {
+    font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+    color: #fff9c4;
+    font-weight: 700;
+    margin-top: 8px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 18px 50px;
+    border-radius: 50px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    outline: none;
+    touch-action: manipulation;
+  }
+  .btn:active { transform: scale(0.94); }
+
+  .btn-start {
+    background: linear-gradient(135deg, #ff6b35, #ff3d00);
+    color: white;
+    box-shadow: 0 8px 0 #b71c1c, 0 12px 20px rgba(255,61,0,0.4);
+    letter-spacing: 2px;
+    animation: startPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes startPulse { 0%,100%{box-shadow:0 8px 0 #b71c1c,0 12px 20px rgba(255,61,0,0.4)} 50%{box-shadow:0 8px 0 #b71c1c,0 12px 30px rgba(255,61,0,0.7)} }
+  .btn-start:active { box-shadow: 0 4px 0 #b71c1c; transform: translateY(4px); }
+
+  .btn-secondary {
+    background: linear-gradient(135deg, #42a5f5, #1976d2);
+    color: white;
+    box-shadow: 0 6px 0 #0d47a1;
+    font-size: 1.1rem;
+    padding: 14px 35px;
+  }
+  .btn-secondary:active { box-shadow: 0 3px 0 #0d47a1; transform: translateY(3px); }
+
+  .title-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 25px; }
+  .title-row-btns { display: flex; gap: 12px; }
+
+  /* ─── HUD ─── */
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+    z-index: 50;
+    pointer-events: none;
+  }
+  .hud-group { display: flex; align-items: center; gap: 8px; }
+  .hud-item {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 5px 12px;
+    color: white;
+    font-size: clamp(0.75rem, 2vw, 0.95rem);
+    font-weight: 700;
+  }
+  .hud-item span { color: #ffd600; }
+  #streakDisplay { color: #ff6b35; }
+
+  .hud-icon-btns { pointer-events: all; display: flex; gap: 8px; }
+  .hud-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .hud-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* ─── QUESTION PANEL ─── */
+  #questionPanel {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    width: min(92vw, 600px);
+    background: linear-gradient(135deg, #fff9c4, #ffffff);
+    border-radius: 25px;
+    border: 5px solid #ffd600;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 8px rgba(255,214,0,0.2);
+    padding: 25px;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #questionPanel.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    pointer-events: all;
+  }
+  .q-header {
+    display: flex; align-items: center; gap: 15px;
+    margin-bottom: 15px;
+  }
+  .q-insect-display {
+    width: 110px; height: 110px;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border-radius: 20px;
+    border: 3px solid #4caf50;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .q-insect-display svg { width: 90%; height: 90%; }
+  .golden-glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle, rgba(255,214,0,0.4) 0%, transparent 70%);
+    animation: goldenPulse 0.8s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes goldenPulse { from{opacity:0.5} to{opacity:1} }
+
+  .q-text-area { flex: 1; }
+  .q-number {
+    font-size: 0.85rem; color: #757575; font-weight: 700;
+    background: #eeeeee; border-radius: 10px;
+    padding: 3px 10px; display: inline-block; margin-bottom: 8px;
+  }
+  .q-question {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    font-weight: 900; color: #1a237e; line-height: 1.4;
+  }
+  .q-insect-name {
+    font-size: 1.4rem; font-weight: 900;
+    color: #2e7d32; margin-top: 5px;
+  }
+
+  .q-choices {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-top: 15px;
+  }
+  .choice-btn {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border: 3px solid #42a5f5;
+    border-radius: 15px;
+    padding: 12px 10px;
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+    font-weight: 700;
+    color: #0d47a1;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    touch-action: manipulation;
+  }
+  .choice-btn:hover { transform: scale(1.04); border-color: #1976d2; background: linear-gradient(135deg, #bbdefb, #90caf9); }
+  .choice-btn.correct { background: linear-gradient(135deg, #c8e6c9, #a5d6a7); border-color: #2e7d32; color: #1b5e20; animation: correctPop 0.4s ease; }
+  .choice-btn.wrong { background: linear-gradient(135deg, #ffcdd2, #ef9a9a); border-color: #c62828; color: #b71c1c; animation: wrongShake 0.4s ease; }
+  @keyframes correctPop { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+  @keyframes wrongShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+  .bonus-badge {
+    background: linear-gradient(135deg, #ffd600, #ff6f00);
+    color: white; font-size: 0.8rem; font-weight: 900;
+    border-radius: 10px; padding: 3px 10px;
+    display: inline-block; margin-bottom: 8px;
+    animation: badgePulse 0.6s ease-in-out infinite alternate;
+    box-shadow: 0 3px 10px rgba(255,111,0,0.5);
+  }
+  @keyframes badgePulse { from{transform:scale(1)} to{transform:scale(1.05)} }
+
+  /* ─── EFFECTS ─── */
+  .particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 300;
+    border-radius: 50%;
+    animation: particleFly ease-out forwards;
+  }
+  @keyframes particleFly {
+    from { transform: translate(0,0) scale(1); opacity: 1; }
+    to { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  .float-text {
+    position: absolute;
+    font-weight: 900;
+    font-size: 1.8rem;
+    pointer-events: none;
+    z-index: 300;
+    animation: floatUp 1.2s ease-out forwards;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+  @keyframes floatUp {
+    from { transform: translateY(0) scale(1); opacity: 1; }
+    to { transform: translateY(-80px) scale(0.7); opacity: 0; }
+  }
+
+  .cheer-popup {
+    position: absolute;
+    top: 40%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, #ff6b35, #ffd600);
+    border-radius: 25px;
+    padding: 20px 40px;
+    color: white;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 900;
+    z-index: 350;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    pointer-events: none;
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+    border: 4px solid white;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    opacity: 0;
+  }
+  .cheer-popup.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+  /* ─── TIGER OVERLAY ─── */
+  #tigerOverlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 400;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #tigerOverlay.show { display: flex; }
+  .tiger-roar {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 900;
+    color: #ff3d00;
+    text-shadow: 0 0 30px rgba(255,61,0,0.8);
+    animation: roarPulse 0.3s ease-in-out infinite alternate;
+    margin-bottom: 20px;
+  }
+  @keyframes roarPulse { from{transform:scale(1)} to{transform:scale(1.08)} }
+
+  /* ─── GAME OVER SCREEN ─── */
+  #gameOverScreen {
+    background: radial-gradient(circle at center, #3d0000 0%, #1a0000 100%);
+    gap: 20px;
+  }
+  .go-title {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 900;
+    color: #ff3d00;
+    text-shadow: 0 0 40px rgba(255,61,0,0.8), 4px 4px 0 #7f0000;
+    animation: goShake 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes goShake { from{transform:rotate(-2deg)} to{transform:rotate(2deg)} }
+  .go-stats {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 20px 40px;
+    color: white;
+    text-align: center;
+  }
+  .go-stat { font-size: 1.2rem; margin: 5px 0; }
+  .go-stat span { color: #ffd600; font-weight: 900; font-size: 1.5rem; }
+  .go-btns { display: flex; gap: 15px; }
+  .btn-retry { background: linear-gradient(135deg, #ff6b35, #ff3d00); color: white; box-shadow: 0 6px 0 #7f0000; }
+  .btn-main { background: linear-gradient(135deg, #42a5f5, #1976d2); color: white; box-shadow: 0 6px 0 #0d47a1; }
+
+  /* ─── CLEAR SCREEN ─── */
+  #clearScreen {
+    background: radial-gradient(circle at center, #1a3a0a 0%, #0d1f05 100%);
+    gap: 15px;
+    overflow: hidden;
+  }
+  .clear-title {
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 900;
+    color: #ffd600;
+    text-shadow: 0 0 40px rgba(255,214,0,0.8), 4px 4px 0 #7f6000;
+    text-align: center;
+    animation: clearGlow 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes clearGlow { from{text-shadow:0 0 30px rgba(255,214,0,0.6),4px 4px 0 #7f6000} to{text-shadow:0 0 60px rgba(255,214,0,1),4px 4px 0 #7f6000} }
+  .clear-sub { font-size: clamp(1.2rem, 3vw, 1.8rem); color: #c8e6c9; font-weight: 700; text-align: center; }
+  .trophy-display { font-size: 6rem; animation: trophySpin 3s ease-in-out infinite; }
+  @keyframes trophySpin { 0%,100%{transform:rotate(-10deg) scale(1)} 50%{transform:rotate(10deg) scale(1.1)} }
+  .clear-score-box {
+    background: rgba(255,214,0,0.15);
+    border: 3px solid #ffd600;
+    border-radius: 20px;
+    padding: 20px 40px;
+    color: white;
+    text-align: center;
+    font-size: 1.3rem;
+  }
+  .clear-score-box strong { color: #ffd600; font-size: 1.8rem; }
+
+  /* ─── POKEDEX / 도감 ─── */
+  #pokedexScreen {
+    background: linear-gradient(135deg, #1b5e20 0%, #0d3b0d 100%);
+    overflow: hidden;
+    padding: 20px;
+    gap: 15px;
+  }
+  .dex-title { font-size: 2rem; font-weight: 900; color: #ffd600; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+  .dex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 700px;
+    max-height: 60vh;
+    padding: 10px;
+  }
+  .dex-item {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 10px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .dex-item.unlocked { border-color: #ffd600; background: rgba(255,214,0,0.1); }
+  .dex-item .dex-icon { font-size: 2.5rem; width: 60px; height: 60px; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; }
+  .dex-item .dex-name { font-size: 0.8rem; color: white; font-weight: 700; }
+  .dex-item.locked .dex-icon { filter: grayscale(1) brightness(0.3); }
+  .dex-item.locked .dex-name { color: rgba(255,255,255,0.3); }
+  .dex-item .dex-count { font-size: 0.7rem; color: #ffd600; }
+  .dex-progress { color: white; font-size: 1rem; font-weight: 700; }
+  .dex-progress span { color: #ffd600; }
+
+  /* ─── PAUSE ─── */
+  #pauseScreen {
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    gap: 20px;
+  }
+  .pause-title { font-size: 3rem; font-weight: 900; color: white; }
+
+  /* ─── ITEMS BAR ─── */
+  #itemsBar {
+    position: absolute;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 8px;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 30px;
+    padding: 8px 15px;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .item-badge {
+    font-size: 1.4rem;
+    opacity: 0.3;
+    transition: all 0.3s;
+    filter: grayscale(1);
+  }
+  .item-badge.earned { opacity: 1; filter: none; animation: itemPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes itemPop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+
+  /* ─── RANDOM EVENT ─── */
+  .random-event-text {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    border: 3px solid #ffd600;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #1a237e;
+    z-index: 60;
+    white-space: nowrap;
+    animation: eventFade 3s ease forwards;
+    pointer-events: none;
+  }
+  @keyframes eventFade { 0%{opacity:0;transform:translateX(-50%) translateY(-20px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 75%{opacity:1} 100%{opacity:0} }
+
+  /* ─── BOSS STAGE ─── */
+  .boss-banner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, #7b1fa2, #4a148c);
+    border: 4px solid #e040fb;
+    border-radius: 20px;
+    padding: 20px 40px;
+    color: white;
+    font-size: 2rem;
+    font-weight: 900;
+    z-index: 350;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(224,64,251,0.5);
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .boss-banner.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+  /* CANVAS bg */
+  #gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* intro screen */
+  #introScreen {
+    background: linear-gradient(180deg, #87ceeb 0%, #c8e6c9 60%, #4caf50 100%);
+    gap: 0;
+  }
+  .intro-bubble {
+    background: white;
+    border-radius: 20px;
+    border: 3px solid #4caf50;
+    padding: 20px 35px;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    font-weight: 900;
+    color: #1b5e20;
+    margin: 15px;
+    text-align: center;
+    max-width: 500px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+  .intro-bubble.show { opacity: 1; transform: translateY(0); }
+
+  /* Achievement popup */
+  #achievementPopup {
+    position: absolute;
+    top: 70px; right: 10px;
+    background: linear-gradient(135deg, #ffd600, #ff6f00);
+    border-radius: 15px;
+    padding: 12px 20px;
+    color: white;
+    font-weight: 900;
+    font-size: 0.95rem;
+    z-index: 350;
+    transform: translateX(200%);
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 5px 20px rgba(255,111,0,0.4);
+    pointer-events: none;
+    max-width: 220px;
+  }
+  #achievementPopup.show { transform: translateX(0); }
+  .ach-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+
+  /* Progress bar */
+  #progressBar {
+    position: absolute;
+    bottom: 60px; left: 50%;
+    transform: translateX(-50%);
+    width: min(90vw, 500px);
+    height: 12px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    z-index: 50;
+    pointer-events: none;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+  #progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a, #ffd600);
+    border-radius: 6px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(139,195,74,0.5);
+  }
+  #progressLabel {
+    position: absolute;
+    bottom: 75px; left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 50;
+    pointer-events: none;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+
+  <!-- CANVAS for background animation -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" style="display:none">
+    <div class="hud-group">
+      <div class="hud-item">🐛 <span id="qNum">1</span>/50</div>
+      <div class="hud-item">⭐ <span id="scoreDisplay">0</span></div>
+      <div class="hud-item" id="streakDisplay">🔥 <span id="streakNum">0</span>연속</div>
+    </div>
+    <div class="hud-icon-btns">
+      <button class="hud-btn" id="sfxBtn" title="효과음">🔊</button>
+      <button class="hud-btn" id="musicBtn" title="음악">🎵</button>
+      <button class="hud-btn" id="pauseBtn" title="일시정지">⏸</button>
+      <button class="hud-btn" id="dexBtn" title="곤충도감">📖</button>
+    </div>
+  </div>
+
+  <!-- Items bar -->
+  <div id="itemsBar" style="display:none">
+    <div class="item-badge" id="item1">🍎</div>
+    <div class="item-badge" id="item2">⭐</div>
+    <div class="item-badge" id="item3">🦋</div>
+    <div class="item-badge" id="item4">🏆</div>
+    <div class="item-badge" id="item5">💎</div>
+    <div class="item-badge" id="item6">👑</div>
+    <div class="item-badge" id="item7">🏅</div>
+  </div>
+
+  <!-- Progress bar -->
+  <div id="progressBar" style="display:none"><div id="progressFill" style="width:0%"></div></div>
+  <div id="progressLabel" style="display:none">곤충 탐험 0%</div>
+
+  <!-- Achievement popup -->
+  <div id="achievementPopup"><span class="ach-icon" id="achIcon">🏆</span><span id="achText">업적 달성!</span></div>
+
+  <!-- Cheer popup -->
+  <div class="cheer-popup" id="cheerPopup"></div>
+
+  <!-- Boss banner -->
+  <div class="boss-banner" id="bossBanner"></div>
+
+  <!-- Question Panel -->
+  <div id="questionPanel">
+    <div class="q-header">
+      <div class="q-insect-display" id="insectDisplay"></div>
+      <div class="q-text-area">
+        <div id="bonusBadge" class="bonus-badge" style="display:none">⭐ 황금 곤충 보너스!</div>
+        <div class="q-number" id="qNumber">문제 1/50</div>
+        <div class="q-question" id="questionText"></div>
+        <div class="q-insect-name" id="insectNameDisplay"></div>
+      </div>
+    </div>
+    <div class="q-choices" id="choices"></div>
+  </div>
+
+  <!-- Tiger Overlay -->
+  <div id="tigerOverlay">
+    <div id="tigerSvg"></div>
+    <div class="tiger-roar">어흥!!!</div>
+    <div style="color:#ff6b35;font-size:1.3rem;font-weight:700;margin-top:10px">호랑이에게 잡혔어요! 😱</div>
+  </div>
+
+  <!-- SCREENS -->
+  <!-- Title -->
+  <div class="screen active" id="titleScreen">
+    <div class="title-sky">
+      <div class="title-sun"></div>
+    </div>
+    <div class="title-ground"></div>
+    <div class="title-box">
+      <span class="title-emoji">🦋</span>
+      <div class="title-main">지승이의<br>곤충 대모험</div>
+      <div class="title-sub">🌿 숲속 곤충 탐험을 떠나자! 🌿</div>
+      <div class="title-buttons">
+        <button class="btn btn-start" id="startBtn">🎮 START</button>
+        <div class="title-row-btns">
+          <button class="btn btn-secondary" id="titleDexBtn">📖 곤충도감</button>
+          <button class="btn btn-secondary" id="howToBtn">❓ 게임방법</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Intro -->
+  <div class="screen" id="introScreen">
+    <div style="font-size:5rem;margin-bottom:20px;animation:bounce 0.8s ease-in-out infinite alternate" id="introChar">🧒</div>
+    <div class="intro-bubble" id="intro1">오늘은 어떤 곤충을 만날까?</div>
+    <div class="intro-bubble" id="intro2">곤충박사가 되러 출발!</div>
+    <div class="intro-bubble" id="intro3">하지만... 숲속에 호랑이가 있어! 조심해! 🐯</div>
+  </div>
+
+  <!-- How To Play -->
+  <div class="screen" id="howToScreen" style="background:linear-gradient(135deg,#1b5e20,#0d3b0d);gap:15px;padding:30px">
+    <div style="font-size:2rem;font-weight:900;color:#ffd600">게임 방법 📖</div>
+    <div style="background:rgba(255,255,255,0.1);border-radius:20px;padding:20px;color:white;font-size:1.05rem;line-height:1.8;max-width:500px">
+      🌿 지승이가 자동으로 숲속을 탐험해요<br>
+      🐛 곤충이 나타나면 문제를 풀어요<br>
+      ✅ 정답이면 점수를 획득해요<br>
+      ❌ 오답이면 호랑이에게 잡혀요<br>
+      ⭐ 5연속 정답마다 응원 메시지!<br>
+      🏆 50문제를 모두 맞히면 곤충박사!<br>
+      📖 맞힌 곤충은 도감에 등록돼요
+    </div>
+    <button class="btn btn-start" onclick="showScreen('titleScreen')">← 돌아가기</button>
+  </div>
+
+  <!-- Game Over -->
+  <div class="screen" id="gameOverScreen">
+    <div id="goTigerEmoji" style="font-size:6rem;margin-bottom:10px">🐯</div>
+    <div class="go-title">GAME OVER</div>
+    <div class="go-stats">
+      <div class="go-stat">맞힌 문제: <span id="goCorrect">0</span>개</div>
+      <div class="go-stat">획득 점수: <span id="goScore">0</span>점</div>
+      <div class="go-stat">최고 기록: <span id="goBest">0</span>점</div>
+      <div class="go-stat">호랑이에게 잡힌 횟수: <span id="goCaught">0</span>번</div>
+    </div>
+    <div class="go-btns">
+      <button class="btn btn-retry" id="retryBtn">🔄 다시하기</button>
+      <button class="btn btn-main" id="goMainBtn">🏠 메인화면</button>
+    </div>
+  </div>
+
+  <!-- Clear Screen -->
+  <div class="screen" id="clearScreen">
+    <div class="trophy-display">🏆</div>
+    <div class="clear-title">🎉 축하합니다! 🎉</div>
+    <div class="clear-sub">당신은 곤충박사입니다!</div>
+    <div class="clear-score-box">
+      최종 점수: <strong id="clearScore">0</strong>점<br>
+      <span style="font-size:1rem;color:#c8e6c9">50문제 모두 정복! 🦋</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:2rem" id="clearItems"></div>
+    <div class="go-btns" style="margin-top:10px">
+      <button class="btn btn-start" id="clearRetryBtn">🔄 다시하기</button>
+      <button class="btn btn-main" id="clearMainBtn">🏠 메인화면</button>
+    </div>
+  </div>
+
+  <!-- Pokedex -->
+  <div class="screen" id="pokedexScreen">
+    <div class="dex-title">📖 곤충도감</div>
+    <div class="dex-progress">등록: <span id="dexCount">0</span> / 20종</div>
+    <div class="dex-grid" id="dexGrid"></div>
+    <button class="btn btn-main" id="dexBackBtn">← 돌아가기</button>
+  </div>
+
+  <!-- Pause -->
+  <div class="screen" id="pauseScreen">
+    <div class="pause-title">⏸ 일시정지</div>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+      <button class="btn btn-start" id="resumeBtn">▶ 계속하기</button>
+      <button class="btn btn-secondary" id="pauseDexBtn">📖 곤충도감</button>
+      <button class="btn btn-main" id="pauseMainBtn">🏠 메인화면</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  INSECT DATA — SVG drawings + questions
+// ══════════════════════════════════════════════════════════════════
+const INSECTS = [
+  {
+    id:'dragonfly', name:'잠자리', emoji:'🦟',
+    desc:'물가 근처에 살며, 하늘을 빠르게 날아다니는 곤충이에요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="52" rx="7" ry="18" fill="#29b6f6" opacity="0.9"/>
+      <ellipse cx="50" cy="35" rx="9" ry="11" fill="#4fc3f7"/>
+      <circle cx="46" cy="30" r="4" fill="#1565c0"/><circle cx="54" cy="30" r="4" fill="#1565c0"/>
+      <circle cx="47" cy="29" r="1.5" fill="white"/><circle cx="55" cy="29" r="1.5" fill="white"/>
+      <ellipse cx="33" cy="44" rx="18" ry="7" fill="rgba(100,220,255,0.45)" stroke="#81d4fa" stroke-width="1"/>
+      <ellipse cx="67" cy="44" rx="18" ry="7" fill="rgba(100,220,255,0.45)" stroke="#81d4fa" stroke-width="1"/>
+      <ellipse cx="35" cy="56" rx="14" ry="5" fill="rgba(100,220,255,0.3)" stroke="#81d4fa" stroke-width="1"/>
+      <ellipse cx="65" cy="56" rx="14" ry="5" fill="rgba(100,220,255,0.3)" stroke="#81d4fa" stroke-width="1"/>
+      <line x1="50" y1="34" x2="45" y2="24" stroke="#333" stroke-width="1.2"/>
+      <line x1="50" y1="34" x2="55" y2="24" stroke="#333" stroke-width="1.2"/>
+    </svg>`,
+    questions:[
+      {q:'잠자리는 어디에서 알을 낳나요?',a:'물속',choices:['물속','땅속','나무','돌 밑']},
+      {q:'잠자리의 눈은 몇 개인가요?',a:'2개(겹눈)',choices:['1개','2개(겹눈)','4개','6개']},
+    ]
+  },
+  {
+    id:'stagbeetle', name:'사슴벌레', emoji:'🪲',
+    desc:'수컷은 큰 턱이 사슴뿔처럼 생겼어요. 나무 수액을 먹어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="60" rx="18" ry="22" fill="#4e342e"/>
+      <ellipse cx="50" cy="40" rx="14" ry="13" fill="#5d4037"/>
+      <rect x="42" y="28" width="16" height="6" rx="3" fill="#4e342e"/>
+      <path d="M35 27 Q25 20 20 15 Q18 30 30 32" fill="#3e2723" stroke="#3e2723" stroke-width="1"/>
+      <path d="M65 27 Q75 20 80 15 Q82 30 70 32" fill="#3e2723" stroke="#3e2723" stroke-width="1"/>
+      <circle cx="42" cy="37" r="5" fill="#1a237e"/><circle cx="58" cy="37" r="5" fill="#1a237e"/>
+      <circle cx="43" cy="36" r="2" fill="white"/><circle cx="59" cy="36" r="2" fill="white"/>
+      <ellipse cx="50" cy="60" rx="16" ry="20" fill="none" stroke="#795548" stroke-width="2"/>
+      <line x1="50" y1="60" x2="50" y2="40" stroke="#6d4c41" stroke-width="1.5"/>
+      <line x1="34" y1="55" x2="25" y2="65" stroke="#5d4037" stroke-width="2"/>
+      <line x1="34" y1="62" x2="23" y2="68" stroke="#5d4037" stroke-width="2"/>
+      <line x1="66" y1="55" x2="75" y2="65" stroke="#5d4037" stroke-width="2"/>
+      <line x1="66" y1="62" x2="77" y2="68" stroke="#5d4037" stroke-width="2"/>
+      <line x1="34" y1="70" x2="25" y2="78" stroke="#5d4037" stroke-width="2"/>
+      <line x1="66" y1="70" x2="75" y2="78" stroke="#5d4037" stroke-width="2"/>
+    </svg>`,
+    questions:[
+      {q:'사슴벌레 수컷의 큰 턱 모양은 무엇을 닮았나요?',a:'사슴뿔',choices:['사슴뿔','코끼리코','원숭이손','공룡꼬리']},
+      {q:'사슴벌레가 좋아하는 먹이는 무엇인가요?',a:'나무 수액',choices:['나뭇잎','나무 수액','열매','꽃꿀']},
+    ]
+  },
+  {
+    id:'rhinobeetle', name:'장수풍뎅이', emoji:'🐛',
+    desc:'우리나라에서 가장 큰 딱정벌레예요. 수컷 머리에 뿔이 있어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="62" rx="20" ry="24" fill="#33691e"/>
+      <ellipse cx="50" cy="40" rx="15" ry="13" fill="#558b2f"/>
+      <path d="M50 28 L50 18 Q50 12 47 12" fill="none" stroke="#1b5e20" stroke-width="4" stroke-linecap="round"/>
+      <path d="M50 18 Q54 10 56 8" fill="none" stroke="#1b5e20" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="41" cy="37" r="5.5" fill="#1a237e"/><circle cx="59" cy="37" r="5.5" fill="#1a237e"/>
+      <circle cx="42" cy="36" r="2" fill="white"/><circle cx="60" cy="36" r="2" fill="white"/>
+      <line x1="50" y1="38" x2="45" y2="30" stroke="#33691e" stroke-width="1.5"/>
+      <line x1="50" y1="38" x2="55" y2="30" stroke="#33691e" stroke-width="1.5"/>
+      <ellipse cx="50" cy="62" rx="18" ry="22" fill="none" stroke="#558b2f" stroke-width="2"/>
+      <line x1="50" y1="50" x2="50" y2="85" stroke="#33691e" stroke-width="1.5"/>
+      <line x1="32" y1="56" x2="20" y2="63" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="32" y1="64" x2="19" y2="70" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="68" y1="56" x2="80" y2="63" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="68" y1="64" x2="81" y2="70" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="32" y1="73" x2="21" y2="80" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="68" y1="73" x2="79" y2="80" stroke="#33691e" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'장수풍뎅이 수컷 머리에 있는 것은?',a:'뿔',choices:['더듬이','뿔','날개','수염']},
+      {q:'장수풍뎅이는 어떤 종류의 곤충인가요?',a:'딱정벌레',choices:['나비','벌','딱정벌레','파리']},
+    ]
+  },
+  {
+    id:'ladybug', name:'무당벌레', emoji:'🐞',
+    desc:'빨간 등껍질에 검은 점이 있어요. 진딧물을 잡아먹는 익충이에요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="58" rx="22" ry="20" fill="#c62828"/>
+      <ellipse cx="50" cy="40" rx="13" ry="10" fill="#212121"/>
+      <line x1="50" y1="38" x2="50" y2="78" stroke="#212121" stroke-width="2.5"/>
+      <circle cx="38" cy="52" r="5" fill="#212121"/>
+      <circle cx="62" cy="52" r="5" fill="#212121"/>
+      <circle cx="36" cy="65" r="4" fill="#212121"/>
+      <circle cx="64" cy="65" r="4" fill="#212121"/>
+      <circle cx="43" cy="72" r="3" fill="#212121"/>
+      <circle cx="57" cy="72" r="3" fill="#212121"/>
+      <circle cx="42" cy="37" r="5" fill="white"/><circle cx="58" cy="37" r="5" fill="white"/>
+      <circle cx="42" cy="37" r="3" fill="#212121"/><circle cx="58" cy="37" r="3" fill="#212121"/>
+      <circle cx="43" cy="36" r="1" fill="white"/><circle cx="59" cy="36" r="1" fill="white"/>
+      <line x1="45" y1="32" x2="40" y2="23" stroke="#212121" stroke-width="1.5"/>
+      <line x1="55" y1="32" x2="60" y2="23" stroke="#212121" stroke-width="1.5"/>
+    </svg>`,
+    questions:[
+      {q:'무당벌레는 주로 무엇을 먹나요?',a:'진딧물',choices:['꽃꿀','진딧물','나뭇잎','씨앗']},
+      {q:'무당벌레 등껍질의 색깔은?',a:'빨간색',choices:['파란색','초록색','빨간색','노란색']},
+    ]
+  },
+  {
+    id:'mantis', name:'사마귀', emoji:'🦗',
+    desc:'앞발로 먹이를 낚아채는 사냥꾼 곤충이에요. 기도하는 자세로 유명해요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="65" rx="8" ry="20" fill="#558b2f"/>
+      <ellipse cx="50" cy="42" rx="7" ry="13" fill="#689f38"/>
+      <ellipse cx="50" cy="28" rx="9" ry="9" fill="#7cb342"/>
+      <circle cx="44" cy="25" r="5" fill="#1a237e"/><circle cx="56" cy="25" r="5" fill="#1a237e"/>
+      <circle cx="44.5" cy="24" r="2" fill="white"/><circle cx="56.5" cy="24" r="2" fill="white"/>
+      <path d="M44 34 Q30 28 25 40 Q28 48 40 43" fill="#558b2f" stroke="#33691e" stroke-width="1"/>
+      <path d="M56 34 Q70 28 75 40 Q72 48 60 43" fill="#558b2f" stroke="#33691e" stroke-width="1"/>
+      <line x1="42" y1="55" x2="28" y2="65" stroke="#558b2f" stroke-width="2.5"/>
+      <line x1="42" y1="63" x2="27" y2="72" stroke="#558b2f" stroke-width="2.5"/>
+      <line x1="58" y1="55" x2="72" y2="65" stroke="#558b2f" stroke-width="2.5"/>
+      <line x1="58" y1="63" x2="73" y2="72" stroke="#558b2f" stroke-width="2.5"/>
+      <line x1="42" y1="72" x2="28" y2="80" stroke="#558b2f" stroke-width="2.5"/>
+      <line x1="58" y1="72" x2="72" y2="80" stroke="#558b2f" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'사마귀의 앞발은 무엇에 주로 사용하나요?',a:'먹이 잡기',choices:['걷기','먹이 잡기','날기','땅파기']},
+      {q:'사마귀의 영어 이름 Praying Mantis에서 Praying의 뜻은?',a:'기도하는',choices:['날아가는','기도하는','먹는','자는']},
+    ]
+  },
+  {
+    id:'cicada', name:'매미', emoji:'🦟',
+    desc:'수컷이 배 근육을 떨어서 큰 소리를 내요. 여름의 대표 곤충이에요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="60" rx="14" ry="22" fill="#8d6e63"/>
+      <ellipse cx="50" cy="38" rx="13" ry="11" fill="#a1887f"/>
+      <ellipse cx="28" cy="48" rx="20" ry="10" fill="rgba(200,230,255,0.55)" stroke="#90caf9" stroke-width="1.5"/>
+      <ellipse cx="72" cy="48" rx="20" ry="10" fill="rgba(200,230,255,0.55)" stroke="#90caf9" stroke-width="1.5"/>
+      <ellipse cx="30" cy="60" rx="16" ry="7" fill="rgba(200,230,255,0.35)" stroke="#90caf9" stroke-width="1.5"/>
+      <ellipse cx="70" cy="60" rx="16" ry="7" fill="rgba(200,230,255,0.35)" stroke="#90caf9" stroke-width="1.5"/>
+      <circle cx="43" cy="35" r="5.5" fill="#1a237e"/><circle cx="57" cy="35" r="5.5" fill="#1a237e"/>
+      <circle cx="44" cy="34" r="2" fill="white"/><circle cx="58" cy="34" r="2" fill="white"/>
+      <line x1="46" y1="30" x2="42" y2="22" stroke="#5d4037" stroke-width="1.5"/>
+      <line x1="54" y1="30" x2="58" y2="22" stroke="#5d4037" stroke-width="1.5"/>
+    </svg>`,
+    questions:[
+      {q:'매미는 어떤 계절에 주로 울음소리를 내나요?',a:'여름',choices:['봄','여름','가을','겨울']},
+      {q:'매미 수컷이 소리를 내는 방법은?',a:'배 근육을 떨어서',choices:['날개를 비벼서','배 근육을 떨어서','발을 두들겨서','입으로 불어서']},
+    ]
+  },
+  {
+    id:'ant', name:'개미', emoji:'🐜',
+    desc:'엄청난 힘으로 자기 몸무게의 50배를 들어요. 군집생활을 해요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="72" rx="13" ry="15" fill="#212121"/>
+      <ellipse cx="50" cy="53" rx="9" ry="10" fill="#212121"/>
+      <ellipse cx="50" cy="35" rx="11" ry="11" fill="#212121"/>
+      <line x1="50" y1="63" x2="50" y2="40" stroke="#212121" stroke-width="3"/>
+      <circle cx="44" cy="31" r="5" fill="#1a237e"/><circle cx="56" cy="31" r="5" fill="#1a237e"/>
+      <circle cx="44.5" cy="30" r="2" fill="white"/><circle cx="56.5" cy="30" r="2" fill="white"/>
+      <line x1="45" y1="25" x2="38" y2="17" stroke="#212121" stroke-width="1.5"/>
+      <line x1="55" y1="25" x2="62" y2="17" stroke="#212121" stroke-width="1.5"/>
+      <line x1="41" y1="47" x2="25" y2="52" stroke="#212121" stroke-width="2.5"/>
+      <line x1="41" y1="53" x2="23" y2="57" stroke="#212121" stroke-width="2.5"/>
+      <line x1="59" y1="47" x2="75" y2="52" stroke="#212121" stroke-width="2.5"/>
+      <line x1="59" y1="53" x2="77" y2="57" stroke="#212121" stroke-width="2.5"/>
+      <line x1="39" y1="65" x2="24" y2="73" stroke="#212121" stroke-width="2.5"/>
+      <line x1="61" y1="65" x2="76" y2="73" stroke="#212121" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'개미는 자기 몸무게의 몇 배를 들 수 있나요?',a:'50배',choices:['5배','10배','50배','100배']},
+      {q:'개미의 다리는 모두 몇 개인가요?',a:'6개',choices:['4개','6개','8개','10개']},
+    ]
+  },
+  {
+    id:'bee', name:'꿀벌', emoji:'🐝',
+    desc:'꽃에서 꿀을 모아 벌집에 저장해요. 여왕벌을 중심으로 생활해요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="58" rx="16" ry="20" fill="#fdd835"/>
+      <rect x="36" y="48" width="28" height="7" rx="2" fill="#212121" opacity="0.8"/>
+      <rect x="36" y="60" width="28" height="7" rx="2" fill="#212121" opacity="0.8"/>
+      <rect x="36" y="72" width="28" height="5" rx="2" fill="#212121" opacity="0.7"/>
+      <ellipse cx="50" cy="37" rx="12" ry="10" fill="#f9a825"/>
+      <ellipse cx="32" cy="46" rx="17" ry="8" fill="rgba(200,230,255,0.55)" stroke="#90caf9" stroke-width="1.5"/>
+      <ellipse cx="68" cy="46" rx="17" ry="8" fill="rgba(200,230,255,0.55)" stroke="#90caf9" stroke-width="1.5"/>
+      <circle cx="43" cy="33" r="5" fill="#1a237e"/><circle cx="57" cy="33" r="5" fill="#1a237e"/>
+      <circle cx="43.5" cy="32" r="2" fill="white"/><circle cx="57.5" cy="32" r="2" fill="white"/>
+      <line x1="46" y1="28" x2="42" y2="20" stroke="#5d4037" stroke-width="1.5"/>
+      <line x1="54" y1="28" x2="58" y2="20" stroke="#5d4037" stroke-width="1.5"/>
+    </svg>`,
+    questions:[
+      {q:'꿀벌이 꽃에서 모으는 것은 무엇인가요?',a:'꿀',choices:['이슬','꿀','물','씨앗']},
+      {q:'꿀벌 집단의 우두머리는 누구인가요?',a:'여왕벌',choices:['수벌','일벌','여왕벌','병정벌']},
+    ]
+  },
+  {
+    id:'butterfly', name:'나비', emoji:'🦋',
+    desc:'애벌레에서 번데기를 거쳐 아름다운 나비가 돼요. 완전변태를 해요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="55" rx="4" ry="20" fill="#4a148c"/>
+      <path d="M50 45 Q20 20 15 45 Q20 65 50 60 Z" fill="#ce93d8" stroke="#7b1fa2" stroke-width="1.5"/>
+      <path d="M50 45 Q80 20 85 45 Q80 65 50 60 Z" fill="#ce93d8" stroke="#7b1fa2" stroke-width="1.5"/>
+      <path d="M50 60 Q25 55 22 70 Q30 80 50 72 Z" fill="#ba68c8" stroke="#7b1fa2" stroke-width="1.5"/>
+      <path d="M50 60 Q75 55 78 70 Q70 80 50 72 Z" fill="#ba68c8" stroke="#7b1fa2" stroke-width="1.5"/>
+      <circle cx="35" cy="43" r="6" fill="rgba(255,255,255,0.4)" stroke="#9c27b0" stroke-width="1"/>
+      <circle cx="65" cy="43" r="6" fill="rgba(255,255,255,0.4)" stroke="#9c27b0" stroke-width="1"/>
+      <circle cx="50" cy="38" r="6" fill="#4a148c"/>
+      <circle cx="46" cy="36" r="2" fill="white"/><circle cx="54" cy="36" r="2" fill="white"/>
+      <line x1="47" y1="33" x2="42" y2="25" stroke="#4a148c" stroke-width="1.5"/>
+      <line x1="53" y1="33" x2="58" y2="25" stroke="#4a148c" stroke-width="1.5"/>
+      <circle cx="42" cy="24" r="2" fill="#4a148c"/>
+      <circle cx="58" cy="24" r="2" fill="#4a148c"/>
+    </svg>`,
+    questions:[
+      {q:'나비의 변태 순서를 고르세요',a:'알→애벌레→번데기→나비',choices:['알→나비→번데기→애벌레','알→애벌레→번데기→나비','애벌레→알→나비→번데기','번데기→알→애벌레→나비']},
+      {q:'나비가 꽃에서 먹는 것은?',a:'꽃꿀',choices:['꽃잎','꽃꿀','열매','씨앗']},
+    ]
+  },
+  {
+    id:'waterstrider', name:'소금쟁이', emoji:'🪲',
+    desc:'물 위를 걸어다닐 수 있는 곤충이에요. 다리에 기름진 털이 있어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="50" rx="35" ry="8" fill="rgba(100,180,255,0.3)"/>
+      <ellipse cx="50" cy="52" rx="7" ry="15" fill="#5d4037"/>
+      <ellipse cx="50" cy="38" rx="6" ry="8" fill="#795548"/>
+      <circle cx="45" cy="34" r="3.5" fill="#1a237e"/><circle cx="55" cy="34" r="3.5" fill="#1a237e"/>
+      <circle cx="45.5" cy="33" r="1.5" fill="white"/><circle cx="55.5" cy="33" r="1.5" fill="white"/>
+      <line x1="43" y1="46" x2="18" y2="50" stroke="#5d4037" stroke-width="2"/>
+      <line x1="43" y1="52" x2="17" y2="52" stroke="#5d4037" stroke-width="2"/>
+      <line x1="57" y1="46" x2="82" y2="50" stroke="#5d4037" stroke-width="2"/>
+      <line x1="57" y1="52" x2="83" y2="52" stroke="#5d4037" stroke-width="2"/>
+      <line x1="43" y1="58" x2="20" y2="62" stroke="#5d4037" stroke-width="2"/>
+      <line x1="57" y1="58" x2="80" y2="62" stroke="#5d4037" stroke-width="2"/>
+    </svg>`,
+    questions:[
+      {q:'소금쟁이가 물 위를 걸을 수 있는 이유는?',a:'다리에 기름진 털이 있어서',choices:['발이 넓어서','다리에 기름진 털이 있어서','몸이 가벼워서','수영을 잘해서']},
+      {q:'소금쟁이는 어디에 사나요?',a:'연못, 강',choices:['사막','높은 산','연못, 강','땅속']},
+    ]
+  },
+  {
+    id:'grasshopper', name:'메뚜기', emoji:'🦗',
+    desc:'강한 뒷다리로 높이 점프할 수 있어요. 식물의 잎을 먹어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="58" rx="16" ry="20" fill="#558b2f"/>
+      <ellipse cx="50" cy="38" rx="12" ry="10" fill="#689f38"/>
+      <ellipse cx="38" cy="55" rx="14" ry="7" fill="rgba(180,230,100,0.4)" stroke="#7cb342" stroke-width="1"/>
+      <ellipse cx="62" cy="55" rx="14" ry="7" fill="rgba(180,230,100,0.4)" stroke="#7cb342" stroke-width="1"/>
+      <circle cx="43" cy="34" r="5" fill="#1a237e"/><circle cx="57" cy="34" r="5" fill="#1a237e"/>
+      <circle cx="43.5" cy="33" r="2" fill="white"/><circle cx="57.5" cy="33" r="2" fill="white"/>
+      <line x1="47" y1="30" x2="43" y2="22" stroke="#33691e" stroke-width="1.5"/>
+      <line x1="53" y1="30" x2="57" y2="22" stroke="#33691e" stroke-width="1.5"/>
+      <line x1="36" y1="62" x2="18" y2="52" stroke="#33691e" stroke-width="2"/>
+      <line x1="64" y1="62" x2="82" y2="52" stroke="#33691e" stroke-width="2"/>
+      <line x1="36" y1="68" x2="22" y2="80" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="64" y1="68" x2="78" y2="80" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="36" y1="58" x2="22" y2="60" stroke="#33691e" stroke-width="2"/>
+      <line x1="64" y1="58" x2="78" y2="60" stroke="#33691e" stroke-width="2"/>
+    </svg>`,
+    questions:[
+      {q:'메뚜기는 무엇으로 높이 점프하나요?',a:'뒷다리',choices:['앞다리','뒷다리','날개','꼬리']},
+      {q:'메뚜기는 주로 무엇을 먹나요?',a:'식물의 잎',choices:['다른 곤충','흙','식물의 잎','물고기']},
+    ]
+  },
+  {
+    id:'cricket', name:'귀뚜라미', emoji:'🦗',
+    desc:'수컷이 날개를 비벼서 "귀뚤귀뚤" 소리를 내요. 가을의 상징이에요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="60" rx="15" ry="18" fill="#4e342e"/>
+      <ellipse cx="50" cy="42" rx="12" ry="10" fill="#5d4037"/>
+      <ellipse cx="38" cy="56" rx="13" ry="7" fill="rgba(120,80,50,0.4)" stroke="#795548" stroke-width="1"/>
+      <ellipse cx="62" cy="56" rx="13" ry="7" fill="rgba(120,80,50,0.4)" stroke="#795548" stroke-width="1"/>
+      <circle cx="43" cy="38" r="5" fill="#1a237e"/><circle cx="57" cy="38" r="5" fill="#1a237e"/>
+      <circle cx="43.5" cy="37" r="2" fill="white"/><circle cx="57.5" cy="37" r="2" fill="white"/>
+      <line x1="47" y1="33" x2="40" y2="22" stroke="#3e2723" stroke-width="1.5"/>
+      <line x1="53" y1="33" x2="60" y2="22" stroke="#3e2723" stroke-width="1.5"/>
+      <line x1="35" y1="55" x2="20" y2="50" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="65" y1="55" x2="80" y2="50" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="35" y1="63" x2="18" y2="70" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="65" y1="63" x2="82" y2="70" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="35" y1="70" x2="20" y2="82" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="65" y1="70" x2="80" y2="82" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="50" y1="78" x2="47" y2="92" stroke="#4e342e" stroke-width="2"/>
+      <line x1="50" y1="78" x2="53" y2="92" stroke="#4e342e" stroke-width="2"/>
+    </svg>`,
+    questions:[
+      {q:'귀뚜라미는 어떻게 소리를 내나요?',a:'날개를 비벼서',choices:['발을 두드려서','날개를 비벼서','입으로 불어서','배를 떨어서']},
+      {q:'귀뚜라미는 주로 어떤 계절에 우나요?',a:'가을',choices:['봄','여름','가을','겨울']},
+    ]
+  },
+  {
+    id:'firefly', name:'반딧불이', emoji:'✨',
+    desc:'꽁무니에서 빛을 내요. 주로 깨끗한 물 근처에 살아요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <radialGradient id="glow" cx="50%" cy="75%" r="30%">
+        <stop offset="0%" stop-color="#ccff00" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </radialGradient>
+      <ellipse cx="50" cy="55" rx="12" ry="20" fill="#212121"/>
+      <ellipse cx="50" cy="55" rx="10" ry="18" fill="#1b5e20"/>
+      <ellipse cx="50" cy="37" rx="11" ry="9" fill="#212121"/>
+      <ellipse cx="33" cy="50" rx="15" ry="7" fill="rgba(200,230,255,0.45)" stroke="#90caf9" stroke-width="1"/>
+      <ellipse cx="67" cy="50" rx="15" ry="7" fill="rgba(200,230,255,0.45)" stroke="#90caf9" stroke-width="1"/>
+      <circle cx="43" cy="33" r="4.5" fill="#1a237e"/><circle cx="57" cy="33" r="4.5" fill="#1a237e"/>
+      <circle cx="43.5" cy="32" r="2" fill="white"/><circle cx="57.5" cy="32" r="2" fill="white"/>
+      <ellipse cx="50" cy="73" rx="8" ry="5" fill="#ccff00" opacity="0.9"/>
+      <ellipse cx="50" cy="73" rx="12" ry="8" fill="url(#glow)"/>
+      <line x1="42" y1="47" x2="26" y2="52" stroke="#212121" stroke-width="2.5"/>
+      <line x1="58" y1="47" x2="74" y2="52" stroke="#212121" stroke-width="2.5"/>
+      <line x1="42" y1="55" x2="27" y2="60" stroke="#212121" stroke-width="2.5"/>
+      <line x1="58" y1="55" x2="73" y2="60" stroke="#212121" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'반딧불이는 몸 어느 부분에서 빛을 내나요?',a:'꽁무니(배 끝)',choices:['머리','날개','꽁무니(배 끝)','더듬이']},
+      {q:'반딧불이는 주로 어떤 환경에서 사나요?',a:'깨끗한 물 근처',choices:['건조한 사막','깨끗한 물 근처','도심 속','높은 산꼭대기']},
+    ]
+  },
+  {
+    id:'longhorn', name:'하늘소', emoji:'🪲',
+    desc:'몸보다 훨씬 긴 더듬이가 특징이에요. 나무를 갉아 먹어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="60" rx="14" ry="20" fill="#1565c0"/>
+      <ellipse cx="50" cy="38" rx="11" ry="10" fill="#1976d2"/>
+      <ellipse cx="50" cy="60" rx="12" ry="18" fill="none" stroke="#0d47a1" stroke-width="2"/>
+      <circle cx="44" cy="34" r="5" fill="#1a237e"/><circle cx="56" cy="34" r="5" fill="#1a237e"/>
+      <circle cx="44.5" cy="33" r="2" fill="white"/><circle cx="56.5" cy="33" r="2" fill="white"/>
+      <line x1="47" y1="28" x2="30" y2="10" stroke="#1565c0" stroke-width="1.5"/>
+      <line x1="53" y1="28" x2="70" y2="10" stroke="#1565c0" stroke-width="1.5"/>
+      <line x1="30" y1="10" x2="15" y2="18" stroke="#1565c0" stroke-width="1.5"/>
+      <line x1="70" y1="10" x2="85" y2="18" stroke="#1565c0" stroke-width="1.5"/>
+      <line x1="36" y1="55" x2="20" y2="60" stroke="#1565c0" stroke-width="2.5"/>
+      <line x1="64" y1="55" x2="80" y2="60" stroke="#1565c0" stroke-width="2.5"/>
+      <line x1="36" y1="63" x2="19" y2="68" stroke="#1565c0" stroke-width="2.5"/>
+      <line x1="64" y1="63" x2="81" y2="68" stroke="#1565c0" stroke-width="2.5"/>
+      <line x1="36" y1="72" x2="22" y2="80" stroke="#1565c0" stroke-width="2.5"/>
+      <line x1="64" y1="72" x2="78" y2="80" stroke="#1565c0" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'하늘소의 가장 큰 특징은 무엇인가요?',a:'매우 긴 더듬이',choices:['매우 긴 더듬이','화려한 날개','큰 집게','독을 뿜는 것']},
+      {q:'하늘소 유충은 주로 무엇을 먹나요?',a:'나무 속',choices:['나뭇잎','꽃꿀','나무 속','흙']},
+    ]
+  },
+  {
+    id:'waterbeetle', name:'물방개', emoji:'🪲',
+    desc:'물속에 사는 딱정벌레예요. 공기를 저장해 물속에서 호흡해요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="55" rx="20" ry="25" fill="#1b5e20"/>
+      <ellipse cx="50" cy="55" rx="18" ry="23" fill="#2e7d32"/>
+      <ellipse cx="50" cy="55" rx="16" ry="21" fill="none" stroke="#1b5e20" stroke-width="2"/>
+      <ellipse cx="50" cy="37" rx="13" ry="10" fill="#388e3c"/>
+      <circle cx="43" cy="33" r="5" fill="#1a237e"/><circle cx="57" cy="33" r="5" fill="#1a237e"/>
+      <circle cx="43.5" cy="32" r="2" fill="white"/><circle cx="57.5" cy="32" r="2" fill="white"/>
+      <line x1="47" y1="29" x2="43" y2="22" stroke="#1b5e20" stroke-width="1.5"/>
+      <line x1="53" y1="29" x2="57" y2="22" stroke="#1b5e20" stroke-width="1.5"/>
+      <line x1="32" y1="50" x2="16" y2="48" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="68" y1="50" x2="84" y2="48" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="32" y1="60" x2="15" y2="60" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="68" y1="60" x2="85" y2="60" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="32" y1="70" x2="18" y2="75" stroke="#1b5e20" stroke-width="3"/>
+      <line x1="68" y1="70" x2="82" y2="75" stroke="#1b5e20" stroke-width="3"/>
+    </svg>`,
+    questions:[
+      {q:'물방개는 어디에 사나요?',a:'물속',choices:['나무 위','물속','땅속','하늘']},
+      {q:'물방개가 물속에서 숨을 쉬는 방법은?',a:'등에 공기를 저장해서',choices:['아가미로','등에 공기를 저장해서','코로 직접','피부로']},
+    ]
+  },
+  {
+    id:'bombybeetle', name:'방아깨비', emoji:'🦗',
+    desc:'메뚜기와 비슷하지만 몸이 더 가늘고 길어요. 잡으면 방아를 찧는 것처럼 몸을 흔들어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="52" cy="60" rx="10" ry="22" fill="#33691e" transform="rotate(-10 52 60)"/>
+      <ellipse cx="48" cy="37" rx="9" ry="9" fill="#558b2f"/>
+      <ellipse cx="35" cy="55" rx="13" ry="6" fill="rgba(180,230,100,0.35)" stroke="#7cb342" stroke-width="1"/>
+      <ellipse cx="65" cy="55" rx="13" ry="6" fill="rgba(180,230,100,0.35)" stroke="#7cb342" stroke-width="1"/>
+      <circle cx="42" cy="33" r="5" fill="#1a237e"/><circle cx="55" cy="33" r="5" fill="#1a237e"/>
+      <circle cx="42.5" cy="32" r="2" fill="white"/><circle cx="55.5" cy="32" r="2" fill="white"/>
+      <line x1="46" y1="28" x2="40" y2="19" stroke="#33691e" stroke-width="1.5"/>
+      <line x1="54" y1="28" x2="60" y2="19" stroke="#33691e" stroke-width="1.5"/>
+      <line x1="42" y1="57" x2="20" y2="48" stroke="#33691e" stroke-width="2"/>
+      <line x1="58" y1="57" x2="78" y2="48" stroke="#33691e" stroke-width="2"/>
+      <line x1="40" y1="65" x2="20" y2="80" stroke="#33691e" stroke-width="2.5"/>
+      <line x1="60" y1="65" x2="78" y2="80" stroke="#33691e" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'방아깨비를 잡으면 어떤 행동을 하나요?',a:'몸을 위아래로 흔든다',choices:['가만히 있는다','날아간다','몸을 위아래로 흔든다','다리를 뺀다']},
+      {q:'방아깐비는 주로 어디에 사나요?',a:'풀밭',choices:['물속','나무 속','풀밭','돌 밑']},
+    ]
+  },
+  {
+    id:'stinkbug', name:'노린재', emoji:'🪲',
+    desc:'방어할 때 고약한 냄새를 풍겨요. 식물의 즙을 빨아 먹어요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="50,25 70,38 75,62 50,78 25,62 30,38" fill="#827717"/>
+      <ellipse cx="50" cy="52" rx="18" ry="22" fill="#9e9d24"/>
+      <ellipse cx="50" cy="52" rx="14" ry="18" fill="rgba(255,255,150,0.2)"/>
+      <ellipse cx="50" cy="35" rx="12" ry="9" fill="#afb42b"/>
+      <circle cx="43" cy="31" r="5" fill="#1a237e"/><circle cx="57" cy="31" r="5" fill="#1a237e"/>
+      <circle cx="43.5" cy="30" r="2" fill="white"/><circle cx="57.5" cy="30" r="2" fill="white"/>
+      <line x1="47" y1="27" x2="42" y2="19" stroke="#827717" stroke-width="1.5"/>
+      <line x1="53" y1="27" x2="58" y2="19" stroke="#827717" stroke-width="1.5"/>
+      <line x1="32" y1="50" x2="16" y2="55" stroke="#827717" stroke-width="2.5"/>
+      <line x1="68" y1="50" x2="84" y2="55" stroke="#827717" stroke-width="2.5"/>
+      <line x1="31" y1="60" x2="15" y2="65" stroke="#827717" stroke-width="2.5"/>
+      <line x1="69" y1="60" x2="85" y2="65" stroke="#827717" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'노린재가 위협받을 때 하는 행동은?',a:'고약한 냄새를 풍긴다',choices:['죽은 척한다','고약한 냄새를 풍긴다','색을 바꾼다','크게 운다']},
+      {q:'노린재는 주로 무엇을 먹나요?',a:'식물의 즙',choices:['다른 곤충','식물의 즙','꽃꿀','나무껍질']},
+    ]
+  },
+  {
+    id:'walkingstick', name:'대벌레', emoji:'🌿',
+    desc:'나뭇가지처럼 생겨서 눈에 잘 띄지 않아요. 보호색의 명수예요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="55" rx="5" ry="28" fill="#558b2f" transform="rotate(5 50 55)"/>
+      <ellipse cx="50" cy="30" rx="5" ry="8" fill="#689f38" transform="rotate(-5 50 30)"/>
+      <circle cx="48" cy="22" r="5" fill="#33691e"/>
+      <circle cx="45" cy="20" r="2.5" fill="#1a237e"/><circle cx="51" cy="20" r="2.5" fill="#1a237e"/>
+      <line x1="46" y1="16" x2="38" y2="8" stroke="#558b2f" stroke-width="1.2"/>
+      <line x1="50" y1="15" x2="55" y2="7" stroke="#558b2f" stroke-width="1.2"/>
+      <line x1="45" y1="44" x2="22" y2="42" stroke="#558b2f" stroke-width="2"/>
+      <line x1="55" y1="44" x2="78" y2="42" stroke="#558b2f" stroke-width="2"/>
+      <line x1="44" y1="54" x2="20" y2="56" stroke="#558b2f" stroke-width="2"/>
+      <line x1="56" y1="54" x2="80" y2="56" stroke="#558b2f" stroke-width="2"/>
+      <line x1="45" y1="64" x2="22" y2="70" stroke="#558b2f" stroke-width="2"/>
+      <line x1="55" y1="64" x2="78" y2="70" stroke="#558b2f" stroke-width="2"/>
+    </svg>`,
+    questions:[
+      {q:'대벌레가 살아남기 위해 사용하는 방법은?',a:'나뭇가지처럼 위장한다',choices:['빠르게 달린다','독을 뿜는다','나뭇가지처럼 위장한다','땅속에 숨는다']},
+      {q:'대벌레는 어떤 동물의 종류인가요?',a:'곤충',choices:['거미','곤충','지렁이','달팽이']},
+    ]
+  },
+  {
+    id:'dung_beetle', name:'쇠똥구리', emoji:'🪲',
+    desc:'동물의 똥을 굴려 공으로 만들어요. 그 안에 알을 낳아요.',
+    svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="65" r="14" fill="#795548" opacity="0.9"/>
+      <ellipse cx="50" cy="50" rx="18" ry="18" fill="#4e342e"/>
+      <ellipse cx="50" cy="50" rx="16" ry="16" fill="#5d4037"/>
+      <ellipse cx="50" cy="37" rx="13" ry="9" fill="#6d4c41"/>
+      <circle cx="43" cy="33" r="5" fill="#1a237e"/><circle cx="57" cy="33" r="5" fill="#1a237e"/>
+      <circle cx="43.5" cy="32" r="2" fill="white"/><circle cx="57.5" cy="32" r="2" fill="white"/>
+      <line x1="47" y1="29" x2="43" y2="21" stroke="#3e2723" stroke-width="1.5"/>
+      <line x1="53" y1="29" x2="57" y2="21" stroke="#3e2723" stroke-width="1.5"/>
+      <line x1="33" y1="48" x2="18" y2="52" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="67" y1="48" x2="82" y2="52" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="32" y1="57" x2="16" y2="60" stroke="#4e342e" stroke-width="2.5"/>
+      <line x1="68" y1="57" x2="84" y2="60" stroke="#4e342e" stroke-width="2.5"/>
+    </svg>`,
+    questions:[
+      {q:'쇠똥구리는 무엇을 굴려서 공으로 만드나요?',a:'동물의 똥',choices:['나뭇잎','동물의 똥','흙','나무 조각']},
+      {q:'쇠똥구리의 똥 공은 무엇에 사용되나요?',a:'알을 낳는 곳',choices:['먹이','알을 낳는 곳','집','장난감']},
+    ]
+  },
+];
+
+// Build 50 questions from insect data
+function buildQuestions() {
+  const qs = [];
+  INSECTS.forEach(ins => {
+    ins.questions.forEach(q => {
+      qs.push({ insect: ins, ...q, isGolden: false });
+    });
+  });
+  // Fill up to 50 with variety questions
+  const extraQs = [
+    {insect:INSECTS[0], q:'잠자리 유충을 부르는 이름은?', a:'수채', choices:['수채','번데기','유충','알']},
+    {insect:INSECTS[2], q:'장수풍뎅이의 애벌레는 어디에 사나요?', a:'흙 속', choices:['흙 속','나무 위','물속','돌 밑']},
+    {insect:INSECTS[3], q:'무당벌레는 천적이 나타나면 어떻게 하나요?', a:'죽은 척한다', choices:['도망친다','죽은 척한다','독을 뿜는다','크게 운다']},
+    {insect:INSECTS[4], q:'사마귀의 색깔이 초록색인 이유는?', a:'나뭇잎에 위장하기 위해', choices:['예쁘게 보이기 위해','나뭇잎에 위장하기 위해','따뜻해서','먹이가 초록색이라서']},
+    {insect:INSECTS[6], q:'개미는 집단 내에서 무엇에 따라 역할이 나뉘나요?', a:'계급', choices:['나이','색깔','계급','크기']},
+    {insect:INSECTS[7], q:'꿀벌이 만드는 달콤한 것은?', a:'꿀', choices:['설탕','꿀','잼','시럽']},
+    {insect:INSECTS[8], q:'나비 날개의 가루 같은 것을 무엇이라고 하나요?', a:'인분', choices:['꽃가루','인분','먼지','비늘가루']},
+    {insect:INSECTS[1], q:'사슴벌레 암컷의 턱은 어떤가요?', a:'수컷보다 작다', choices:['수컷보다 크다','수컷보다 작다','똑같다','없다']},
+    {insect:INSECTS[5], q:'매미가 땅속에서 지내는 기간은 얼마나 될까요?', a:'수년 이상', choices:['1주일','1달','수년 이상','하루']},
+    {insect:INSECTS[11], q:'귀뚜라미 소리는 주로 어느 시간대에 들리나요?', a:'밤', choices:['아침','낮','밤','새벽']},
+  ];
+  while (qs.length < 50) {
+    const eq = extraQs[qs.length % extraQs.length];
+    qs.push({ ...eq, isGolden: false });
+  }
+  // Shuffle
+  for (let i = qs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [qs[i], qs[j]] = [qs[j], qs[i]];
+  }
+  // Randomly assign golden insects (5 questions)
+  const goldenIndices = new Set();
+  while (goldenIndices.size < 5) goldenIndices.add(Math.floor(Math.random() * 50));
+  goldenIndices.forEach(i => qs[i].isGolden = true);
+  return qs;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════════════════════════════
+let state = {
+  screen: 'title',
+  questions: [],
+  qIndex: 0,
+  score: 0,
+  streak: 0,
+  maxStreak: 0,
+  tigerCaught: 0,
+  correctCount: 0,
+  items: [],
+  dex: {},
+  achievements: {},
+  bestScore: 0,
+  sfxOn: true,
+  musicOn: true,
+  paused: false,
+  answered: false,
+  prevDexScreen: 'title',
+};
+
+// Load from localStorage
+function loadSave() {
+  try {
+    const s = JSON.parse(localStorage.getItem('jiseungBug') || '{}');
+    state.bestScore = s.bestScore || 0;
+    state.dex = s.dex || {};
+    state.achievements = s.achievements || {};
+    state.sfxOn = s.sfxOn !== undefined ? s.sfxOn : true;
+    state.musicOn = s.musicOn !== undefined ? s.musicOn : true;
+    state.tigerCaught = s.tigerCaught || 0;
+  } catch(e){}
+}
+function saveGame() {
+  localStorage.setItem('jiseungBug', JSON.stringify({
+    bestScore: state.bestScore,
+    dex: state.dex,
+    achievements: state.achievements,
+    sfxOn: state.sfxOn,
+    musicOn: state.musicOn,
+    tigerCaught: state.tigerCaught,
+  }));
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CANVAS BACKGROUND ANIMATION
+// ══════════════════════════════════════════════════════════════════
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let animFrame = 0;
+let cw, ch;
+
+function resizeCanvas() {
+  cw = canvas.width = window.innerWidth;
+  ch = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// World objects
+const clouds = Array.from({length:6}, (_,i) => ({
+  x: Math.random() * 2000, y: 30 + Math.random() * 80,
+  w: 80 + Math.random() * 80, speed: 0.3 + Math.random() * 0.3, opa: 0.7 + Math.random() * 0.3
+}));
+
+const trees = Array.from({length:8}, (_,i) => ({
+  x: i * 180 + 50, sway: Math.random() * Math.PI * 2, h: 90 + Math.random() * 50
+}));
+
+const flowers = Array.from({length:15}, (_,i) => ({
+  x: i * 80 + 30, bob: Math.random() * Math.PI * 2, color: ['#ff80ab','#ffeb3b','#ce93d8','#80deea'][i%4]
+}));
+
+const flutterButterflies = Array.from({length:3}, (_,i) => ({
+  x: Math.random() * 800, y: ch * 0.3 + Math.random() * ch * 0.2,
+  vx: 0.5 + Math.random(), vy: 0, t: Math.random() * 100, color: ['#ce93d8','#ffd600','#80deea'][i]
+}));
+
+const birds = Array.from({length:2}, (_,i) => ({
+  x: i * 400 + 100, y: 60 + Math.random() * 80, vx: 1.5 + Math.random()
+}));
+
+const fireflies = Array.from({length:8}, (_,i) => ({
+  x: Math.random() * 1000, y: ch * 0.4 + Math.random() * ch * 0.4,
+  t: Math.random() * 100, vx: (Math.random()-0.5) * 0.8, vy: (Math.random()-0.5) * 0.5
+}));
+
+// Character
+const char = { x: 0, y: 0, frame: 0, mood: 'walk', moodTimer: 0 };
+let worldX = 0;
+
+function drawBackground(t) {
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, ch * 0.6);
+  skyGrad.addColorStop(0, '#87ceeb');
+  skyGrad.addColorStop(1, '#b8e4f9');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, cw, ch * 0.6);
+
+  // Ground
+  const gndGrad = ctx.createLinearGradient(0, ch * 0.55, 0, ch);
+  gndGrad.addColorStop(0, '#4caf50');
+  gndGrad.addColorStop(0.3, '#388e3c');
+  gndGrad.addColorStop(1, '#1b5e20');
+  ctx.fillStyle = gndGrad;
+  ctx.fillRect(0, ch * 0.55, cw, ch * 0.45);
+
+  // Sun
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,214,0,0.5)';
+  ctx.shadowBlur = 30;
+  const sunGrad = ctx.createRadialGradient(cw-80, 60, 0, cw-80, 60, 50);
+  sunGrad.addColorStop(0, '#fff9c4');
+  sunGrad.addColorStop(0.5, '#ffd600');
+  sunGrad.addColorStop(1, 'rgba(255,214,0,0)');
+  ctx.fillStyle = sunGrad;
+  ctx.beginPath();
+  ctx.arc(cw - 80, 60, 50, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Clouds
+  clouds.forEach(c => {
+    c.x = (c.x - c.speed) % (cw + c.w * 2);
+    if (c.x < -c.w) c.x = cw + c.w;
+    ctx.save();
+    ctx.globalAlpha = c.opa;
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y, c.w, c.w * 0.45, 0, 0, Math.PI * 2);
+    ctx.ellipse(c.x - c.w * 0.3, c.y + 5, c.w * 0.6, c.w * 0.35, 0, 0, Math.PI * 2);
+    ctx.ellipse(c.x + c.w * 0.3, c.y + 5, c.w * 0.55, c.w * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Mountains in BG
+  ctx.fillStyle = 'rgba(100,160,100,0.25)';
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * 220 - (worldX * 0.05 % 220), ch * 0.55);
+    ctx.lineTo(i * 220 + 110 - (worldX * 0.05 % 220), ch * 0.3);
+    ctx.lineTo(i * 220 + 220 - (worldX * 0.05 % 220), ch * 0.55);
+    ctx.fill();
+  }
+
+  // Trees (parallax)
+  trees.forEach((tr, i) => {
+    const tx = ((tr.x - worldX * 0.4) % (cw + 120) + cw + 120) % (cw + 120) - 60;
+    const sway = Math.sin(t * 0.03 + tr.sway) * 2;
+    ctx.save();
+    ctx.translate(tx, ch * 0.55);
+    // Trunk
+    ctx.fillStyle = '#5d4037';
+    ctx.beginPath();
+    ctx.roundRect(-8, -tr.h * 0.4, 16, tr.h * 0.4, 4);
+    ctx.fill();
+    // Canopy swaying
+    ctx.translate(sway, 0);
+    ctx.fillStyle = i % 3 === 0 ? '#2e7d32' : i % 3 === 1 ? '#388e3c' : '#43a047';
+    ctx.beginPath();
+    ctx.ellipse(0, -tr.h * 0.7, 40, 55, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = i % 3 === 0 ? '#1b5e20' : '#2e7d32';
+    ctx.beginPath();
+    ctx.ellipse(-12, -tr.h * 0.65, 28, 40, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Flowers
+  flowers.forEach((f, i) => {
+    const fx = ((f.x - worldX * 0.6) % (cw + 80) + cw + 80) % (cw + 80) - 40;
+    const bob = Math.sin(t * 0.04 + f.bob) * 3;
+    ctx.save();
+    ctx.translate(fx, ch * 0.55 + bob);
+    ctx.fillStyle = '#558b2f';
+    ctx.fillRect(-1.5, -20, 3, 20);
+    ctx.fillStyle = f.color;
+    for (let p = 0; p < 5; p++) {
+      const a = (p / 5) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.ellipse(Math.cos(a) * 7, Math.sin(a) * 7 - 20, 5, 5, a, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#ffd600';
+    ctx.beginPath();
+    ctx.arc(0, -20, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Ground grass detail
+  ctx.fillStyle = '#66bb6a';
+  for (let i = 0; i < cw; i += 12) {
+    const wave = Math.sin(t * 0.05 + i * 0.1) * 3;
+    ctx.beginPath();
+    ctx.moveTo(i, ch * 0.55);
+    ctx.lineTo(i + 6, ch * 0.55 - 12 + wave);
+    ctx.lineTo(i + 12, ch * 0.55);
+    ctx.fill();
+  }
+
+  // Butterflies
+  flutterButterflies.forEach(b => {
+    b.t += 0.05;
+    b.x += b.vx;
+    b.y += Math.sin(b.t) * 0.8;
+    if (b.x > cw + 50) { b.x = -50; b.y = ch * 0.2 + Math.random() * ch * 0.3; }
+    const wing = Math.abs(Math.sin(b.t * 3));
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = b.color;
+    ctx.beginPath();
+    ctx.ellipse(-8 * wing, 0, 10 * wing, 7, -0.3, 0, Math.PI * 2);
+    ctx.ellipse(8 * wing, 0, 10 * wing, 7, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#212121';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 2, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Birds
+  birds.forEach(b => {
+    b.x += b.vx;
+    if (b.x > cw + 60) b.x = -60;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.strokeStyle = '#1a237e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-10, 0);
+    ctx.quadraticCurveTo(-5, -6, 0, 0);
+    ctx.quadraticCurveTo(5, -6, 10, 0);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // Fireflies (evening effect)
+  fireflies.forEach(f => {
+    f.t += 0.04;
+    f.x += f.vx;
+    f.y += f.vy;
+    if (f.x < 0) f.x = cw;
+    if (f.x > cw) f.x = 0;
+    if (f.y < ch * 0.4) f.vy = 0.3;
+    if (f.y > ch * 0.9) f.vy = -0.3;
+    const glow = (Math.sin(f.t) + 1) / 2;
+    ctx.save();
+    ctx.globalAlpha = 0.15 + glow * 0.6;
+    ctx.shadowColor = '#ccff00';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = '#ccff00';
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawCharacter(t) {
+  if (state.screen !== 'game') return;
+  const charX = cw * 0.22;
+  const groundY = ch * 0.55;
+  const bobY = Math.sin(t * 0.15) * 3;
+
+  ctx.save();
+  ctx.translate(charX, groundY + bobY);
+
+  // Shadow
+  ctx.save();
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(0, 3, 18, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Legs animation
+  const legSwing = Math.sin(t * 0.2) * 10;
+
+  // Left leg
+  ctx.fillStyle = '#1565c0';
+  ctx.save();
+  ctx.translate(-7, 0);
+  ctx.rotate((legSwing * Math.PI) / 180);
+  ctx.fillRect(-4, 0, 8, 20);
+  ctx.fillStyle = '#ff7043';
+  ctx.fillRect(-5, 18, 10, 8);
+  ctx.restore();
+
+  // Right leg
+  ctx.fillStyle = '#1565c0';
+  ctx.save();
+  ctx.translate(7, 0);
+  ctx.rotate((-legSwing * Math.PI) / 180);
+  ctx.fillRect(-4, 0, 8, 20);
+  ctx.fillStyle = '#ff7043';
+  ctx.fillRect(-5, 18, 10, 8);
+  ctx.restore();
+
+  // Body
+  ctx.fillStyle = '#ff7043';
+  ctx.beginPath();
+  ctx.roundRect(-14, -38, 28, 40, 8);
+  ctx.fill();
+
+  // Stripe
+  ctx.fillStyle = '#ff5722';
+  ctx.fillRect(-14, -25, 28, 6);
+
+  // Arms
+  ctx.fillStyle = '#ffccbc';
+  ctx.save();
+  ctx.translate(-14, -30);
+  ctx.rotate((Math.sin(t * 0.2) * 15 * Math.PI) / 180);
+  ctx.beginPath();
+  ctx.roundRect(-6, 0, 12, 22, 6);
+  ctx.fill();
+  ctx.restore();
+
+  // Net arm (right)
+  const netSwing = Math.sin(t * 0.15) * 8;
+  ctx.fillStyle = '#ffccbc';
+  ctx.save();
+  ctx.translate(14, -30);
+  ctx.rotate((netSwing * Math.PI) / 180);
+  ctx.beginPath();
+  ctx.roundRect(-6, 0, 12, 22, 6);
+  ctx.fill();
+  // Net stick
+  ctx.fillStyle = '#a1887f';
+  ctx.fillRect(4, 10, 4, 30);
+  // Net
+  ctx.strokeStyle = '#bdbdbd';
+  ctx.lineWidth = 1.5;
+  ctx.globalAlpha = 0.8;
+  ctx.beginPath();
+  ctx.arc(6, 10, 13, 0, Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(6 - 13, 10);
+  ctx.lineTo(6, 25);
+  ctx.lineTo(6 + 13, 10);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // Head
+  ctx.fillStyle = '#ffccbc';
+  ctx.beginPath();
+  ctx.ellipse(0, -50, 18, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hair
+  ctx.fillStyle = '#212121';
+  ctx.beginPath();
+  ctx.ellipse(0, -64, 16, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Hair tufts
+  ctx.beginPath();
+  ctx.arc(-10, -64, 7, 0, Math.PI * 2);
+  ctx.arc(10, -64, 7, 0, Math.PI * 2);
+  ctx.arc(0, -68, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes
+  ctx.fillStyle = '#1a237e';
+  ctx.beginPath();
+  ctx.arc(-6, -52, 4, 0, Math.PI * 2);
+  ctx.arc(6, -52, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(-5, -53, 1.5, 0, Math.PI * 2);
+  ctx.arc(7, -53, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Smile
+  ctx.strokeStyle = '#c62828';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, -47, 6, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+
+  // Cheeks
+  ctx.fillStyle = 'rgba(255,100,100,0.3)';
+  ctx.beginPath();
+  ctx.ellipse(-11, -47, 5, 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(11, -47, 5, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RANDOM EVENTS
+// ══════════════════════════════════════════════════════════════════
+let randomEventTimer = 0;
+const RANDOM_EVENTS = [
+  { icon:'🌈', text:'무지개가 떴어요! 아름다운 빛깔이에요!' },
+  { icon:'🦋', text:'나비 떼가 날아가요! 정말 예쁘다!' },
+  { icon:'🐿️', text:'다람쥐가 폴짝폴짝 지나가요!' },
+  { icon:'🐰', text:'귀여운 토끼가 깡충깡충!' },
+  { icon:'🌸', text:'꽃잎이 흩날려요~ 봄 향기!' },
+  { icon:'⭐', text:'별똥별이 지나갔어요! 소원을 빌어요!' },
+];
+
+function triggerRandomEvent() {
+  const e = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+  const el = document.createElement('div');
+  el.className = 'random-event-text';
+  el.textContent = `${e.icon} ${e.text}`;
+  document.getElementById('gameContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3100);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  AUDIO (Web Audio API synthetic sounds)
+// ══════════════════════════════════════════════════════════════════
+let audioCtx;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, duration, type='sine', vol=0.3, delay=0) {
+  if (!state.sfxOn) return;
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ac.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + duration);
+    osc.start(ac.currentTime + delay);
+    osc.stop(ac.currentTime + delay + duration);
+  } catch(e) {}
+}
+
+function playCorrect() {
+  playTone(523, 0.15, 'sine', 0.4);
+  playTone(659, 0.15, 'sine', 0.4, 0.15);
+  playTone(784, 0.25, 'sine', 0.4, 0.3);
+}
+
+function playWrong() {
+  playTone(200, 0.3, 'sawtooth', 0.3);
+  playTone(150, 0.4, 'sawtooth', 0.3, 0.25);
+}
+
+function playTigerRoar() {
+  for (let i = 0; i < 5; i++) {
+    playTone(80 + i * 15, 0.3, 'sawtooth', 0.4, i * 0.15);
+  }
+}
+
+function playFanfare() {
+  const notes = [523, 659, 784, 1047, 784, 1047, 1175, 1047];
+  notes.forEach((n, i) => playTone(n, 0.25, 'sine', 0.35, i * 0.18));
+}
+
+function playItemGet() {
+  playTone(880, 0.1, 'sine', 0.3);
+  playTone(1100, 0.15, 'sine', 0.3, 0.1);
+}
+
+// BGM (simple looping pattern)
+let bgmPlaying = false;
+let bgmTimeout;
+const BGM_NOTES = [523, 587, 659, 698, 784, 880, 784, 698, 659, 587];
+function startBGM() {
+  if (!state.musicOn || bgmPlaying) return;
+  bgmPlaying = true;
+  let i = 0;
+  function playNext() {
+    if (!state.musicOn || !bgmPlaying) { bgmPlaying = false; return; }
+    try {
+      const ac = getAudio();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = 'triangle';
+      osc.frequency.value = BGM_NOTES[i % BGM_NOTES.length] * 0.5;
+      gain.gain.setValueAtTime(0.08, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.5);
+      osc.start(); osc.stop(ac.currentTime + 0.5);
+      i++;
+      bgmTimeout = setTimeout(playNext, 550);
+    } catch(e) { bgmPlaying = false; }
+  }
+  playNext();
+}
+function stopBGM() {
+  bgmPlaying = false;
+  clearTimeout(bgmTimeout);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  VISUAL EFFECTS
+// ══════════════════════════════════════════════════════════════════
+function spawnParticles(x, y, count, colors) {
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (i / count) * Math.PI * 2;
+    const dist = 60 + Math.random() * 60;
+    p.style.cssText = `
+      left:${x}px; top:${y}px;
+      width:${8+Math.random()*8}px; height:${8+Math.random()*8}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --tx:${Math.cos(angle)*dist}px; --ty:${Math.sin(angle)*dist}px;
+      animation-duration:${0.6+Math.random()*0.6}s;
+    `;
+    document.getElementById('gameContainer').appendChild(p);
+    setTimeout(() => p.remove(), 1300);
+  }
+}
+
+function floatText(x, y, text, color='#ffd600') {
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = text;
+  el.style.cssText = `left:${x-30}px; top:${y}px; color:${color};`;
+  document.getElementById('gameContainer').appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function showCheer(text) {
+  const el = document.getElementById('cheerPopup');
+  el.textContent = text;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function showAchievement(icon, text) {
+  const el = document.getElementById('achievementPopup');
+  document.getElementById('achIcon').textContent = icon;
+  document.getElementById('achText').textContent = text;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Rainbow effect
+let rainbowActive = false;
+function showRainbow() {
+  if (rainbowActive) return;
+  rainbowActive = true;
+  const colors = ['rgba(255,0,0,0.2)','rgba(255,165,0,0.2)','rgba(255,255,0,0.2)','rgba(0,128,0,0.2)','rgba(0,0,255,0.2)','rgba(238,130,238,0.2)'];
+  const el = document.createElement('div');
+  el.style.cssText = `position:absolute;inset:0;z-index:45;pointer-events:none;`;
+  el.innerHTML = `<svg width="100%" height="100%" style="position:absolute;inset:0">
+    ${colors.map((c,i) => `<ellipse cx="50%" cy="120%" rx="${50+i*8}%" ry="${80+i*10}%" fill="none" stroke="${c.replace('0.2','0.4')}" stroke-width="20"/>`).join('')}
+  </svg>`;
+  document.getElementById('gameContainer').appendChild(el);
+  setTimeout(() => { el.remove(); rainbowActive = false; }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  SCREEN MANAGEMENT
+// ══════════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  state.screen = id;
+
+  const isGame = id === 'game';
+  document.getElementById('hud').style.display = isGame ? 'flex' : 'none';
+  document.getElementById('itemsBar').style.display = isGame ? 'flex' : 'none';
+  document.getElementById('progressBar').style.display = isGame ? 'block' : 'none';
+  document.getElementById('progressLabel').style.display = isGame ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  GAME LOGIC
+// ══════════════════════════════════════════════════════════════════
+let questionTimer = null;
+let bossTriggered = {};
+
+function startGame() {
+  state.questions = buildQuestions();
+  state.qIndex = 0;
+  state.score = 0;
+  state.streak = 0;
+  state.maxStreak = 0;
+  state.correctCount = 0;
+  state.items = [];
+  state.answered = false;
+  state.paused = false;
+  worldX = 0;
+
+  // Reset item badges
+  [1,2,3,4,5,6,7].forEach(i => {
+    const el = document.getElementById(`item${i}`);
+    el.classList.remove('earned');
+  });
+
+  updateHUD();
+  updateProgress();
+  showScreen('game');
+  startBGM();
+
+  // Schedule first question
+  clearTimeout(questionTimer);
+  questionTimer = setTimeout(showQuestion, 4000);
+
+  // Random events
+  scheduleRandomEvent();
+}
+
+function scheduleRandomEvent() {
+  const delay = 15000 + Math.random() * 20000;
+  setTimeout(() => {
+    if (state.screen === 'game' && !state.paused) {
+      if (Math.random() < 0.6) triggerRandomEvent();
+      if (Math.random() < 0.2) showRainbow();
+    }
+    scheduleRandomEvent();
+  }, delay);
+}
+
+function updateHUD() {
+  document.getElementById('qNum').textContent = state.qIndex + 1;
+  document.getElementById('scoreDisplay').textContent = state.score;
+  document.getElementById('streakNum').textContent = state.streak;
+  document.getElementById('streakDisplay').style.color = state.streak >= 5 ? '#ff6b35' : '#fff';
+}
+
+function updateProgress() {
+  const pct = (state.qIndex / 50) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `곤충 탐험 ${Math.round(pct)}% 🌿`;
+}
+
+let bossBannerTimeout;
+function checkBossStage(qIndex) {
+  if (qIndex > 0 && qIndex % 10 === 0 && !bossTriggered[qIndex]) {
+    bossTriggered[qIndex] = true;
+    const bossBanner = document.getElementById('bossBanner');
+    const bossNames = ['🦁 사자 곤충박사 등장!', '🐻 곰 곤충학자 도전!', '🦊 여우 박사 출현!', '🐼 판다 교수님 등장!', '🐯 호랑이 대왕 도전!'];
+    bossBanner.innerHTML = `⚡ 보스 스테이지! ⚡<br><small style="font-size:1.2rem">${bossNames[Math.floor(qIndex/10)-1]}</small>`;
+    bossBanner.classList.add('show');
+    clearTimeout(bossBannerTimeout);
+    bossBannerTimeout = setTimeout(() => bossBanner.classList.remove('show'), 2500);
+    playTone(200, 0.5, 'sawtooth', 0.2);
+    playTone(300, 0.5, 'sawtooth', 0.2, 0.4);
+  }
+}
+
+function showQuestion() {
+  if (state.screen !== 'game' || state.paused) return;
+  if (state.qIndex >= 50) { endClear(); return; }
+
+  const q = state.questions[state.qIndex];
+  state.answered = false;
+  bossTriggered = bossTriggered || {};
+  checkBossStage(state.qIndex);
+
+  // Populate panel
+  const insectEl = document.getElementById('insectDisplay');
+  insectEl.innerHTML = q.insect.svg;
+  if (q.isGolden) {
+    const glow = document.createElement('div');
+    glow.className = 'golden-glow';
+    insectEl.appendChild(glow);
+    document.getElementById('bonusBadge').style.display = 'block';
+  } else {
+    document.getElementById('bonusBadge').style.display = 'none';
+  }
+
+  document.getElementById('qNumber').textContent = `문제 ${state.qIndex+1}/50`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('insectNameDisplay').textContent = q.insect.name;
+
+  // Shuffle choices
+  const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  shuffled.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = choice;
+    btn.addEventListener('click', () => handleAnswer(choice, q, btn));
+    choicesEl.appendChild(btn);
+  });
+
+  const panel = document.getElementById('questionPanel');
+  panel.classList.add('show');
+
+  updateHUD();
+  updateProgress();
+}
+
+function handleAnswer(choice, q, btn) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const choiceBtns = document.querySelectorAll('.choice-btn');
+  choiceBtns.forEach(b => b.style.pointerEvents = 'none');
+
+  const correct = choice === q.a;
+  const panel = document.getElementById('questionPanel');
+  const rect = panel.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  if (correct) {
+    btn.classList.add('correct');
+    playCorrect();
+
+    let pts = 100;
+    if (q.isGolden) pts = 300;
+
+    state.score += pts + state.streak * 10;
+    state.streak++;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    state.correctCount++;
+
+    // Register to dex
+    if (!state.dex[q.insect.id]) {
+      state.dex[q.insect.id] = { name: q.insect.name, count: 0, svg: q.insect.svg, desc: q.insect.desc };
+    }
+    state.dex[q.insect.id].count++;
+
+    spawnParticles(cx, cy, 20, ['#ffd600','#ff6b35','#4caf50','#42a5f5','#ce93d8']);
+    floatText(cx, cy - 50, q.isGolden ? `+${pts}점 ⭐` : `+${pts}점`, '#ffd600');
+
+    // Cheer messages
+    const cheers = {5:'잘하고 있어! 🌟', 10:'대단해! 👏', 15:'와! 진짜 대단해!', 20:'와! 곤충 천재! 🏆', 30:'곤충 마스터! 💎', 50:'전설의 곤충박사! 👑'};
+    if (cheers[state.streak]) showCheer(cheers[state.streak]);
+
+    // Items
+    const itemMap = {5:1, 10:2, 15:3, 20:4, 30:5, 40:6, 50:7};
+    const itemEmoji = ['🍎','⭐','🦋','🏆','💎','👑','🏅'];
+    if (itemMap[state.correctCount]) {
+      const idx = itemMap[state.correctCount];
+      document.getElementById(`item${idx}`).classList.add('earned');
+      playItemGet();
+      floatText(cx, cy - 80, itemEmoji[idx-1], '#fff');
+    }
+
+    // Achievements
+    checkAchievements();
+    saveGame();
+
+    updateHUD();
+
+    setTimeout(() => {
+      panel.classList.remove('show');
+      state.qIndex++;
+      if (state.qIndex >= 50) {
+        setTimeout(endClear, 500);
+      } else {
+        questionTimer = setTimeout(showQuestion, 3500 + Math.random() * 2000);
+      }
+    }, 1800);
+
+  } else {
+    btn.classList.add('wrong');
+    playWrong();
+    state.streak = 0;
+    floatText(cx, cy - 50, '틀렸어요!', '#ef5350');
+
+    // Show correct
+    choiceBtns.forEach(b => { if (b.textContent === q.a) b.classList.add('correct'); });
+
+    updateHUD();
+
+    setTimeout(() => {
+      panel.classList.remove('show');
+      setTimeout(showTiger, 400);
+    }, 1500);
+  }
+}
+
+function showTiger() {
+  state.tigerCaught++;
+  saveGame();
+  const overlay = document.getElementById('tigerOverlay');
+  document.getElementById('tigerSvg').innerHTML = getTigerSVG();
+  overlay.classList.add('show');
+  playTigerRoar();
+
+  // Screen shake
+  const gc = document.getElementById('gameContainer');
+  gc.style.animation = 'none';
+  let sh = 0;
+  const shakeInterval = setInterval(() => {
+    sh++;
+    gc.style.transform = `translate(${Math.sin(sh) * 8}px, ${Math.cos(sh) * 5}px)`;
+    if (sh > 15) { clearInterval(shakeInterval); gc.style.transform = ''; }
+  }, 50);
+
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    showGameOver();
+  }, 3000);
+}
+
+function getTigerSVG() {
+  return `<svg width="180" height="180" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="60" rx="30" ry="28" fill="#ff8f00"/>
+    <ellipse cx="50" cy="38" rx="25" ry="22" fill="#ffa000"/>
+    <!-- Stripes -->
+    <path d="M35 55 Q40 48 45 55" stroke="#5d4037" stroke-width="3" fill="none"/>
+    <path d="M55 55 Q60 48 65 55" stroke="#5d4037" stroke-width="3" fill="none"/>
+    <path d="M32 65 Q37 60 40 67" stroke="#5d4037" stroke-width="2.5" fill="none"/>
+    <path d="M60 65 Q65 60 68 67" stroke="#5d4037" stroke-width="2.5" fill="none"/>
+    <!-- Face stripes -->
+    <path d="M35 35 Q38 28 40 35" stroke="#5d4037" stroke-width="2.5" fill="none"/>
+    <path d="M60 35 Q62 28 65 35" stroke="#5d4037" stroke-width="2.5" fill="none"/>
+    <!-- Eyes -->
+    <circle cx="40" cy="34" r="7" fill="#ffe082"/>
+    <circle cx="60" cy="34" r="7" fill="#ffe082"/>
+    <circle cx="40" cy="35" r="4" fill="#1a237e"/>
+    <circle cx="60" cy="35" r="4" fill="#1a237e"/>
+    <circle cx="41" cy="33" r="1.5" fill="white"/>
+    <circle cx="61" cy="33" r="1.5" fill="white"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="44" rx="7" ry="5" fill="#ff5722"/>
+    <ellipse cx="50" cy="43" rx="5" ry="3" fill="#e64a19"/>
+    <!-- Mouth -->
+    <path d="M44 50 Q50 57 56 50" stroke="#5d4037" stroke-width="2.5" fill="none"/>
+    <!-- Fangs -->
+    <polygon points="45,50 42,60 48,50" fill="white"/>
+    <polygon points="55,50 52,50 58,60" fill="white"/>
+    <!-- Ears -->
+    <polygon points="28,20 22,5 38,18" fill="#ff8f00"/>
+    <polygon points="28,20 25,10 35,18" fill="#ff5722"/>
+    <polygon points="72,20 78,5 62,18" fill="#ff8f00"/>
+    <polygon points="72,20 75,10 65,18" fill="#ff5722"/>
+    <!-- Whiskers -->
+    <line x1="20" y1="42" x2="40" y2="44" stroke="white" stroke-width="1.5" opacity="0.9"/>
+    <line x1="20" y1="47" x2="40" y2="47" stroke="white" stroke-width="1.5" opacity="0.9"/>
+    <line x1="60" y1="44" x2="80" y2="42" stroke="white" stroke-width="1.5" opacity="0.9"/>
+    <line x1="60" y1="47" x2="80" y2="47" stroke="white" stroke-width="1.5" opacity="0.9"/>
+    <!-- Paws -->
+    <ellipse cx="30" cy="80" rx="14" ry="10" fill="#ffa000"/>
+    <ellipse cx="70" cy="80" rx="14" ry="10" fill="#ffa000"/>
+    <ellipse cx="24" cy="87" rx="5" ry="4" fill="#ff8f00"/>
+    <ellipse cx="30" cy="89" rx="5" ry="4" fill="#ff8f00"/>
+    <ellipse cx="36" cy="87" rx="5" ry="4" fill="#ff8f00"/>
+    <ellipse cx="64" cy="87" rx="5" ry="4" fill="#ff8f00"/>
+    <ellipse cx="70" cy="89" rx="5" ry="4" fill="#ff8f00"/>
+    <ellipse cx="76" cy="87" rx="5" ry="4" fill="#ff8f00"/>
+  </svg>`;
+}
+
+function showGameOver() {
+  if (state.score > state.bestScore) state.bestScore = state.score;
+  saveGame();
+
+  document.getElementById('goCorrect').textContent = state.correctCount;
+  document.getElementById('goScore').textContent = state.score;
+  document.getElementById('goBest').textContent = state.bestScore;
+  document.getElementById('goCaught').textContent = state.tigerCaught;
+
+  stopBGM();
+  showScreen('gameOverScreen');
+}
+
+function endClear() {
+  if (state.score > state.bestScore) state.bestScore = state.score;
+  saveGame();
+
+  playFanfare();
+  document.getElementById('clearScore').textContent = state.score;
+
+  // Show items earned
+  const itemEmoji = ['🍎','⭐','🦋','🏆','💎','👑','🏅'];
+  document.getElementById('clearItems').textContent = itemEmoji.slice(0, Math.min(7, Math.floor(state.correctCount / 5) + 1)).join(' ');
+
+  // Achievement: 곤충박사
+  if (!state.achievements['master']) {
+    state.achievements['master'] = true;
+    showAchievement('👑', '전설의 곤충박사!');
+    saveGame();
+  }
+
+  stopBGM();
+  showScreen('clearScreen');
+
+  // Confetti
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      spawnParticles(
+        Math.random() * window.innerWidth,
+        Math.random() * window.innerHeight * 0.5,
+        30, ['#ffd600','#ff6b35','#4caf50','#42a5f5','#ce93d8','#ff80ab']
+      );
+    }, i * 400);
+  }
+}
+
+function checkAchievements() {
+  const achs = [
+    { key:'first', cond: state.correctCount === 1, icon:'🌟', text:'첫 번째 정답!'},
+    { key:'streak10', cond: state.streak >= 10, icon:'🔥', text:'10연속 정답!'},
+    { key:'streak20', cond: state.streak >= 20, icon:'💫', text:'20연속 정답!'},
+    { key:'tiger10', cond: state.tigerCaught >= 10, icon:'🐯', text:'호랑이에게 10번 잡힘...'},
+    { key:'dex_all', cond: Object.keys(state.dex).length >= INSECTS.length, icon:'📖', text:'도감 완성!'},
+  ];
+  achs.forEach(a => {
+    if (a.cond && !state.achievements[a.key]) {
+      state.achievements[a.key] = true;
+      showAchievement(a.icon, a.text);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  POKEDEX
+// ══════════════════════════════════════════════════════════════════
+function renderDex() {
+  const grid = document.getElementById('dexGrid');
+  grid.innerHTML = '';
+  let unlocked = 0;
+
+  INSECTS.forEach(ins => {
+    const d = state.dex[ins.id];
+    const item = document.createElement('div');
+    item.className = `dex-item ${d ? 'unlocked' : 'locked'}`;
+
+    if (d) {
+      unlocked++;
+      item.innerHTML = `
+        <div class="dex-icon">${ins.svg.replace('viewBox="0 0 100 100"', 'viewBox="0 0 100 100" width="50" height="50"')}</div>
+        <div class="dex-name">${ins.name}</div>
+        <div class="dex-count">${d.count}번 만남</div>
+      `;
+      item.title = ins.desc;
+    } else {
+      item.innerHTML = `
+        <div class="dex-icon">❓</div>
+        <div class="dex-name">???</div>
+      `;
+    }
+    grid.appendChild(item);
+  });
+
+  document.getElementById('dexCount').textContent = unlocked;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  INTRO SEQUENCE
+// ══════════════════════════════════════════════════════════════════
+function startIntro() {
+  showScreen('introScreen');
+  bossTriggered = {};
+  const bubbles = ['intro1','intro2','intro3'];
+  bubbles.forEach((id, i) => document.getElementById(id).classList.remove('show'));
+  bubbles.forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('show'), 600 + i * 1200);
+  });
+  setTimeout(startGame, 600 + bubbles.length * 1200 + 800);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  MAIN GAME LOOP
+// ══════════════════════════════════════════════════════════════════
+function gameLoop(t) {
+  requestAnimationFrame(gameLoop);
+  animFrame = t;
+  ctx.clearRect(0, 0, cw, ch);
+
+  const time = t * 0.001;
+
+  if (state.screen === 'game' && !state.paused) {
+    worldX += 1.2;
+  }
+
+  drawBackground(time * 60);
+
+  if (state.screen === 'game') {
+    drawCharacter(time * 60);
+  }
+}
+
+requestAnimationFrame(gameLoop);
+
+// ══════════════════════════════════════════════════════════════════
+//  EVENT LISTENERS
+// ══════════════════════════════════════════════════════════════════
+document.getElementById('startBtn').addEventListener('click', () => {
+  try { getAudio(); } catch(e) {}
+  startIntro();
+});
+
+document.getElementById('titleDexBtn').addEventListener('click', () => {
+  state.prevDexScreen = 'titleScreen';
+  renderDex();
+  showScreen('pokedexScreen');
+});
+
+document.getElementById('howToBtn').addEventListener('click', () => showScreen('howToScreen'));
+
+document.getElementById('sfxBtn').addEventListener('click', () => {
+  state.sfxOn = !state.sfxOn;
+  document.getElementById('sfxBtn').textContent = state.sfxOn ? '🔊' : '🔇';
+  saveGame();
+});
+
+document.getElementById('musicBtn').addEventListener('click', () => {
+  state.musicOn = !state.musicOn;
+  document.getElementById('musicBtn').textContent = state.musicOn ? '🎵' : '🔕';
+  if (state.musicOn) startBGM();
+  else stopBGM();
+  saveGame();
+});
+
+document.getElementById('pauseBtn').addEventListener('click', () => {
+  state.paused = true;
+  showScreen('pauseScreen');
+});
+
+document.getElementById('dexBtn').addEventListener('click', () => {
+  state.paused = true;
+  state.prevDexScreen = 'game';
+  renderDex();
+  showScreen('pokedexScreen');
+});
+
+document.getElementById('resumeBtn').addEventListener('click', () => {
+  state.paused = false;
+  showScreen('game');
+});
+
+document.getElementById('pauseDexBtn').addEventListener('click', () => {
+  renderDex();
+  state.prevDexScreen = 'pauseScreen';
+  showScreen('pokedexScreen');
+});
+
+document.getElementById('pauseMainBtn').addEventListener('click', () => {
+  state.paused = false;
+  clearTimeout(questionTimer);
+  stopBGM();
+  showScreen('titleScreen');
+});
+
+document.getElementById('retryBtn').addEventListener('click', startIntro);
+document.getElementById('goMainBtn').addEventListener('click', () => showScreen('titleScreen'));
+document.getElementById('clearRetryBtn').addEventListener('click', startIntro);
+document.getElementById('clearMainBtn').addEventListener('click', () => showScreen('titleScreen'));
+
+document.getElementById('dexBackBtn').addEventListener('click', () => {
+  const prev = state.prevDexScreen || 'titleScreen';
+  if (prev === 'game') {
+    state.paused = false;
+    showScreen('game');
+  } else if (prev === 'pauseScreen') {
+    showScreen('pauseScreen');
+  } else {
+    showScreen(prev);
+  }
+});
+
+// Touch/keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.screen === 'game') {
+    state.paused = true;
+    showScreen('pauseScreen');
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════════
+loadSave();
+
+// Title cloud decoration
+const titleSky = document.querySelector('.title-sky');
+if (titleSky) {
+  for (let i = 0; i < 4; i++) {
+    const c = document.createElement('div');
+    c.className = 'title-cloud';
+    const w = 80 + Math.random() * 80;
+    c.style.cssText = `width:${w}px;height:${w*0.4}px;top:${10+Math.random()*30}%;animation-duration:${20+Math.random()*15}s;animation-delay:${-Math.random()*20}s`;
+    titleSky.appendChild(c);
+  }
+}
+
+console.log('🦋 지승이의 곤충 대모험 - 로드 완료!');
+</script>
+</body>
+</html>
